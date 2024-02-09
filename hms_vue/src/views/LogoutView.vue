@@ -1,0 +1,12 @@
+<template>
+
+</template>
+
+<script>
+export default{
+    name: 'LogoutView',
+}
+</script>
+
+<style scoped>
+</style>
