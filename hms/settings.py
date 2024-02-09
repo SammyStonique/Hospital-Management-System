@@ -23,12 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = "django-insecure-wd!fk90x(zhq^0ea-y3xqdpaxt31=9xc#qj5zb*h8h!xstio$9"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost',
+                 '127.0.0.1',
+                 ]
 
 
 # Application definition
@@ -40,6 +42,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+    'billing_management',
+    'bookings',
+    'customer_support',
+    'doctor_profile',
+    'inventory_management',
+    'lab_management',
+    'patients_registration',
+    'payroll',
+    'statistical_data',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -90,6 +105,15 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'users.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -127,10 +151,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR /'media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+        #DJOSER SETTINGS
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    # 'ACTIVATION_URL': 'my-account/activate/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': '/password-reset/{uid}/{token}',
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    'LOGOUT_ON_PASSWORD_CHANGE': True
+}
 
 

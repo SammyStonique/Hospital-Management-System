@@ -13,7 +13,7 @@
                 </div>
                 </div>
                 <div class="py-4 px-8">
-                    <form action="">
+                    <form @submit.prevent="" action="">
                         <div class="py-3 px-3 flex">
                             <div class="w-1/4 grid justify-items-end place-items-center">
                                 <label for="">Username:</label>
@@ -43,11 +43,56 @@
 </template>
 
 <script>
+import axios from "axios";
 
 export default {
   name: 'LoginView',
+  data(){
+    return{
+        email: '',
+        password: ''
+    }
+  },
   components: {
     
+  },
+  methods:{
+    login(){
+        if (this.email != "" && this.password != ""){
+            const formData = {
+                email: this.email,
+                password: this.password
+            }
+            this.axios
+            .post("/api/v1/tokens/login/", formData)
+            .then((response)=>{
+                const token = response.data.auth_token;        
+                this.$store.commit('setToken', token);
+                axios.defaults.headers.common['Authorization'] = "Token " + token
+                localStorage.setItem('token',token)
+                this.$toast.success('Login Succesful',{
+                    duration: 5000
+                })
+                this.$router.push('/')
+                // this.$store.commit('reloadingPage')
+            })    
+            .catch((error)=>{
+                if (error.response) {
+                    for (const property in error.response.data) {
+                        this.errors.push(`${error.response.data[property]}`)
+                    }
+                    console.log(JSON.stringify(error.response.data))
+                    this.$toast.error('Invalid Login Credentials!',{
+                        duration:5000
+                    })
+                } else if (error.message) {
+                    this.errors.push('Something went wrong. Please try again')
+                    console.log(JSON.stringify(error))
+                }
+            })
+
+        }
+    }
   }
 }
 </script>
