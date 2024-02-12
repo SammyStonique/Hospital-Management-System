@@ -30,9 +30,13 @@
         </div>
       </div>
       <div class="w-3/4 pt-2 flex">
-        <div class="w-3/4">
-          <p class="font-bold text-sm">Otieno Samuel</p>
-          <p class="text-xs">Admin</p>
+        <div class="w-3/4" v-if="isAuthenticated">
+          <p class="font-bold text-sm">{{this.userDetails.last_name}} {{ this.userDetails.first_name }}</p>
+          <p class="text-xs">{{this.userDetails.profile}}</p>
+        </div>
+        <div class="w-3/4" v-else>
+          <p class="font-bold text-sm">User Account</p>
+          <p></p>
         </div>
         <div class="w-1/4">
           <i class="fa fa-caret-down" aria-hidden="true"></i>
@@ -44,7 +48,44 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default{
+  data(){
+    return{
+      userDetails: []
+    }
+  },
+  computed:{
+    isAuthenticated(){
+      return this.$store.state.isAuthenticated;
+    }
+  },
+  beforeMount(){
+    this.$store.commit("initializeStore");
+    const token = this.$store.state.token;
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = "Token " + token;
+    } else {
+      axios.defaults.headers.common["Authorization"] = "";
+    }
+  },
+  methods:{
+    getUserDetails(){
+      this.axios
+      .get("api/v1/users/me/")
+      .then((response)=>{
+        this.userDetails = response.data;
+        console.log("The user details ",this.userDetails);
+      })
+      .catch((error)=>{
+        console.log(error)
+      })
+    }
+  },
+  mounted(){
+    this.getUserDetails();
+  }
 
 }
 </script>

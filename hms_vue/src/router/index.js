@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '../store'
 import HomeView from '../views/HomeView.vue'
 import AppointmentsView from '../views/AppointmentsView.vue'
 import DepartmentsView from '../views/DepartmentsView.vue'
@@ -13,7 +14,10 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    meta:{
+      requireLogin: true
+    }
   },
   {
     path: '/login',
@@ -23,17 +27,26 @@ const routes = [
   {
     path: '/appointments',
     name: 'appointments',
-    component: AppointmentsView
+    component: AppointmentsView,
+    meta:{
+      requireLogin: true
+    }
   },
   {
     path: '/departments',
     name: 'departments',
-    component: DepartmentsView
+    component: DepartmentsView,
+    meta:{
+      requireLogin: true
+    }
   },
   {
     path: '/doctors',
     name: 'doctors',
-    component: DoctorsView
+    component: DoctorsView,
+    meta:{
+      requireLogin: true
+    }
   },
   {
     path: '/logout',
@@ -43,17 +56,26 @@ const routes = [
   {
     path: '/patients',
     name: 'patients',
-    component: PatientsView
+    component: PatientsView,
+    meta:{
+      requireLogin: true
+    }
   },
   {
     path: '/settings',
     name: 'settings',
-    component: SettingsView
+    component: SettingsView,
+    meta:{
+      requireLogin: true
+    }
   },
   {
     path: '/staff',
     name: 'staff',
-    component: StaffView
+    component: StaffView,
+    meta:{
+      requireLogin: true
+    }
   },
  
 ]
@@ -61,6 +83,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requireLogin) && !store.state.isAuthenticated) {
+    next({ name: 'login', query: { to: to.path } });
+  } else {
+    next()
+  }
 })
 
 export default router

@@ -1,7 +1,7 @@
 <template>
     <div class="login">
         <div class="w-full h-screen bg-slate-700 grid place-items-center">
-            <div class="w-1/2 h-80 bg-white p-4 rounded-lg">
+            <div class="w-1/2 h-100 bg-white p-4 rounded-lg">
                 <div class="text-center grid place-items-center">
                     <div class="flex w-36">
                     <div class="w-1/2 rounded-full">
@@ -12,14 +12,14 @@
                     </div>
                 </div>
                 </div>
-                <div class="py-4 px-8">
-                    <form @submit.prevent="" action="">
+                <div class="py-6 px-8">
+                    <form @submit.prevent="login" action="">
                         <div class="py-3 px-3 flex">
                             <div class="w-1/4 grid justify-items-end place-items-center">
                                 <label for="">Username:</label>
                             </div>
                             <div class="w-3/4">
-                                <input type="text" name="" id="" class="ml-4 w-3/4 rounded-lg border-gray-500 border-2 p-2 text-lg">
+                                <input type="text" name="" id="" class="ml-4 w-3/4 rounded-lg border-gray-500 border-2 p-2 text-lg" v-model="email">
                             </div>
                         </div>
                         <div class="py-3 px-3 flex">
@@ -27,8 +27,11 @@
                                 <label for="">Password:</label>
                             </div>
                             <div class="w-3/4">
-                                <input type="password" name="" id="" class="ml-4 w-3/4 rounded-lg border-gray-500 border-2 p-2 text-lg">
+                                <input type="password" name="" id="" class="ml-4 w-3/4 rounded-lg border-gray-500 border-2 p-2 text-lg" v-model="password">
                             </div>
+                        </div>
+                        <div class="col-md-12 notification is-danger" v-if="errors.length">
+                            <p style="color: red;" v-for="error in errors" v-bind:key="error">{{ error }}</p>
                         </div>
                         <div class="mt-3 grid justify-items-end">
                             <div class="pr-24">
@@ -50,7 +53,8 @@ export default {
   data(){
     return{
         email: '',
-        password: ''
+        password: '',
+        errors: []
     }
   },
   components: {
@@ -64,7 +68,7 @@ export default {
                 password: this.password
             }
             this.axios
-            .post("/api/v1/tokens/login/", formData)
+            .post("/api/v1/token/login/", formData)
             .then((response)=>{
                 const token = response.data.auth_token;        
                 this.$store.commit('setToken', token);
@@ -78,21 +82,26 @@ export default {
             })    
             .catch((error)=>{
                 if (error.response) {
-                    for (const property in error.response.data) {
-                        this.errors.push(`${error.response.data[property]}`)
-                    }
-                    console.log(JSON.stringify(error.response.data))
                     this.$toast.error('Invalid Login Credentials!',{
                         duration:5000
                     })
+                    console.log(error.message);
                 } else if (error.message) {
-                    this.errors.push('Something went wrong. Please try again')
+                    this.errors.push('Something went wrong. Please try again');
                     console.log(JSON.stringify(error))
                 }
             })
 
+        }else{
+            this.$toast.error('Please Enter your Login Credentials!',{
+                        duration:5000
+                    })
         }
     }
+  },
+  mounted(){
+    const token = ''
+    this.$store.commit("removeToken",token);
   }
 }
 </script>
