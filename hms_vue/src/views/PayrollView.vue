@@ -12,10 +12,10 @@ import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 
 export default{
-    name: 'StaffView',
+    name: 'PayrollView',
     data(){
     return{
-      title: 'Staff'
+      title: 'Payroll'
     }
   },
     components: {

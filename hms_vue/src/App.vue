@@ -14,7 +14,6 @@ import axios from "axios";
 export default{
   data(){
     return{
-      // isAuthenticated: false,
     }
   },
   computed:{
@@ -30,7 +29,6 @@ export default{
     } else {
       axios.defaults.headers.common["Authorization"] = "";
     }
-    // this.isAuthenticated = this.$store.state.isAuthenticated;
   },
   mounted(){
 

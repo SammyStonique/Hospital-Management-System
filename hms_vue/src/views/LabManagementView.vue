@@ -1,5 +1,7 @@
 <template>
-    <NavBar />
+    <NavBar
+    :title="title"
+    />
     <SideBar />
     <div class="main-content bg-gray-100 px-4 py-4"></div>
 </template>
@@ -10,7 +12,12 @@ import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 
 export default{
-    name: 'SettingsView',
+    name: 'LabManagementView',
+    data(){
+    return{
+      title: 'Lab Management'
+    }
+  },
     components: {
         NavBar,
         SideBar

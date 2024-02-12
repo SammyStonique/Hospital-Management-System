@@ -7,8 +7,11 @@ import DoctorsView from '../views/DoctorsView.vue'
 import LoginView from '../views/LoginView.vue'
 import LogoutView from '../views/LogoutView.vue'
 import PatientsView from '../views/PatientsView.vue'
-import SettingsView from '../views/SettingsView.vue'
 import StaffView from '../views/StaffView.vue'
+import PayrollView from '../views/PayrollView.vue'
+import AccountsView from '../views/AccountsView.vue'
+import LabManagementView from '../views/LabManagementView.vue'
+import InventoryView from '../views/InventoryView.vue'
 
 const routes = [
   {
@@ -62,9 +65,9 @@ const routes = [
     }
   },
   {
-    path: '/settings',
-    name: 'settings',
-    component: SettingsView,
+    path: '/lab-management',
+    name: 'lab-management',
+    component: LabManagementView,
     meta:{
       requireLogin: true
     }
@@ -73,6 +76,30 @@ const routes = [
     path: '/staff',
     name: 'staff',
     component: StaffView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/payroll',
+    name: 'payroll',
+    component: PayrollView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/accounts',
+    name: 'accounts',
+    component: AccountsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/inventory',
+    name: 'inventory',
+    component: InventoryView,
     meta:{
       requireLogin: true
     }

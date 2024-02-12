@@ -1,5 +1,7 @@
 <template>
-    <NavBar />
+    <NavBar
+    :title="title"
+    />
     <SideBar />
     <div class="main-content bg-gray-100 px-4 py-4">
         <div class="rounded-lg bg-white w-full p-3">
@@ -78,6 +80,11 @@ import SideBar from '@/components/SideBar.vue'
 
 export default{
     name: 'PatientsView',
+    data(){
+    return{
+      title: 'Patients'
+    }
+  },
     components: {
         NavBar,
         SideBar

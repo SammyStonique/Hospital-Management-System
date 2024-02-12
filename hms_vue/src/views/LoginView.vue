@@ -100,8 +100,7 @@ export default {
     }
   },
   mounted(){
-    const token = ''
-    this.$store.commit("removeToken",token);
+    this.$store.commit('removeToken');
   }
 }
 </script>

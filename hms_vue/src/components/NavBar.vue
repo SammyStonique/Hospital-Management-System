@@ -10,7 +10,7 @@
   </div>
   <div class="w-2/4 py-2 flex">
     <div class="w-1/2">
-      <h5 class="bold text-2xl">Dashboard</h5>
+      <h5 class="bold text-2xl">{{title}}</h5>
     </div>
     <div class="relative w-1/2 grid justify-items-center">   
       <input type="search" name="" id="" class="relative rounded-sm w-full text-xs border border-gray-300 px-8 h-8 bg-gray-100" placeholder="Search here..">
@@ -29,17 +29,22 @@
             </button>
         </div>
       </div>
-      <div class="w-3/4 pt-2 flex">
-        <div class="w-3/4" v-if="isAuthenticated">
-          <p class="font-bold text-sm">{{this.userDetails.last_name}} {{ this.userDetails.first_name }}</p>
-          <p class="text-xs">{{this.userDetails.profile}}</p>
+      <div class="w-3/4 pt-2 dropdown">
+        <div class="flex">
+          <div class="w-3/4" v-if="isAuthenticated">
+            <p class="font-bold text-sm">{{this.userDetails.last_name}} {{ this.userDetails.first_name }}</p>
+            <p class="text-xs">{{this.userDetails.profile}}</p>
+          </div>
+          <div class="w-3/4" v-else>
+            <p class="font-bold text-sm">User Account</p>
+            <p></p>
+          </div>
+          <div class="w-1/4">
+            <button @click="showDropdown"><i class="fa fa-caret-down" aria-hidden="true"></i></button>
+          </div>
         </div>
-        <div class="w-3/4" v-else>
-          <p class="font-bold text-sm">User Account</p>
-          <p></p>
-        </div>
-        <div class="w-1/4">
-          <i class="fa fa-caret-down" aria-hidden="true"></i>
+        <div class="dropdown-content mt-3 absolute rounded bg-white w-36 py-2 px-2 shadow-md shadow-slate-500" v-if="dropdown">
+          <router-link to="/login"><strong>Logout</strong></router-link>
         </div>
       </div>
     </div>
@@ -53,9 +58,11 @@ import axios from "axios";
 export default{
   data(){
     return{
-      userDetails: []
+      userDetails: [],
+      dropdown: false,
     }
   },
+  props:['title'],
   computed:{
     isAuthenticated(){
       return this.$store.state.isAuthenticated;
@@ -76,11 +83,13 @@ export default{
       .get("api/v1/users/me/")
       .then((response)=>{
         this.userDetails = response.data;
-        console.log("The user details ",this.userDetails);
       })
       .catch((error)=>{
         console.log(error)
       })
+    },
+    showDropdown(){
+      this.dropdown = !this.dropdown ;
     }
   },
   mounted(){
@@ -94,4 +103,10 @@ export default{
 .navbar{
   z-index: 1;
 }
+/* .dropdown:hover .dropdown-content{
+  display: block;
+} */
+/* .dropdown-content{
+  display: none;
+} */
 </style>

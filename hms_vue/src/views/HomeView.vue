@@ -1,5 +1,7 @@
 <template>
-  <NavBar />
+  <NavBar
+  :title="title"
+   />
   <SideBar />
   <div class="main-content bg-gray-100 px-4 py-4">
     <div class="flex w-full">
@@ -184,6 +186,14 @@ import SideBar from '@/components/SideBar.vue'
 
 export default {
   name: 'HomeView',
+  data(){
+    return{
+      title: 'Dashboard'
+    }
+  },
+
+  mounted(){
+  },
   components: {
     PieChart,
     NavBar,
