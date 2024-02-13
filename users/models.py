@@ -33,9 +33,9 @@ class CustomAccountManager(BaseUserManager):
     
 class User(AbstractBaseUser,PermissionsMixin):
     GENDER = (('','Select Gender'),('Male','Male'),('Female','Female'),('Other','Other')) 
-    PROFILES = (('', 'Select User Profile'),('Admin','Admin'),('Doctor','Doctor'),('Patient','Patient'),('Clinical Officer','Clinical Officer'),
+    PROFILES = (('', 'Select User Profile'),('Super Admin','Super Admin'),('Admin','Admin'),('Doctor','Doctor'),('Patient','Patient'),
                 ('Accountant','Accountant'),('Human Resource','Human Resource'),('Nurse','Nurse'),('Lab Technician','Lab Technician'),
-                ('Office Clerk','Office Clerk'))
+                ('Office Clerk','Office Clerk'),('Clinical Officer','Clinical Officer'),)
 
     email = models.EmailField(_('email_address'), unique=True)
     first_name = models.CharField(max_length=250,blank=True)

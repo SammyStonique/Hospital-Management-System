@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'patients_registration',
     'payroll',
     'statistical_data',
-    'users'
+    'users.apps.UsersConfig'
 ]
 
 MIDDLEWARE = [
