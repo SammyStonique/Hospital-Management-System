@@ -5,15 +5,16 @@
     <SideBar />
     <div class="main-content bg-gray-100 px-4 py-4">
       <div class="rounded bg-white p-3">
-        <div class="mb-4">
-          <button class="rounded border bg-green-400 py-2 px-4 text-white" @click="showModal"> + New Staff</button>
+        <h2 class="text-center font-bold">Staff</h2>
+        <div class="md:px-8 py-8 mb-4">
+          <button class="rounded border bg-green-400 text-white p-3" @click="showModal"> + New Staff</button>
         </div>
 
         <!-- MODAL component for adding a new user -->
         <Modal v-show="isModalVisible" @close="closeModal">
             <template v-slot:header> User Details </template>
             <template v-slot:body>
-              <form action="" @submit.prevent="">
+              <form action="" @submit.prevent="createStaff">
                 <div class="flex mb-4">
                   <div class="basis-1/2">
                     <label for="">First Name<em>*</em></label>
@@ -70,7 +71,7 @@
                 </div>
               </div>
               <div class="text-center">
-                <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createStaff">Save</button>
+                <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg">Save</button>
               </div>
               </form>
             </template>
@@ -126,7 +127,8 @@ export default{
       department: '',
       payroll_number: '',
       specialization: '',
-      temporary_password: ''
+      temporary_password: '',
+      is_staff: false
     }
   },
     components: {
@@ -150,6 +152,7 @@ export default{
           })
         }
         else{
+          this.is_staff = true;
           this.axios
           .get("api/v1/pass-gen/")
           .then((response)=>{
@@ -168,7 +171,8 @@ export default{
                 gender: this.gender,
                 phone_number: this.phone_number,
                 profile: this.profile,
-                password: this.temporary_password
+                password: this.temporary_password,
+                is_staff: this.is_staff,
               }
               this.axios
               .post("api/v1/users/", formData)
@@ -193,6 +197,8 @@ export default{
                 this.gender = "";
                 this.phone_number = "";
                 this.profile = "";
+                this.is_staff = false;
+                this.$router.push("/staff")
                 
                 // if(this.userDetails.profile === "Doctor"){
                 //   let formData = {
@@ -227,6 +233,7 @@ export default{
   z-index: -1;
   margin-left: 338px;
   margin-top: 65px;
+  min-height: 100vh;
 }
 em{
   color: red;

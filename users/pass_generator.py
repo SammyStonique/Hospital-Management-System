@@ -13,8 +13,7 @@ def random_string(letter_count=5, digit_count=3):
         final_string = ''.join(sam_list)  
         return (final_string)
 
-# class PassGenerator:
-#         password = random_string()
+
 class PassGenerator:
         def __init__(self, password):
                 self.password = password
@@ -22,5 +21,4 @@ class PassGenerator:
 def password_generator(request):
         password = random_string()
         p1 = PassGenerator(password)
-        # print("P1 is ",p1.password)
         return HttpResponse(p1.password)

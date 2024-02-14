@@ -5,6 +5,7 @@
   </nav>
   <router-view
   :isAuthenticated="isAuthenticated"
+  :scrollToTop="scrollToTop"
   />
 </template>
 
@@ -32,6 +33,11 @@ export default{
   },
   mounted(){
 
+  },
+  methods:{
+    scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
   }
 }
 </script>

@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'billing_management',
     'bookings',
     'customer_support',
-    'doctor_profile',
+    'doctor_profile.apps.DoctorProfileConfig',
     'inventory_management',
     'lab_management',
     'patients_registration',

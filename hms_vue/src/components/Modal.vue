@@ -32,6 +32,7 @@
   <script>
   export default {
     name: "Modal",
+    props:['index'],
     methods: {
       close() {
         this.$emit("close");
