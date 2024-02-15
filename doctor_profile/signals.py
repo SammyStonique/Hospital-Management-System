@@ -17,4 +17,7 @@ def create_doctor(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender = UserModel)
 def save_doctor(sender, instance,**kwargs):
-    instance.doctor.save()
+    if instance.profile == "Doctor":
+        instance.doctor.save()
+    else:
+        print("NOT A DOCTOR")

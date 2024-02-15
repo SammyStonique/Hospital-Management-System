@@ -4,7 +4,7 @@ from .models import *
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ['id','name']
+        fields = ['id','code','name']
 
     def create(self, validated_data):
         department = Department.objects.create(**validated_data)
@@ -12,7 +12,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
         return department
     
     def update(self, instance, validated_data):
-        instance.id = validated_data.get('id', instance.id)
+        instance.code = validated_data.get('code', instance.code)
         instance.name = validated_data.get('name', instance.name)
 
         instance.save()
@@ -22,7 +22,7 @@ class ManagerSerializer(serializers.ModelSerializer):
     department = serializers.ReadOnlyField(source='department.name')
     class Meta:
         model = Manager
-        fields = ['name','start_date','phone_number','department','end_date','status']
+        fields = ['id','name','start_date','phone_number','department','end_date','status']
 
     def create(self, validated_data):
         manager = Manager.objects.create(**validated_data)
@@ -31,10 +31,11 @@ class ManagerSerializer(serializers.ModelSerializer):
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.email')
-    department = serializers.ReadOnlyField(source='department.name')
+    # department = serializers.ReadOnlyField(source='department.name')
     class Meta:
         model = Doctor
-        fields = ['first_name','last_name','email','phone_number','specialization','department','payroll_number','user']
+        # fields = ['first_name','last_name','email','phone_number','specialization','department','payroll_number','user']
+        fields = ['id','first_name','last_name','email','phone_number','specialization','payroll_number','user']
 
     def create(self, validated_data):
         doctor = Doctor.objects.create(**validated_data)

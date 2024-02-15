@@ -5,11 +5,14 @@ UserModel = get_user_model()
 
 # Create your models here.
 class Department(models.Model):
-    id = models.CharField(primary_key=True,max_length=100)
+    code = models.CharField(max_length=100)
     name = models.CharField(max_length=250)
 
     def __str__(self):
         return f'{self.name} Department'
+    
+    class Meta:
+        ordering = [('id')]
     
 class Manager(models.Model):
     STATUS = (('','Select Status'),('Active','Active'),('Inactive','Inactive'))
