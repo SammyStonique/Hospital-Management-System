@@ -49,7 +49,7 @@
                 <div class="basis-1/2">
                   <label for="">Profile<em>*</em></label><br />
                   <select name="" id="" class="rounded border border-gray-600 text-lg pl-2 pt-2" placeholder="Select Profile" v-model="profile">
-                    <option value="">---Select Profile---</option>
+                    <option value="" selected disabled>---Select Profile---</option>
                     <option value="Admin">Admin</option>
                     <option value="Doctor">Doctor</option>
                     <option value="Clinical Officer">Clinical Officer</option>
@@ -63,7 +63,7 @@
                 <div class="basis-1/2">
                   <label for="">Gender<em>*</em></label><br />
                   <select class="rounded border border-gray-600 text-lg pl-2 pt-2" placeholder="Select Gender" v-model="gender">
-                    <option value="">---Select Gender--</option>
+                    <option value="" selected disabled>---Select Gender--</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>

@@ -3,12 +3,23 @@
     :title="title"
     />
     <SideBar />
-    <div class="main-content bg-gray-100 px-4 py-4">
-        <div class="rounded-lg bg-white w-full p-3">
+    <div class="main-content grid grid-rows-12 bg-gray-100 px-4 py-4">
+        <div class="subsection row-span-2 rounded-lg bg-white w-full p-3">
             <h2 class="text-center font-bold">Departments</h2>
             <div class="md:px-8 py-8 w-full">
-                <div class="mb-4">
-                    <button class="rounded-lg bg-green-500 text-white p-3" @click="showModal">+ New Department</button>
+                <div class="mb-4 flex">
+                    <div class="basis-1/4 pl-3">
+                        <button class="rounded-lg bg-green-500 text-white p-3" @click="showModal">+ New Department</button>
+                    </div>
+                    <div class="basis-1/4 pl-3">
+                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code" v-model="code">
+                    </div>
+                    <div class="basis-1/4 pl-3">
+                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name" v-model="name">
+                    </div>
+                    <div class="basis-1/4 pl-3">
+                        <button class="rounded-lg bg-green-500 text-white px-3 py-2" @click="searchDepartment">Search</button>
+                    </div>
                 </div>
                 <!-- MODAL component for adding a new department -->
                 <Modal v-show="isModalVisible" @close="closeModal" :index="index">
@@ -44,7 +55,7 @@
                     </template>
                     <template v-slot:footer> HMS. </template>
                 </Modal>
-                <div class="shadow overflow-hidden rounded border-b border-gray-200">
+                <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8">
                     <table class="min-w-full bg-white"> 
                         <thead class="bg-gray-800 text-white">
                             <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
@@ -81,17 +92,19 @@
                         </tbody>
                     </table>   
                 </div>
-                <MyPagination 
-                :count="depCount"
-                :currentPage="currentPage"
-                :result="depArrLen"
-                @loadPrev="loadPrev"
-                @loadNext="loadNext"
-                @firstPage="firstPage"
-                @lastPage="lastPage"
-                :showNextBtn="showNextBtn"
-                :showPreviousBtn="showPreviousBtn"
-                />
+                <div class="pagination row-span-2">
+                    <MyPagination 
+                    :count="depCount"
+                    :currentPage="currentPage"
+                    :result="depArrLen"
+                    @loadPrev="loadPrev"
+                    @loadNext="loadNext"
+                    @firstPage="firstPage"
+                    @lastPage="lastPage"
+                    :showNextBtn="showNextBtn"
+                    :showPreviousBtn="showPreviousBtn"
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -124,7 +137,9 @@ export default{
             depList: [],
             pageCount: 0,
             showNextBtn: false,
-            showPreviousBtn: false
+            showPreviousBtn: false,
+            code: '',
+            name: ''
         }
     },
     components: {
@@ -202,6 +217,7 @@ export default{
             this.isEditing = true;
             let selectedDepartment = arguments[0];
             this.depID = this.depList[selectedDepartment].id;
+            console.log("The depID is ", this.depID);
             this.axios
             .get(`api/v1/department-details/${this.depID}/`)
             .then((response)=>{
@@ -308,6 +324,23 @@ export default{
         lastPage(){
             this.currentPage = this.pageCount;
             this.fetchDepartments();
+        },
+        searchDepartment(){
+            let formData = {
+                code: this.code,
+                name: this.name,
+            }
+            this.axios
+            .post("api/v1/department-search/",formData)
+            .then((response)=>{
+                this.depList = response.data.departments;
+                console.log("The depList is ", this.depList);
+                this.depArrLen = response.data.departments.length;
+                // this.fetchDepartments();
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
         }
     },
     mounted(){
@@ -322,6 +355,12 @@ export default{
   margin-left: 338px;
   margin-top: 65px;
   min-height: 100vh;
+}
+.subsection{
+    min-height: 100vh;
+}
+.pagination{
+    bottom: 20px;
 }
 em{
   color: red;

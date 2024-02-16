@@ -1,5 +1,6 @@
 from django.urls import path,include
 from . import views
+from .filters import department_code_search
 
 from rest_framework.routers import DefaultRouter
 
@@ -8,6 +9,7 @@ router.register("departments",views.DepartmentViewSet, basename="departments")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("department-search/", department_code_search, name="department_search"),
     path("doctor-list/", views.DoctorList.as_view()),
     path("doctor-details/<int:pk>/", views.DoctorDetails.as_view()),
     path("department-list/", views.DepartmentList.as_view()),

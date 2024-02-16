@@ -20,6 +20,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost',
                  '127.0.0.1',
+                 'http://localhost:8080'
                  ]
 
 
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'corsheaders',
     'djoser',
     'rest_framework',
@@ -45,7 +47,8 @@ INSTALLED_APPS = [
     'patients_registration',
     'payroll',
     'statistical_data',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -105,7 +108,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 
@@ -169,3 +173,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = list(default_methods) + []
 
 CORS_ALLOW_HEADERS = list(default_headers) + []
+
+        #CSRF SETTINGS
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8080',]
+CSRF_COOKIE_SECURE = False
