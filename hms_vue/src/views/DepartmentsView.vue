@@ -58,7 +58,7 @@
                         </thead>
                         <tbody>
                         
-                        <tr v-for="(det,index) in pageOfDepartments" :key="det.id" class="even:bg-gray-100">
+                        <tr v-for="(det,index) in depList" :key="det.id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
                             <td class="text-left py-3 px-4">{{ det.code }}</td>
                             <td class="text-left py-3 px-4">{{ det.name }}</td>
@@ -67,7 +67,7 @@
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/3">
-                                        <button @click="editDepartment(det.id)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
+                                        <button @click="editDepartment(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
                                     </div>
                                     <div class="basis-1/3">
                                         <button><i class="fa fa-plus-square-o" aria-hidden="true" title="Add Manager"></i></button>
@@ -81,23 +81,33 @@
                         </tbody>
                     </table>   
                 </div>
-                <Pagination :items="exampleItems" @changePage="onChangePage" :pageSize="10" />
+                <MyPagination 
+                :count="depCount"
+                :currentPage="currentPage"
+                :result="depArrLen"
+                @loadPrev="loadPrev"
+                @loadNext="loadNext"
+                @firstPage="firstPage"
+                @lastPage="lastPage"
+                :showNextBtn="showNextBtn"
+                :showPreviousBtn="showPreviousBtn"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <script>
-// import swal from "sweetalert2";
-import axios from "axios"
+
 import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 import Modal from '@/components/Modal.vue'
-import Pagination from '@/components/Pagination.vue'
+import MyPagination from '@/components/MyPagination.vue'
+
 
 export default{
     name: 'DepartmentsView',
-    props:['scrollToTop','depList','fetchDepartments'],
+    props:['scrollToTop',],
     data(){
         return{
             title: 'Departments',
@@ -105,24 +115,25 @@ export default{
             dep_code: "",
             dep_name: "",
             start_date: "",
-            // depList: [],
             isEditing: false,
             depID: "",
-            exampleItems: [],
-            pageOfDepartments: [],
+            currentPage: 1,
+            depCount: 0,
+            depArrLen: 0,
+            depResults: [],
+            depList: [],
+            pageCount: 0,
+            showNextBtn: false,
+            showPreviousBtn: false
         }
     },
     components: {
         NavBar,
         SideBar,
         Modal,
-        Pagination
+        MyPagination
     },
     methods:{
-        onChangePage(pageOfDepartments) {
-            // update page of items
-            this.pageOfDepartments = pageOfDepartments;
-        },
       showModal(){
         this.isModalVisible = !this.isModalVisible;
       },
@@ -161,11 +172,24 @@ export default{
           })
         }
       },
-      fetchDepartment(){
+      fetchDepartments(){
+        this.showNextBtn = false;
+        this.showPreviousBtn = false;
             this.axios
-            .get("api/v1/department-list/")
+            .get(`api/v1/departments/?page=${this.currentPage}`)
             .then((response)=>{
-                this.depList = response.data;
+                this.depList = response.data.results;
+                this.depResults = response.data;
+                this.depArrLen = this.depList.length;
+                this.depCount = this.depResults.count;
+                this.pageCount = Math.ceil(this.depCount / 10);
+
+                if(response.data.next){
+                    this.showNextBtn = true;
+                }
+                if(response.data.previous){
+                    this.showPreviousBtn = true;
+                }
             })
             .catch((error)=>{
                 console.log(error.message);
@@ -177,9 +201,7 @@ export default{
         editDepartment(){
             this.isEditing = true;
             let selectedDepartment = arguments[0];
-            console.log("SelectedDep is ",selectedDepartment);
-            this.depID = this.depList[selectedDepartment-1].id;
-            console.log("The depID is ",this.depID);
+            this.depID = this.depList[selectedDepartment].id;
             this.axios
             .get(`api/v1/department-details/${this.depID}/`)
             .then((response)=>{
@@ -227,12 +249,11 @@ export default{
         },
         removeDepartment() {
             let selectedItem = arguments[0];
-            console.log("The selected item is ",selectedItem);
             this.depID = this.depList[selectedItem].id;
-            console.log("The depID to be removed is ",this.depID);
+            this.depName = this.depList[selectedItem].name;
             this.$swal({
                 title: "Are you sure?",
-                text: `Do you wish to delete ${this.pageOfDepartments[selectedItem].name}?`,
+                text: `Do you wish to delete ${this.depName}?`,
                 type: 'warning',
                 showCloseButton: true,
                 showCancelButton: true,
@@ -242,7 +263,7 @@ export default{
             }).then((result) => {
                 if (result.value) {
                 this.axios
-                .delete("api/v1/department-details/"+this.pageOfDepartments[selectedItem].id+"/")
+                .delete("api/v1/department-details/"+this.depID+"/")
                 .then((response)=>{
                     this.$swal("Poof! Department removed succesfully!", {
                         icon: "success",
@@ -256,14 +277,41 @@ export default{
                 })
                 
                 } else {
-                    this.$swal(`${this.pageOfDepartments[selectedItem].name} has not been deleted!`);
+                    this.$swal(`${this.depName} has not been deleted!`);
                 }
             });
         },
+        loadNext(){
+            if(this.currentPage >= this.pageCount){
+                this.currentPage = this.pageCount;
+                console.log("Current Page ",this.currentPage," is equal to ", this.pageCount);
+            }else if(this.currentPage < this.pageCount){
+                this.currentPage += 1;
+                console.log("Current page plus 1 ",this.currentPage,"pageCount ",this.pageCount);
+            }
+
+            this.fetchDepartments();
+        },
+        loadPrev(){
+            if (this.currentPage <= 1){
+                this.currentPage = 1;
+            }else{
+                this.currentPage -= 1;
+            }
+            
+            this.fetchDepartments();
+        },
+        firstPage(){
+            this.currentPage = 1;
+            this.fetchDepartments();
+        },
+        lastPage(){
+            this.currentPage = this.pageCount;
+            this.fetchDepartments();
+        }
     },
     mounted(){
         this.fetchDepartments();
-        this.exampleItems = this.depList;
     }
 }
 </script>

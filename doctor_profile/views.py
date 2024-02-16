@@ -5,7 +5,16 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 
+from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
+
 # Create your views here.
+class BasePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
 class DoctorList(generics.ListCreateAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
@@ -14,9 +23,15 @@ class DoctorDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
 
+class DepartmentViewSet(viewsets.ModelViewSet):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    pagination_class = BasePagination
+
 class DepartmentList(generics.ListCreateAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    pagination_class = BasePagination
 
 class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
