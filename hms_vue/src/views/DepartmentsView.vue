@@ -7,18 +7,29 @@
         <div class="subsection row-span-2 rounded-lg bg-white w-full p-3">
             <h2 class="text-center font-bold">Departments</h2>
             <div class="md:px-8 py-8 w-full">
-                <div class="mb-4 flex">
-                    <div class="basis-1/4 pl-3">
-                        <button class="rounded-lg bg-green-500 text-white p-3" @click="showModal">+ New Department</button>
+                <div class="mb-4 flex items-end">
+                    <div class="basis-1/5 pl-3">
+                        <button class="rounded-lg bg-green-400 text-white p-3" @click="showModal">+ New Deptmnt</button>
                     </div>
-                    <div class="basis-1/4 pl-3">
+                    <div class="basis-1/5 pl-3 items-center">
                        <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code" v-model="code">
                     </div>
-                    <div class="basis-1/4 pl-3">
+                    <div class="basis-1/5 pl-3 items-center">
                        <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name" v-model="name">
                     </div>
-                    <div class="basis-1/4 pl-3">
-                        <button class="rounded-lg bg-green-500 text-white px-3 py-2" @click="searchDepartment">Search</button>
+                    <div class="basis-1/5 pl-3">
+                        <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchDepartment">Search</button>
+                    </div>
+                    <div class="basis-1/5 pl-3">
+                        <div class="print-dropdown">
+                            <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="showDropdown">Options<i class="fa fa-caret-down pl-2" aria-hidden="true"></i></button>
+                            <button class="fixed inset-button inset-0 bg-gray-50 opacity-25 cursor-default w-full" v-if="showOptions" @click="showOptions = !showOptions"></button>
+                        </div>
+                        <div class="options-container absolute right-25 pt-4 pb-2 rounded border border-gray-200 bg-white shadow-slate-400 shadow-xl" v-if="showOptions">
+                            <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Print List</button><br />
+                            <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
+                            <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
+                        </div>
                     </div>
                 </div>
                 <!-- MODAL component for adding a new department -->
@@ -139,7 +150,8 @@ export default{
             showNextBtn: false,
             showPreviousBtn: false,
             code: '',
-            name: ''
+            name: '',
+            showOptions: false,
         }
     },
     components: {
@@ -341,7 +353,10 @@ export default{
             .catch((error)=>{
                 console.log(error);
             })
-        }
+        },
+        showDropdown(){
+            this.showOptions = !this.showOptions;
+        },
     },
     mounted(){
         this.fetchDepartments();
@@ -351,8 +366,8 @@ export default{
 
 <style scoped>
 .main-content{
-  z-index: -1;
-  margin-left: 338px;
+  z-index: 1;
+  margin-left: 227px;
   margin-top: 65px;
   min-height: 100vh;
 }
@@ -364,5 +379,15 @@ export default{
 }
 em{
   color: red;
+}
+.options-container {
+  width: 150px;
+
+}
+.dropdown-button{
+    z-index: 1;
+}
+.inset-button{
+    min-height: 100vh;
 }
 </style>

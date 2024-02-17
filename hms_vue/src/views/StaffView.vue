@@ -4,7 +4,7 @@
     />
     <SideBar />
     <div class="main-content bg-gray-100 px-4 py-4">
-      <div class="rounded bg-white p-3">
+      <div class="subsection rounded bg-white p-3">
         <h2 class="text-center font-bold">Staff</h2>
         <div class="md:px-8 py-8 mb-4">
           <button class="rounded border bg-green-400 text-white p-3" @click="showModal"> + New Staff</button>
@@ -231,9 +231,12 @@ export default{
 <style scoped>
 .main-content{
   z-index: -1;
-  margin-left: 338px;
+  margin-left: 227px;
   margin-top: 65px;
   min-height: 100vh;
+}
+.subsection{
+    min-height: 100vh;
 }
 em{
   color: red;

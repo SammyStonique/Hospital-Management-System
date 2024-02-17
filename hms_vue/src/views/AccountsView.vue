@@ -3,7 +3,11 @@
     :title="title"
     />
     <SideBar />
-    <div class="main-content bg-gray-100 px-4 py-4"></div>
+    <div class="main-content bg-gray-100 px-4 py-4">
+      <div class="subsection">
+
+      </div>
+    </div>
 </template>
 
 <script>
@@ -28,7 +32,11 @@ export default{
 <style scoped>
 .main-content{
   z-index: -1;
-  margin-left: 338px;
+  margin-left: 227px;
   margin-top: 65px;
+  min-height: 100vh;
+}
+.subsection{
+    min-height: 100vh;
 }
 </style>

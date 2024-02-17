@@ -4,7 +4,7 @@
     />
     <SideBar />
     <div class="main-content bg-gray-100 px-4 py-4">
-        <div class="rounded-lg bg-white w-full p-3">
+        <div class="subsection rounded-lg bg-white w-full p-3">
             <h2 class="text-center font-bold">Patients Register</h2>
             <div class="md:px-8 py-8 w-full">
                 <div class="mb-4">
@@ -95,7 +95,11 @@ export default{
 <style scoped>
 .main-content{
   z-index: -1;
-  margin-left: 338px;
+  margin-left: 227px;
   margin-top: 65px;
+  min-height: 100vh;
+}
+.subsection{
+    min-height: 100vh;
 }
 </style>

@@ -4,7 +4,7 @@
    />
   <SideBar />
   <div class="main-content bg-gray-100 px-4 py-4">
-    <div class="flex w-full">
+    <div class="subsection flex w-full">
       <div class="w-3/4 mr-3">
         <div class="flex mb-3">
           <div class="w-1/2 rounded-lg py-3 px-2 bg-white mr-2">
@@ -206,9 +206,12 @@ export default {
 
 .main-content{
   z-index: -1;
-  margin-left: 338px;
+  margin-left: 227px;
   margin-top: 65px;
-  /* margin-left: 350px;
-  margin-top: 95px; */
+  min-height: 100vh;
+
+}
+.subsection{
+    min-height: 100vh;
 }
 </style>
