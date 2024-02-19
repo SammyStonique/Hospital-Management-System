@@ -9,17 +9,17 @@ class UserAdminConfig(UserAdmin):
     search_fields = ('email', 'phone_number','first_name','profile')
     list_filter = ('email', 'phone_number','first_name', 'profile', 'is_active', 'is_staff')
     ordering = ('-start_date',)
-    list_display = ('email','phone_number', 'first_name', 'profile',
+    list_display = ('email', 'first_name','last_name','phone_number', 'profile',
                     'is_active', 'is_staff')
     fieldsets = (
         (None, {'fields': ('email', 'first_name','last_name')}),
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
-        ('Personal', {'fields': ('phone_number','birth_date','gender','identification_no')}),
+        ('Personal', {'fields': ('phone_number','birth_date','gender','identification_no','image')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'first_name', 'password1', 'password2','phone_number',
+            'fields': ('email', 'first_name', 'password1', 'password2','phone_number','image',
                        'gender', 'birth_date','identification_no', 'profile', 'is_active', 'is_staff')}
          ),
     )

@@ -25,7 +25,7 @@
       <div class="w-1/4 grid justify-items-end">
         <div class="rounded-full h-11 pb-5 w-11  mr-3 overflow-hidden border-2 border-white hover:border-2 hover:border-blue-400 hover:opacity-50 hover:shadow-2 hover:shadow-2xl">
             <button>
-              <img src="./../assets/profile.jpg" alt="Profile Pic" class="w-full h-full object-cover"/>
+              <img :src="`${this.userDetails.image}`" alt="Profile Pic" class="w-full h-full object-cover"/>
             </button>
         </div>
       </div>

@@ -1,4 +1,9 @@
 <template>
+    <Loader
+    :loader="loader"
+    :showLoader="showLoader"
+    :hideLoader="hideLoader"
+    />
     <NavBar
     :title="title"
     />
@@ -70,6 +75,12 @@
                   </select>
                 </div>
               </div>
+              <div class="flex">
+                <div class="basis-1/2">
+                    <label for="">Image</label>
+                    <input type="file" ref="file" @change="onFileChange" accept="image/jpg, image/png, image/jpeg">
+                </div>
+              </div>
               <div class="text-center">
                 <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg">Save</button>
               </div>
@@ -79,12 +90,9 @@
         </Modal>
 
 
-        <div>
-          <table class="w-full"> 
-            <thead>
-
-            </thead>
-            <tbody>
+        <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8">
+          <table class="min-w-full bg-white"> 
+            <thead class="bg-gray-800 text-white">
               <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
                 <th class="text-left py-3 px-4">Name</th>
                 <th class="text-left py-3 px-4">Email</th>
@@ -93,8 +101,17 @@
                 <th class="text-left py-3 px-4">Profile</th>
                 <th class="text-left py-3 px-4">Status</th>
               </tr>
-              <tr>
-                <td></td>
+            </thead>
+            <tbody>
+        
+              <tr v-for="staff in staffDetails" class="even:bg-gray-100">
+                <td class="text-left py-3 px-4">{{ staff.first_name }} {{ staff.last_name }}</td>
+                <td class="text-left py-3 px-4">{{ staff.email }}</td>
+                <td class="text-left py-3 px-4">{{ staff.phone_number }}</td>
+                <td class="text-left py-3 px-4">{{ staff.identification_no }}</td>
+                <td class="text-left py-3 px-4">{{ staff.profile }}</td>
+                <td v-if="staff.is_active" class="text-left py-3 px-4">Active</td>
+                <td v-else class="text-left py-3 px-4">Inactive</td>
               </tr>
             </tbody>
           </table>
@@ -105,12 +122,14 @@
 
 <script>
 
+import Loader from '@/components/Loader.vue'
 import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 import Modal from '@/components/Modal.vue'
 
 export default{
     name: 'StaffView',
+    props: ['scrollToTop','loader','showLoader','hideLoader',],
     data(){
     return{
       title: 'Staff',
@@ -118,12 +137,14 @@ export default{
       first_name: '',
       last_name: '',
       email: '',
+      image:null,
       phone_number: '',
       profile: '',
       dob: '',
       gender: '',
       id_number: '',
       userDetails: [],
+      staffDetails: [],
       department: '',
       payroll_number: '',
       specialization: '',
@@ -134,9 +155,14 @@ export default{
     components: {
         NavBar,
         SideBar,
-        Modal
+        Modal,
+        Loader
     },
     methods:{
+      onFileChange(e){
+        this.image = e.target.files[0];
+        console.log(this.image)
+      },
       showModal(){
         this.isModalVisible = !this.isModalVisible;
       },
@@ -144,6 +170,7 @@ export default{
         this.isModalVisible = false;
       },
       createStaff(){
+        this.showLoader();
         if(this.first_name === '' || this.last_name === '' || this.email === '' || this.id_number === '' ||
         this.gender === '' || this.profile === '' || this.dob === '' || this.phone_number === '' ){
           this.$toast.error("Please Enter User Details",{
@@ -178,7 +205,6 @@ export default{
               .post("api/v1/users/", formData)
               .then((response)=>{
                   this.userDetails = response.data;
-                  console.log("The user details are ", this.userDetails);
                   console.log("The temporary password is ", this.temporary_password);
                   this.$toast.success("User Created Succesfully",{
                     duration: 5000,
@@ -189,41 +215,52 @@ export default{
                 console.log(error.message)
               ])
               .finally(()=>{
-                this.first_name = "";
-                this.last_name = "";
-                this.email = "";
-                this.id_number = "";
-                this.dob = "";
-                this.gender = "";
-                this.phone_number = "";
-                this.profile = "";
-                this.is_staff = false;
-                this.$router.push("/staff")
-                
-                // if(this.userDetails.profile === "Doctor"){
-                //   let formData = {
-                //     first_name: this.userDetails.first_name,
-                //     last_name: this.userDetails.last_name,
-                //     email: this.userDetails.email,
-                //     phone_number: this.userDetails.phone_number,
-                //     department: this.department,
-                //     payroll_number: this.payroll_number,
-                //     specialization: this.specialization,
-                //   }
-                //   this.axios
-                //   .post("api/v1/doctor-list/", formData)
-                //   .then((response)=>[
-
-                //   ])
-                //   .catch((error)=>{
-                //     console.log(error.message);
-                //   })
-                // }
+                let formData ={
+                  temporary_password: this.temporary_password,
+                }
+                this.axios
+                .post(`api/v1/user-credentials/${this.userDetails.id}/`, formData)
+                .then((response)=>{
+                })
+                .catch((error)=>{
+                  console.log(error);
+               })
+               .finally(()=>{
+                  this.first_name = "";
+                  this.last_name = "";
+                  this.email = "";
+                  this.id_number = "";
+                  this.dob = "";
+                  this.gender = "";
+                  this.phone_number = "";
+                  this.profile = "";
+                  this.is_staff = false;
+                  this.hideLoader();
+                  this.$router.push("/staff")
+               })
               })
 
           })
         }
+      },
+      fetchStaff(){
+        this.axios
+        .get("api/v1/users/")
+        .then((response)=>{
+          for(let i=0; i<response.data.results.length; i++){
+            if(response.data.results[i].profile != "Admin" && response.data.results[i].profile != "Patient"){
+              this.staffDetails.push(response.data.results[i]);
+            }
+          }
+          
+        })
+        .catch((error)=>{
+          console.log(error);
+        })
       }
+    },
+    mounted(){
+      this.fetchStaff();
     }
 }
 </script>

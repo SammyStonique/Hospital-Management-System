@@ -17,10 +17,10 @@
                         <button class="rounded-lg bg-green-400 text-white p-3" @click="showModal">+ New Deptmnt</button>
                     </div>
                     <div class="basis-1/5 pl-3 items-center">
-                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code" v-model="code">
+                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code" v-model="code" @keyup.enter="searchDepartment">
                     </div>
                     <div class="basis-1/5 pl-3 items-center">
-                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name" v-model="name">
+                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name" v-model="name"  @keyup.enter="searchDepartment">
                     </div>
                     <div class="basis-1/5 pl-3">
                         <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchDepartment">Search</button>
@@ -90,8 +90,8 @@
                             <td>{{ index + 1 }}.</td>
                             <td class="text-left py-3 px-4">{{ det.code }}</td>
                             <td class="text-left py-3 px-4">{{ det.name }}</td>
-                            <td></td>
-                            <td></td>
+                            <td class="text-left py-3 px-4"></td>
+                            <td class="text-left py-3 px-4"></td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/3">
@@ -239,7 +239,6 @@ export default{
             this.isEditing = true;
             let selectedDepartment = arguments[0];
             this.depID = this.depList[selectedDepartment].id;
-            console.log("The depID is ", this.depID);
             this.axios
             .get(`api/v1/department-details/${this.depID}/`)
             .then((response)=>{
@@ -324,10 +323,8 @@ export default{
         loadNext(){
             if(this.currentPage >= this.pageCount){
                 this.currentPage = this.pageCount;
-                console.log("Current Page ",this.currentPage," is equal to ", this.pageCount);
             }else if(this.currentPage < this.pageCount){
                 this.currentPage += 1;
-                console.log("Current page plus 1 ",this.currentPage,"pageCount ",this.pageCount);
             }
 
             this.fetchDepartments();
@@ -358,7 +355,6 @@ export default{
             .post("api/v1/department-search/",formData)
             .then((response)=>{
                 this.depList = response.data.departments;
-                console.log("The depList is ", this.depList);
                 this.depArrLen = response.data.departments.length;
                 // this.fetchDepartments();
             })

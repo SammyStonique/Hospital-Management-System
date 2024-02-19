@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
+from PIL import Image
 
 
 class CustomAccountManager(BaseUserManager):
@@ -45,6 +46,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     gender = models.CharField(max_length=250,choices=GENDER,default='',blank=True)
     phone_number = models.CharField(max_length=250)
     profile = models.CharField(max_length=250,choices=PROFILES,default='',blank=True)
+    image = models.ImageField(default='default.png', upload_to='profile_pics')
     is_staff = models.BooleanField(default= False)
     is_active = models.BooleanField(default= False)
     start_date = models.DateTimeField(auto_now_add=True)
@@ -52,7 +54,17 @@ class User(AbstractBaseUser,PermissionsMixin):
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','is_staff']
+    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','is_staff','image','is_active']
 
     def __str__(self):
         return f'{self.email}'
+    
+    def save(self,*args,**kwargs):
+        super(User,self).save()
+
+        img = Image.open(self.image.path)
+
+        if img.height > 20 or img.width > 200:
+            output_size = (200, 200)
+            img.thumbnail(output_size)
+            img.save(self.image.path)
