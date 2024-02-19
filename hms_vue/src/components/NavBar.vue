@@ -2,7 +2,7 @@
 <div class="navbar fixed flex z-30 top-0 w-full sticky-navbar bg-white border-b border-slate-300 shadow-sm shadow-slate-200 px-12 py-2">
   <div class="w-1/4 flex">
     <div class="w-12 h-12 rounded-full">
-      <img src="@/assets/download.png" alt="Logo" class="">
+      <img src="@/assets/logo.jpeg" alt="Logo" class="">
     </div>
     <div class="ml-4">
       <h4 class="text-2xl py-2">K.H.S</h4>

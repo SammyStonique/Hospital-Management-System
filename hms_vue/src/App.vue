@@ -4,7 +4,9 @@
   <router-view
   :isAuthenticated="isAuthenticated"
   :scrollToTop="scrollToTop"
-
+  :loader="loader"
+  :showLoader="showLoader"
+  :hideLoader="hideLoader"
   />
 </template>
 
@@ -14,7 +16,8 @@ import axios from "axios";
 export default{
   data(){
     return{
-      
+      loader: "none",
+      loaderIndex: 1,
     }
   },
   computed:{
@@ -38,6 +41,15 @@ export default{
   methods:{
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    // Loader Methods
+    showLoader(){
+        this.loader = "block";
+        this.loaderIndex = -1;
+    },
+    hideLoader(){
+        this.loader = "none";
+        this.loaderIndex = 1;
     },
   }
 }

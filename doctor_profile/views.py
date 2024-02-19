@@ -9,10 +9,13 @@ from rest_framework.response import Response
 #Pagination
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
-
 #Pdf 
 import jinja2
 import pdfkit
+#Excel
+import xlwt
+#CSV
+import csv
 
 
 # Create your views here.
@@ -50,7 +53,7 @@ class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
-def printDepartments(request):
+def generate_departments_pdf(request):
     departments = Department.objects.all()
 
     context = {"departments":departments}
@@ -76,6 +79,43 @@ def printDepartments(request):
     response['Content-Disposition'] = 'attachment; filename=Departments.pdf'
     pdf.close()
     os.remove("Departments.pdf")  # remove the locally created pdf file.
+    return response
+
+def generate_departments_excel(request):
+    departments = Department.objects.all()
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=Departments.xls'
+
+    workbook = xlwt.Workbook()
+
+    worksheet = workbook.add_sheet("Departments")
+
+    row_num = 0
+    columns = ['Code', 'Name', 'Manager', 'Start Date']
+    for col_num in range(len(columns)):
+        worksheet.write(row_num, col_num, columns[col_num])
+
+    for dep in departments:
+        row_num += 1
+        row = [dep.code,dep.name]
+        for col_num in range(len(row)):
+            worksheet.write(row_num, col_num, row[col_num])
+       
+    workbook.save(response)
+    return response
+
+def generate_departments_csv(request):
+    departments = Department.objects.all()
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=Departments.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['Code', 'Name', 'Manager', 'Start Date'])
+
+    for dep in departments:
+        writer.writerow([dep.code, dep.name])
     return response
 
             #MANAGER VIEWS

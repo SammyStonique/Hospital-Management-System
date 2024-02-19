@@ -49,14 +49,12 @@
     align-items: center;
     max-width: 100%;
     height: fit-content;
-    /* max-height: 700px; */
     margin-top: 20px;
-    margin-left: 60px;
-    margin-right: 60px;
-    margin-bottom: 100px;
+    margin-left: 160px;
+    margin-right: 120px;
+    margin-bottom: 100px; 
     padding-top: 30px;
     padding-bottom: 30px;
-    /* margin-left: 300px; */
   }
   
   .modal {

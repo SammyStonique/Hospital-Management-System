@@ -1,4 +1,9 @@
 <template>
+    <Loader
+    :loader="loader"
+    :showLoader="showLoader"
+    :hideLoader="hideLoader"
+    />
     <NavBar
     :title="title"
     />
@@ -27,8 +32,9 @@
                         </div>
                         <div class="options-container absolute right-25 pt-4 pb-2 rounded border border-gray-200 bg-white shadow-slate-400 shadow-xl" v-if="showOptions">
                             <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Print List</button><br />
-                            <button @click="exportDepartmentPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
-                            <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
+                            <button @click="exportDepartmentsPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
+                            <button @click="exportDepartmentsExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
+                            <button @click="exportDepartmentsCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
                         </div>
                     </div>
                 </div>
@@ -123,6 +129,7 @@
 
 <script>
 
+import Loader from '@/components/Loader.vue'
 import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 import Modal from '@/components/Modal.vue'
@@ -131,7 +138,7 @@ import MyPagination from '@/components/MyPagination.vue'
 
 export default{
     name: 'DepartmentsView',
-    props:['scrollToTop',],
+    props:['scrollToTop','loader','showLoader','hideLoader',],
     data(){
         return{
             title: 'Departments',
@@ -158,7 +165,8 @@ export default{
         NavBar,
         SideBar,
         Modal,
-        MyPagination
+        MyPagination,
+        Loader
     },
     methods:{
       showModal(){
@@ -171,6 +179,7 @@ export default{
         this.dep_name = "";
       },
       createDepartment(){
+        this.showLoader();
         if(this.dep_code === '' || this.dep_name === ''){
           this.$toast.error("Please Enter Department Details",{
             duration: 5000,
@@ -194,6 +203,7 @@ export default{
             console.log(error.message);
           })
           .finally(()=>{
+            this.hideLoader();
             this.dep_code = "";
             this.dep_name = "";
           })
@@ -247,6 +257,7 @@ export default{
 
         },
         updateDepartment(){
+            this.showLoader();
             if(this.dep_code === "" || this.dep_name === ""){
                 this.$toast.error("Please Enter Department Details",{
                     duration:5000,
@@ -270,6 +281,7 @@ export default{
                     console.log(error.message);
                 })
                 .finally(()=>{
+                    this.hideLoader();
                     this.closeModal();
                     this.$store.commit('reloadingPage');
                 })
@@ -357,9 +369,10 @@ export default{
         showDropdown(){
             this.showOptions = !this.showOptions;
         },
-        exportDepartmentPDF(){
+        exportDepartmentsPDF(){
+            this.showLoader();
             this.axios
-            .get("api/v1/print-departments/", { responseType: 'blob' })
+            .get("api/v1/export-departments-pdf/", { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -372,6 +385,51 @@ export default{
             })
             .catch((error)=>{
                 console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
+        exportDepartmentsExcel(){
+            this.showLoader();
+            this.axios
+            .get("api/v1/export-departments-excel/", { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Departments.xls');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
+        exportDepartmentsCSV(){
+            this.showLoader();
+            this.axios
+            .get("api/v1/export-departments-csv/", { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Departments.csv');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
             })
         }
     },
