@@ -27,7 +27,7 @@
                         </div>
                         <div class="options-container absolute right-25 pt-4 pb-2 rounded border border-gray-200 bg-white shadow-slate-400 shadow-xl" v-if="showOptions">
                             <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Print List</button><br />
-                            <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
+                            <button @click="exportDepartmentPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
                             <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
                         </div>
                     </div>
@@ -357,6 +357,23 @@ export default{
         showDropdown(){
             this.showOptions = !this.showOptions;
         },
+        exportDepartmentPDF(){
+            this.axios
+            .get("api/v1/print-departments/", { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Departments.pdf');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+        }
     },
     mounted(){
         this.fetchDepartments();

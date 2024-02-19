@@ -1,4 +1,6 @@
-from django.shortcuts import render
+import os
+from django.shortcuts import render,get_object_or_404
+from django.http import HttpResponse
 from .models import *
 from .serializers import *
 from rest_framework.views import APIView
@@ -8,14 +10,22 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
+#Pdf 
+import jinja2
+import pdfkit
+
 
 # Create your views here.
+
+        #PAGINATION
+
 class BasePagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
-
+            #DOCTORS VIEWS
+    
 class DoctorList(generics.ListCreateAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
@@ -24,6 +34,9 @@ class DoctorDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
 
+
+            #DEPARTMENTS VIEWS
+    
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
@@ -37,6 +50,36 @@ class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
+def printDepartments(request):
+    departments = Department.objects.all()
+
+    context = {"departments":departments}
+
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/doctor_profile/templates/doctor_profile')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('departmentPDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Departments.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/doctor_profile/static/doctor_profile/departmentPDF.css")
+
+    path = 'Departments.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Departments.pdf'
+    pdf.close()
+    os.remove("Departments.pdf")  # remove the locally created pdf file.
+    return response
+
+            #MANAGER VIEWS
+    
 class ManagerList(generics.ListCreateAPIView):
     queryset = Manager.objects.all()
     serializer_class = ManagerSerializer

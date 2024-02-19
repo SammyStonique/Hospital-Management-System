@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Departments List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Code</th>
+				<th>Name</th>
+				<th>Manager</th>
+				<th>Start Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for dep in departments %}
+			<tr>
+				<td></td>
+				<td>{{ dep.code }}</td>
+				<td>{{ dep.name }}</td>
+				<td>{{ manager }}</td>
+				<td>{{ start_date }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>
