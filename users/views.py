@@ -7,7 +7,7 @@ import re
 import json
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse,FileResponse
 from .models import *
 #SMS Config
 import africastalking
@@ -40,3 +40,7 @@ def send_user_credentials(request, user_id):
 
     return HttpResponse("Credentials successfully sent")
 
+def get_user_image(request, user_id):
+    selected_user = get_object_or_404(User, id=user_id)
+    user_image = selected_user.image
+    return HttpResponse(str(user_image))

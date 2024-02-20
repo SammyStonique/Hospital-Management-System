@@ -6,4 +6,5 @@ from . import pass_generator
 urlpatterns = [
     path('pass-gen/', pass_generator.password_generator),
     path('user-credentials/<int:user_id>/', views.send_user_credentials, name="user-credentials"),
+    path('user-image/<int:user_id>/', views.get_user_image, name="user-image"),
 ]

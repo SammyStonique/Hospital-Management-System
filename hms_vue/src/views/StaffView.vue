@@ -19,7 +19,7 @@
         <Modal v-show="isModalVisible" @close="closeModal">
             <template v-slot:header> User Details </template>
             <template v-slot:body>
-              <form action="" @submit.prevent="createStaff">
+              <form action="" @submit.prevent="">
                 <div class="flex mb-4">
                   <div class="basis-1/2">
                     <label for="">First Name<em>*</em></label>
@@ -76,13 +76,21 @@
                 </div>
               </div>
               <div class="flex">
-                <div class="basis-1/2">
+                <div class="basis-1/2" v-if="isEditing">
+                    <label for="">Image</label>
+                    <p class="text-sm">Currently: <a :href="`${this.image}`" target="blank" class="text-blue-500">{{ this.imgName }}</a></p>
+                    <input type="file" ref="file" @change="onFileChange" accept="image/jpg, image/png, image/jpeg" >
+                </div>
+                <div class="basis-1/2" v-else>
                     <label for="">Image</label>
                     <input type="file" ref="file" @change="onFileChange" accept="image/jpg, image/png, image/jpeg">
                 </div>
               </div>
-              <div class="text-center">
-                <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg">Save</button>
+              <div class="text-center" v-if="isEditing">
+                  <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="updateStaff(index)">Update</button>
+              </div>
+              <div class="text-center" v-else>
+                  <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createStaff">Save</button>
               </div>
               </form>
             </template>
@@ -94,17 +102,20 @@
           <table class="min-w-full bg-white"> 
             <thead class="bg-gray-800 text-white">
               <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
+                <th class="text-left py-3 px-4">#</th>
                 <th class="text-left py-3 px-4">Name</th>
                 <th class="text-left py-3 px-4">Email</th>
                 <th class="text-left py-3 px-4">Phone Number</th>
                 <th class="text-left py-3 px-4">ID Number</th>
                 <th class="text-left py-3 px-4">Profile</th>
                 <th class="text-left py-3 px-4">Status</th>
+                <th class="text-left py-3 px-4">Actions</th>
               </tr>
             </thead>
             <tbody>
         
-              <tr v-for="staff in staffDetails" class="even:bg-gray-100">
+              <tr v-for="(staff,index) in staffList" :key="staff.id" class="even:bg-gray-100">
+                <td class="text-left py-3 px-4">{{ index + 1 }}</td>
                 <td class="text-left py-3 px-4">{{ staff.first_name }} {{ staff.last_name }}</td>
                 <td class="text-left py-3 px-4">{{ staff.email }}</td>
                 <td class="text-left py-3 px-4">{{ staff.phone_number }}</td>
@@ -112,6 +123,20 @@
                 <td class="text-left py-3 px-4">{{ staff.profile }}</td>
                 <td v-if="staff.is_active" class="text-left py-3 px-4">Active</td>
                 <td v-else class="text-left py-3 px-4">Inactive</td>
+                <td>
+                    <div class="flex">
+                        <div class="basis-1/3">
+                            <button @click="editStaff(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
+                        </div>
+                        <div class="basis-1/3">
+                            <button v-if="staff.is_active"><i class="fa fa-unlock" aria-hidden="true" title="Lock Staff"></i></button>
+                            <button v-else><i class="fa fa-lock" aria-hidden="true" title="Unlock Staff"></i></button>
+                        </div>
+                        <div class="basis-1/3">
+                            <button @click="removeStaff(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
+                        </div>
+                    </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -138,18 +163,21 @@ export default{
       last_name: '',
       email: '',
       image:null,
+      imgName: "",
       phone_number: '',
       profile: '',
       dob: '',
       gender: '',
       id_number: '',
       userDetails: [],
-      staffDetails: [],
+      staffList: [],
       department: '',
       payroll_number: '',
       specialization: '',
       temporary_password: '',
-      is_staff: false
+      is_staff: true,
+      isEditing: false,
+      staffID: 0,
     }
   },
     components: {
@@ -179,7 +207,6 @@ export default{
           })
         }
         else{
-          this.is_staff = true;
           this.axios
           .get("api/v1/pass-gen/")
           .then((response)=>{
@@ -189,56 +216,58 @@ export default{
             console.log(error.message)
           })
           .finally(()=>{
-                let formData = {
-                email: this.email,
-                first_name: this.first_name,
-                last_name: this.last_name,
-                identification_no: this.id_number,
-                birth_date: this.dob,
-                gender: this.gender,
-                phone_number: this.phone_number,
-                profile: this.profile,
-                password: this.temporary_password,
-                is_staff: this.is_staff,
+            let formData = new FormData();
+            formData.append('first_name', this.first_name);
+            formData.append('email', this.email);
+            formData.append('last_name', this.last_name);
+            formData.append('identification_no', this.id_number);
+            formData.append('birth_date', this.dob);
+            formData.append('gender', this.gender);
+            formData.append('phone_number', this.phone_number);
+            formData.append('profile', this.profile);
+            formData.append('password', this.temporary_password);
+            formData.append('is_staff', this.is_staff);
+            formData.append('image', this.image);
+              
+            this.axios
+            .post("api/v1/users/", formData)
+            .then((response)=>{
+                this.userDetails = response.data;
+                console.log("The temporary password is ", this.temporary_password);
+                this.$toast.success("User Created Succesfully",{
+                  duration: 5000,
+                  dismissible: true
+                })
+            })
+            .catch((error)=>{
+              console.log(error.message);
+            })
+            .finally(()=>{
+              let formData ={
+                temporary_password: this.temporary_password,
               }
               this.axios
-              .post("api/v1/users/", formData)
+              .post(`api/v1/user-credentials/${this.userDetails.id}/`, formData)
               .then((response)=>{
-                  this.userDetails = response.data;
-                  console.log("The temporary password is ", this.temporary_password);
-                  this.$toast.success("User Created Succesfully",{
-                    duration: 5000,
-                    dismissible: true
-                  })
               })
-              .catch((error)=>[
-                console.log(error.message)
-              ])
+              .catch((error)=>{
+                console.log(error);
+              })
               .finally(()=>{
-                let formData ={
-                  temporary_password: this.temporary_password,
-                }
-                this.axios
-                .post(`api/v1/user-credentials/${this.userDetails.id}/`, formData)
-                .then((response)=>{
-                })
-                .catch((error)=>{
-                  console.log(error);
-               })
-               .finally(()=>{
-                  this.first_name = "";
-                  this.last_name = "";
-                  this.email = "";
-                  this.id_number = "";
-                  this.dob = "";
-                  this.gender = "";
-                  this.phone_number = "";
-                  this.profile = "";
-                  this.is_staff = false;
-                  this.hideLoader();
-                  this.$router.push("/staff")
-               })
+                this.first_name = "";
+                this.last_name = "";
+                this.email = "";
+                this.id_number = "";
+                this.dob = "";
+                this.gender = "";
+                this.phone_number = "";
+                this.profile = "";
+                this.is_staff = false;
+                this.image = null,
+                this.hideLoader();
+                this.$router.push("/staff")
               })
+            })
 
           })
         }
@@ -249,7 +278,7 @@ export default{
         .then((response)=>{
           for(let i=0; i<response.data.results.length; i++){
             if(response.data.results[i].profile != "Admin" && response.data.results[i].profile != "Patient"){
-              this.staffDetails.push(response.data.results[i]);
+              this.staffList.push(response.data.results[i]);
             }
           }
           
@@ -257,7 +286,84 @@ export default{
         .catch((error)=>{
           console.log(error);
         })
-      }
+      },
+      editStaff(){
+        this.isEditing = true;
+        let selectedStaff = arguments[0];
+        this.staffID = this.staffList[selectedStaff].id;
+        this.axios
+        .get(`api/v1/users/${this.staffID}/`)
+        .then((response)=>{
+            this.first_name = response.data.first_name;
+            this.last_name = response.data.last_name;
+            this.email = response.data.email;
+            this.id_number = response.data.identification_no;
+            this.dob = response.data.birth_date;
+            this.phone_number = response.data.phone_number;
+            this.profile = response.data.profile;
+            this.gender = response.data.gender;
+            this.image = response.data.image;
+        })
+        .catch((error)=>{
+            console.log(error.message);
+        })
+        .finally(()=>{
+            this.scrollToTop();
+            this.showModal();
+            this.axios
+            .get(`api/v1/user-image/${this.staffID}/`)
+            .then((response)=>{
+              this.imgName = response.data;
+            })
+            .catch((error)=>{
+              console.log(error.message)
+            })
+        })
+
+      },
+      updateStaff(){
+            this.showLoader();
+            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.id_number === '' ||
+              this.gender === '' || this.profile === '' || this.dob === '' || this.phone_number === '' ){
+                this.$toast.error("Please Enter Staff Details",{
+                    duration:5000,
+                    dismissible: true
+                })
+            }
+            else{
+
+              let formData = new FormData();
+              formData.append('first_name', this.first_name);
+              formData.append('email', this.email);
+              formData.append('last_name', this.last_name);
+              formData.append('identification_no', this.id_number);
+              formData.append('birth_date', this.dob);
+              formData.append('gender', this.gender);
+              formData.append('phone_number', this.phone_number);
+              formData.append('profile', this.profile);
+              formData.append('password', this.temporary_password);
+              formData.append('is_staff', this.is_staff);
+              formData.append('is_active', this.is_staff);
+              formData.append('image', this.image);
+
+              this.axios
+              .put("api/v1/users/"+this.staffID+"/", formData)
+              .then((response)=>{
+                  this.$toast.success("Staff Succesfully Updated",{
+                      duration:5000,
+                      dismissible: true
+                  })
+              })
+              .catch((error)=>{
+                  console.log(error.message);
+              })
+              .finally(()=>{
+                  this.hideLoader();
+                  this.closeModal();
+                  this.$store.commit('reloadingPage');
+              })
+            }
+        },
     },
     mounted(){
       this.fetchStaff();
