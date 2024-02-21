@@ -11,10 +11,66 @@
     <div class="main-content bg-gray-100 px-4 py-4">
       <div class="subsection rounded bg-white p-3">
         <h2 class="text-center font-bold">Staff</h2>
-        <div class="md:px-8 py-8 mb-4">
-          <button class="rounded border bg-green-400 text-white p-3" @click="showModal"> + New Staff</button>
+        <div class="md:px-4 pt-4 pb-1 w-full border-b-2 border-gray-300 mb-6">
+          <div class="mb-4 flex items-end h-24">
+            <div class="basis-1/6 pl-3">
+              <button class="rounded bg-green-400 text-white px-3 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Staff</button>
+            </div>
+            <div class="basis-3/4">
+              <div class="flex mb-3">
+                <div class="basis-1/3 items-center">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="name" id="" placeholder="Name" v-model="search_name" @keyup.enter="searchStaff">
+                </div>
+                <div class="basis-1/3 pl-3 items-center">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="id_number" id="" placeholder="ID Number" v-model="search_id_number"  @keyup.enter="searchStaff">
+                </div>
+                <div class="basis-1/3 pl-3 items-center">
+                  <select name="" id="" class="rounded border border-gray-200 text-lg bg-white text-gray-300 pl-2 pt-2 w-52" placeholder="Profile" v-model="search_profile">
+                    <option value="" selected disabled>Profile</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Clinical Officer">Clinical Officer</option>
+                    <option value="Accountant">Accountant</option>
+                    <option value="Human Resource">Human Resource</option>
+                    <option value="Nurse">Nurse</option>
+                    <option value="Lab Technician">Lab Technician</option>
+                    <option value="Office Clerk">Office Clerk</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex">
+                <div class="basis-1/3 items-center">
+                  <select name="" id="" class="rounded border border-gray-200 bg-white text-gray-300 text-lg pl-2 pt-2 w-52" placeholder="Status" v-model="status">
+                    <option value="" selected disabled>Status</option>
+                    <option value="True">Active</option>
+                    <option value="False">Inactive</option>
+                  </select>
+                </div>
+                <div class="basis-1/3 pl-3 items-center">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Email" id="" placeholder="Email" v-model="search_email" @keyup.enter="searchStaff">
+                </div>
+                <div class="basis-1/3 pl-3 items-center">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Phone Number" id="" placeholder="Phone Number" v-model="search_phone_number" @keyup.enter="searchStaff">
+                </div>
+              </div>
+            </div>
+            <div class="basis-1/8 pl-3 items-center w-36">
+                <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchStaff"><i class="fa fa-binoculars" aria-hidden="true"></i> Search</button>
+            </div>
+            <div class="basis-1/8 pl-3 w-36">
+                <div class="print-dropdown">
+                    <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="showDropdown">Options<i class="fa fa-caret-down pl-2" aria-hidden="true"></i></button>
+                    <button class="fixed inset-button inset-0 bg-gray-50 opacity-25 cursor-default w-full" v-if="showOptions" @click="showOptions = !showOptions"></button>
+                </div>
+                <div class="options-container absolute right-25 pt-4 pb-2 rounded border border-gray-200 bg-white shadow-slate-400 shadow-xl" v-if="showOptions">
+                    <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Print List</button><br />
+                    <button @click="exportDepartmentsPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
+                    <button @click="exportDepartmentsExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
+                    <button @click="exportDepartmentsCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
+                </div>
+            </div>
+          </div>
         </div>
-
         <!-- MODAL component for adding a new user -->
         <Modal v-show="isModalVisible" @close="closeModal">
             <template v-slot:header> User Details </template>
@@ -141,6 +197,19 @@
             </tbody>
           </table>
         </div>
+        <div class="pagination row-span-2">
+          <MyPagination 
+          :count="staffCount"
+          :currentPage="currentPage"
+          :result="staffArrLen"
+          @loadPrev="loadPrev"
+          @loadNext="loadNext"
+          @firstPage="firstPage"
+          @lastPage="lastPage"
+          :showNextBtn="showNextBtn"
+          :showPreviousBtn="showPreviousBtn"
+          />
+      </div>
       </div>
     </div>
 </template>
@@ -151,6 +220,7 @@ import Loader from '@/components/Loader.vue'
 import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 import Modal from '@/components/Modal.vue'
+import MyPagination from '@/components/MyPagination.vue'
 
 export default{
     name: 'StaffView',
@@ -160,15 +230,20 @@ export default{
       title: 'Staff',
       isModalVisible: false,
       first_name: '',
+      search_name: '',
       last_name: '',
       email: '',
+      search_email: '',
       image:null,
       imgName: "",
       phone_number: '',
+      search_phone_number: '',
       profile: '',
+      search_profile: '',
       dob: '',
       gender: '',
       id_number: '',
+      search_id_number: '',
       userDetails: [],
       staffList: [],
       department: '',
@@ -177,15 +252,24 @@ export default{
       temporary_password: '',
       is_staff: true,
       is_active: false,
+      status: "",
       isEditing: false,
       staffID: 0,
+      currentPage: 1,
+      staffCount: 0,
+      staffArrLen: 0,
+      staffResults: [],
+      pageCount: 0,
+      showNextBtn: false,
+      showPreviousBtn: false,
     }
   },
     components: {
         NavBar,
         SideBar,
         Modal,
-        Loader
+        Loader,
+        MyPagination
     },
     methods:{
       onFileChange(e){
@@ -274,13 +358,26 @@ export default{
         }
       },
       fetchStaff(){
+        this.showNextBtn = false;
+        this.showPreviousBtn = false;
         this.axios
-        .get("api/v1/users/")
+        .get(`api/v1/systemusers/?page=${this.currentPage}`)
         .then((response)=>{
           for(let i=0; i<response.data.results.length; i++){
             if(response.data.results[i].profile != "Super Admin" && response.data.results[i].profile != "Patient"){
               this.staffList.push(response.data.results[i]);
             }
+          }
+          this.staffResults = response.data;
+          this.staffArrLen = this.staffList.length;
+          this.staffCount = this.staffResults.count;
+          this.pageCount = Math.ceil(this.staffCount / 10);
+
+          if(response.data.next){
+              this.showNextBtn = true;
+          }
+          if(response.data.previous){
+              this.showPreviousBtn = true;
           }
           
         })
@@ -350,6 +447,7 @@ export default{
               this.axios
               .put("api/v1/users/"+this.staffID+"/", formData)
               .then((response)=>{
+                console.log("The updated info is ",response.data.email);
                   this.$toast.success("Staff Succesfully Updated",{
                       duration:5000,
                       dismissible: true
@@ -542,7 +640,61 @@ export default{
                 }
             });
           
-        }
+        },
+        loadNext(){
+            if(this.currentPage >= this.pageCount){
+                this.currentPage = this.pageCount;
+            }else if(this.currentPage < this.pageCount){
+                this.currentPage += 1;
+            }
+            this.fetchStaff();
+        },
+        loadPrev(){
+            if (this.currentPage <= 1){
+                this.currentPage = 1;
+            }else{
+                this.currentPage -= 1;
+            }
+            this.fetchStaff();
+        },
+        firstPage(){
+            if(this.pageCount > 1){
+              this.currentPage = 1;
+              this.fetchStaff();
+            }
+        },
+        lastPage(){
+            if(this.pageCount > 1){
+              this.currentPage = this.pageCount;
+              this.fetchStaff();
+            }
+        },
+        searchStaff(){
+            this.staffList = [];
+            let formData = {
+              email: this.search_email,
+              name: this.search_name,
+              is_active: this.status,
+              identification_no: this.search_id_number,
+              profile: this.search_profile,
+              phone_number: this.search_phone_number,
+            }
+            this.axios
+            .post("api/v1/staff-search/",formData)
+            .then((response)=>{
+              for(let i=0; i<response.data.staff.length; i++){
+                if(response.data.staff[i].profile != "Super Admin" && response.data.staff[i].profile != "Patient"){
+                  this.staffList.push(response.data.staff[i]);
+                }
+              }
+              console.log("The staff details from search are ",this.staffList);
+                // this.staffList = response.data.staff;
+                this.staffArrLen = response.data.staff.length;
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+        },
     },
     mounted(){
       this.fetchStaff();

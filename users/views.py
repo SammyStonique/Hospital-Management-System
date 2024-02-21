@@ -25,7 +25,19 @@ sms = africastalking.SMS
 
 # Create your views here.
 
+        #PAGINATION
+
+class BasePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
             #DOCTORS VIEWS
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = BasePagination
     
 class UserList(generics.ListCreateAPIView):
     queryset = User.objects.all()

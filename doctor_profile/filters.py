@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import *
 
 @csrf_exempt
-def department_code_search(request):
+def departmentSearch(request):
     departList = []
     data = json.loads(request.body)
     code = data['code']

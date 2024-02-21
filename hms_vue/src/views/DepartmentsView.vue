@@ -12,9 +12,9 @@
         <div class="subsection row-span-2 rounded-lg bg-white w-full p-3">
             <h2 class="text-center font-bold">Departments</h2>
             <div class="md:px-8 py-8 w-full">
-                <div class="mb-4 flex items-end">
+                <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
                     <div class="basis-1/5 pl-3">
-                        <button class="rounded-lg bg-green-400 text-white p-3" @click="showModal">+ New Deptmnt</button>
+                        <button class="rounded bg-green-400 text-white px-3 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Deptmnt</button>
                     </div>
                     <div class="basis-1/5 pl-3 items-center">
                        <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code" v-model="code" @keyup.enter="searchDepartment">
@@ -23,7 +23,7 @@
                        <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name" v-model="name"  @keyup.enter="searchDepartment">
                     </div>
                     <div class="basis-1/5 pl-3">
-                        <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchDepartment">Search</button>
+                        <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchDepartment"><i class="fa fa-binoculars" aria-hidden="true"></i> Search</button>
                     </div>
                     <div class="basis-1/5 pl-3">
                         <div class="print-dropdown">
@@ -210,8 +210,8 @@ export default{
         }
       },
       fetchDepartments(){
-        this.showNextBtn = false;
-        this.showPreviousBtn = false;
+            this.showNextBtn = false;
+            this.showPreviousBtn = false;
             this.axios
             .get(`api/v1/departments/?page=${this.currentPage}`)
             .then((response)=>{
