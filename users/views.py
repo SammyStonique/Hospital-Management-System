@@ -7,8 +7,15 @@ import re
 import json
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse,JsonResponse,FileResponse
+from django.http import HttpResponse
 from .models import *
+from .serializers import *
+from rest_framework.views import APIView
+from rest_framework import generics
+from rest_framework.response import Response
+#Pagination
+from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 #SMS Config
 import africastalking
 username = env('AFRICASTALKING_USERNAME')
@@ -17,6 +24,17 @@ africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
 # Create your views here.
+
+            #DOCTORS VIEWS
+    
+class UserList(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 
 @csrf_exempt
 def send_user_credentials(request, user_id): 

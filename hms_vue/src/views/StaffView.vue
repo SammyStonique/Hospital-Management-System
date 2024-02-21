@@ -75,7 +75,7 @@
                   </select>
                 </div>
               </div>
-              <div class="flex">
+              <!-- <div class="flex">
                 <div class="basis-1/2" v-if="isEditing">
                     <label for="">Image</label>
                     <p class="text-sm">Currently: <a :href="`${this.image}`" target="blank" class="text-blue-500">{{ this.imgName }}</a></p>
@@ -85,7 +85,7 @@
                     <label for="">Image</label>
                     <input type="file" ref="file" @change="onFileChange" accept="image/jpg, image/png, image/jpeg">
                 </div>
-              </div>
+              </div> -->
               <div class="text-center" v-if="isEditing">
                   <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="updateStaff(index)">Update</button>
               </div>
@@ -129,8 +129,8 @@
                             <button @click="editStaff(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
                         </div>
                         <div class="basis-1/3">
-                            <button v-if="staff.is_active"><i class="fa fa-unlock" aria-hidden="true" title="Lock Staff"></i></button>
-                            <button v-else><i class="fa fa-lock" aria-hidden="true" title="Unlock Staff"></i></button>
+                            <button v-if="staff.is_active" @click="lockStaff(index)"><i class="fa fa-unlock" aria-hidden="true" title="Lock Staff"></i></button>
+                            <button v-else @click="unlockStaff(index)"><i class="fa fa-lock" aria-hidden="true" title="Unlock Staff"></i></button>
                         </div>
                         <div class="basis-1/3">
                             <button @click="removeStaff(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
@@ -176,6 +176,7 @@ export default{
       specialization: '',
       temporary_password: '',
       is_staff: true,
+      is_active: false,
       isEditing: false,
       staffID: 0,
     }
@@ -227,7 +228,8 @@ export default{
             formData.append('profile', this.profile);
             formData.append('password', this.temporary_password);
             formData.append('is_staff', this.is_staff);
-            formData.append('image', this.image);
+            formData.append('active', this.is_staff);
+            // formData.append('image', this.image);
               
             this.axios
             .post("api/v1/users/", formData)
@@ -262,7 +264,6 @@ export default{
                 this.gender = "";
                 this.phone_number = "";
                 this.profile = "";
-                this.is_staff = false;
                 this.image = null,
                 this.hideLoader();
                 this.$router.push("/staff")
@@ -277,7 +278,7 @@ export default{
         .get("api/v1/users/")
         .then((response)=>{
           for(let i=0; i<response.data.results.length; i++){
-            if(response.data.results[i].profile != "Admin" && response.data.results[i].profile != "Patient"){
+            if(response.data.results[i].profile != "Super Admin" && response.data.results[i].profile != "Patient"){
               this.staffList.push(response.data.results[i]);
             }
           }
@@ -344,7 +345,7 @@ export default{
               formData.append('password', this.temporary_password);
               formData.append('is_staff', this.is_staff);
               formData.append('is_active', this.is_staff);
-              formData.append('image', this.image);
+              // formData.append('image', this.image);
 
               this.axios
               .put("api/v1/users/"+this.staffID+"/", formData)
@@ -358,12 +359,190 @@ export default{
                   console.log(error.message);
               })
               .finally(()=>{
-                  this.hideLoader();
-                  this.closeModal();
-                  this.$store.commit('reloadingPage');
+                this.first_name = "";
+                this.last_name = "";
+                this.email = "";
+                this.id_number = "";
+                this.dob = "";
+                this.gender = "";
+                this.phone_number = "";
+                this.profile = "";
+                this.image = null,
+                this.hideLoader();
+                this.closeModal();
+                this.$store.commit('reloadingPage');
               })
             }
         },
+        lockStaff(){
+          this.is_active = false;
+          let selectedStaff = arguments[0];
+          this.staffID = this.staffList[selectedStaff].id;
+          this.$swal({
+                title: "Are you sure?",
+                text: `Do you wish to lock ${this.staffList[selectedStaff].first_name}'s account?`,
+                type: 'warning',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Lock it!',
+                cancelButtonText: 'Cancel!',
+                showLoaderOnConfirm: true,
+            }).then((result) => {
+                if (result.value) {
+                  this.axios
+                  .get(`api/v1/users/${this.staffID}/`)
+                  .then((response)=>{
+                      this.first_name = response.data.first_name;
+                      this.last_name = response.data.last_name;
+                      this.email = response.data.email;
+                      this.id_number = response.data.identification_no;
+                      this.dob = response.data.birth_date;
+                      this.phone_number = response.data.phone_number;
+                      this.profile = response.data.profile;
+                      this.gender = response.data.gender;
+                      this.image = response.data.image;
+                  })
+                  .catch((error)=>{
+                      console.log(error.message);
+                  })
+                  .finally(()=>{
+                    let formData = new FormData();
+                    formData.append('first_name', this.first_name);
+                    formData.append('email', this.email);
+                    formData.append('last_name', this.last_name);
+                    formData.append('identification_no', this.id_number);
+                    formData.append('birth_date', this.dob);
+                    formData.append('gender', this.gender);
+                    formData.append('phone_number', this.phone_number);
+                    formData.append('profile', this.profile);
+                    formData.append('password', this.temporary_password);
+                    formData.append('is_staff', this.is_staff);
+                    formData.append('is_active', this.is_active);
+                    // formData.append('image', this.image);
+                    this.axios
+                    .put("api/v1/users/"+ this.staffID+ "/", formData)
+                    .then((response)=>{
+                      this.$swal("Account Locked Successfully", {
+                        icon: "success",
+                      });
+                    })
+                    .catch((error)=>{
+                      console.log(error.message);
+                    })
+                    .finally(()=>{
+                      this.$store.commit("reloadingPage");
+                    })
+                  })
+                
+                } else {
+                    this.$swal(`${this.staffList[selectedStaff].first_name} has not been locked!`);
+                    this.is_active = false;
+                }
+            });
+          
+        },
+        unlockStaff(){
+          this.is_active = true;
+          let selectedStaff = arguments[0];
+          this.staffID = this.staffList[selectedStaff].id;
+          this.$swal({
+                title: "Are you sure?",
+                text: `Do you wish to unlock ${this.staffList[selectedStaff].first_name}'s account?`,
+                type: 'warning',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Unlock it!',
+                cancelButtonText: 'Cancel!',
+                showLoaderOnConfirm: true,
+            }).then((result) => {
+                if (result.value) {
+                  this.axios
+                  .get(`api/v1/users/${this.staffID}/`)
+                  .then((response)=>{
+                      this.first_name = response.data.first_name;
+                      this.last_name = response.data.last_name;
+                      this.email = response.data.email;
+                      this.id_number = response.data.identification_no;
+                      this.dob = response.data.birth_date;
+                      this.phone_number = response.data.phone_number;
+                      this.profile = response.data.profile;
+                      this.gender = response.data.gender;
+                      this.image = response.data.image;
+                  })
+                  .catch((error)=>{
+                      console.log(error.message);
+                  })
+                  .finally(()=>{
+                    let formData = new FormData();
+                    formData.append('first_name', this.first_name);
+                    formData.append('email', this.email);
+                    formData.append('last_name', this.last_name);
+                    formData.append('identification_no', this.id_number);
+                    formData.append('birth_date', this.dob);
+                    formData.append('gender', this.gender);
+                    formData.append('phone_number', this.phone_number);
+                    formData.append('profile', this.profile);
+                    formData.append('password', this.temporary_password);
+                    formData.append('is_staff', this.is_staff);
+                    formData.append('is_active', this.is_active);
+                    // formData.append('image', this.image);
+                    this.axios
+                    .put("api/v1/users/"+ this.staffID+ "/", formData)
+                    .then((response)=>{
+                      this.$swal("Account Unlocked Successfully", {
+                        icon: "success",
+                      });
+                    })
+                    .catch((error)=>{
+                      console.log(error.message);
+                    })
+                    .finally(()=>{
+                      this.$store.commit("reloadingPage");
+                    })
+                  })
+                
+                } else {
+                    this.$swal(`${this.staffList[selectedStaff].first_name} has not been unlocked!`);
+                    this.is_active = false;
+                }
+            });
+          
+        },
+        removeStaff(){
+          let selectedStaff = arguments[0];
+          this.staffID = this.staffList[selectedStaff].id;
+          this.$swal({
+                title: "Are you sure?",
+                text: `Do you wish to delete ${this.staffList[selectedStaff].first_name}'s account?`,
+                type: 'warning',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete it!',
+                cancelButtonText: 'Cancel!',
+                showLoaderOnConfirm: true,
+            }).then((result) => {
+                if (result.value) {
+                  this.axios
+                  .delete("api/v1/user-details/"+ this.staffID+ "/")
+                  .then((response)=>{
+                    this.$swal("Account Deleted Successfully", {
+                      icon: "success",
+                    });
+                  })
+                  .catch((error)=>{
+                    console.log(error.message);
+                  })
+                  .finally(()=>{
+                    this.$store.commit("reloadingPage");
+                  })
+                } 
+                else {
+                    this.$swal(`${this.staffList[selectedStaff].first_name} has not been deleted!`);
+                    this.is_active = false;
+                }
+            });
+          
+        }
     },
     mounted(){
       this.fetchStaff();
