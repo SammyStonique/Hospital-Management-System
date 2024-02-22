@@ -16,5 +16,8 @@ urlpatterns = [
     path('pass-gen/', pass_generator.password_generator),
     path('user-credentials/<int:user_id>/', views.send_user_credentials, name="user-credentials"),
     path('user-image/<int:user_id>/', views.get_user_image, name="user-image"),
-    path("staff-search/", staffSearch, name="staff_search")
+    path("staff-search/", staffSearch, name="staff_search"),
+    path("export-staff-pdf/", views.generate_staff_pdf, name="export-staff-pdf"),
+    path("export-staff-excel/", views.generate_staff_excel, name="export-staff-excel"),
+    path("export-staff-csv/", views.generate_staff_csv, name="export-staff-csv"),
 ]

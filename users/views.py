@@ -22,6 +22,13 @@ username = env('AFRICASTALKING_USERNAME')
 api_key = env('AFRICASTALKING_API_KEY')
 africastalking.initialize(username, api_key)  
 sms = africastalking.SMS
+#Pdf 
+import jinja2
+import pdfkit
+#Excel
+import xlwt
+#CSV
+import csv
 
 # Create your views here.
 
@@ -74,3 +81,83 @@ def get_user_image(request, user_id):
     selected_user = get_object_or_404(User, id=user_id)
     user_image = selected_user.image
     return HttpResponse(str(user_image))
+
+def generate_staff_pdf(request):
+    users = User.objects.all()
+    staff = []
+
+    for stf in users:
+        if(stf.profile != "Super Admin" and stf.profile != "Patient"):
+            staff.append(stf)
+
+    context = {"staff":staff}
+
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/users/templates/users')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('staffPDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Staff.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/users/static/users/staffPDF.css")
+
+    path = 'Staff.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Staff.pdf'
+    pdf.close()
+    os.remove("Staff.pdf")  # remove the locally created pdf file.
+    return response
+
+def generate_staff_excel(request):
+    users = User.objects.all()
+    staff = []
+
+    for stf in users:
+        if(stf.profile != "Super Admin" and stf.profile != "Patient"):
+            staff.append(stf)
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=Staff.xls'
+
+    workbook = xlwt.Workbook()
+
+    worksheet = workbook.add_sheet("Staff")
+
+    row_num = 0
+    columns = ['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile']
+    for col_num in range(len(columns)):
+        worksheet.write(row_num, col_num, columns[col_num])
+
+    for stf in staff:
+        row_num += 1
+        row = [stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile]
+        for col_num in range(len(row)):
+            worksheet.write(row_num, col_num, row[col_num])
+       
+    workbook.save(response)
+    return response
+
+def generate_staff_csv(request):
+    users = User.objects.all()
+    staff = []
+
+    for stf in users:
+        if(stf.profile != "Super Admin" and stf.profile != "Patient"):
+            staff.append(stf)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=Staff.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile'])
+
+    for stf in staff:
+        writer.writerow([stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile])
+    return response

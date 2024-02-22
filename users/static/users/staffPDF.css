@@ -36,7 +36,7 @@ table th{
 table tr:nth-child(even){
   background-color: #f2f2f2;
 }
-.department-info-container{
+.staff-info-container{
   border-top: #ff6f61 1px solid;
   border-width: 100%;
   margin-top: 30px;

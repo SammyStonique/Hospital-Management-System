@@ -64,9 +64,9 @@
                 </div>
                 <div class="options-container absolute right-25 pt-4 pb-2 rounded border border-gray-200 bg-white shadow-slate-400 shadow-xl" v-if="showOptions">
                     <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Print List</button><br />
-                    <button @click="exportDepartmentsPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
-                    <button @click="exportDepartmentsExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
-                    <button @click="exportDepartmentsCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
+                    <button @click="exportStaffPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
+                    <button @click="exportStaffExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
+                    <button @click="exportStaffCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
                 </div>
             </div>
           </div>
@@ -262,6 +262,7 @@ export default{
       pageCount: 0,
       showNextBtn: false,
       showPreviousBtn: false,
+      showOptions: false,
     }
   },
     components: {
@@ -695,6 +696,72 @@ export default{
                 console.log(error);
             })
         },
+        showDropdown(){
+            this.showOptions = !this.showOptions;
+        },
+        exportStaffPDF(){
+            this.showLoader();
+            this.axios
+            .get("api/v1/export-staff-pdf/", { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Staff.pdf');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
+        exportStaffExcel(){
+            this.showLoader();
+            this.axios
+            .get("api/v1/export-staff-excel/", { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Staff.xls');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
+        exportStaffCSV(){
+            this.showLoader();
+            this.axios
+            .get("api/v1/export-staff-csv/", { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Staff.csv');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        }
     },
     mounted(){
       this.fetchStaff();
