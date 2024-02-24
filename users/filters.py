@@ -9,14 +9,14 @@ from .models import *
 def staffSearch(request):
     staffList = []
     data = json.loads(request.body)
-    email = data['email']
+    user_department = data['user_department']
     name = data['name']
     status = data['is_active']
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
 
-    users = User.objects.filter(Q(email__icontains=email) & (Q(first_name__icontains=name) | Q(last_name__icontains=name))
+    users = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
     
     if status:
@@ -24,6 +24,7 @@ def staffSearch(request):
 
     if profile:
         users = users.filter(profile = profile)
+    
 
     for staff in users:
         obj = {
@@ -35,6 +36,7 @@ def staffSearch(request):
             "identification_no": staff.identification_no,
             "profile": staff.profile,
             "phone_number": staff.phone_number,
+            "user_department": staff.user_department.name,
         }
         staffList.append(obj)
 

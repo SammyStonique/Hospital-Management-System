@@ -19,13 +19,13 @@
             <div class="basis-3/4">
               <div class="flex mb-3">
                 <div class="basis-1/3 items-center">
-                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="name" id="" placeholder="Name" v-model="search_name" @keyup.enter="searchStaff">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="name" id="" placeholder="Name...." v-model="search_name" @keyup.enter="searchStaff">
                 </div>
                 <div class="basis-1/3 pl-3 items-center">
-                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="id_number" id="" placeholder="ID Number" v-model="search_id_number"  @keyup.enter="searchStaff">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="id_number" id="" placeholder="ID Number...." v-model="search_id_number"  @keyup.enter="searchStaff">
                 </div>
                 <div class="basis-1/3 pl-3 items-center">
-                  <select name="" id="" class="rounded border border-gray-200 text-lg bg-white text-gray-300 pl-2 pt-2 w-52" placeholder="Profile" v-model="search_profile">
+                  <select name="" id="" class="rounded border border-gray-200 text-lg bg-white pl-2 pt-2 w-52" placeholder="Profile...." v-model="search_profile">
                     <option value="" selected disabled>Profile</option>
                     <option value="Admin">Admin</option>
                     <option value="Doctor">Doctor</option>
@@ -40,17 +40,17 @@
               </div>
               <div class="flex">
                 <div class="basis-1/3 items-center">
-                  <select name="" id="" class="rounded border border-gray-200 bg-white text-gray-300 text-lg pl-2 pt-2 w-52" placeholder="Status" v-model="status">
-                    <option value="" selected disabled>Status</option>
+                  <select name="" id="" class="rounded border border-gray-200 bg-white  text-lg pl-2 pt-2 w-52" placeholder="Status...." v-model="status">
+                    <option value="" selected disabled  class="status-placeholder">Status</option>
                     <option value="True">Active</option>
                     <option value="False">Inactive</option>
                   </select>
                 </div>
                 <div class="basis-1/3 pl-3 items-center">
-                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Email" id="" placeholder="Email" v-model="search_email" @keyup.enter="searchStaff">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Department" id="" placeholder="Department...." v-model="search_user_department" @keyup.enter="searchStaff">
                 </div>
                 <div class="basis-1/3 pl-3 items-center">
-                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Phone Number" id="" placeholder="Phone Number" v-model="search_phone_number" @keyup.enter="searchStaff">
+                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Phone Number" id="" placeholder="Phone Number...." v-model="search_phone_number" @keyup.enter="searchStaff">
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@
               <div class="flex mb-4">
                 <div class="basis-1/2">
                   <label for="">Profile<em>*</em></label><br />
-                  <select name="" id="" class="rounded border border-gray-600 text-lg pl-2 pt-2" placeholder="Select Profile" v-model="profile">
+                  <select name="" id="" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" placeholder="Select Profile" v-model="profile">
                     <option value="" selected disabled>---Select Profile---</option>
                     <option value="Admin">Admin</option>
                     <option value="Doctor">Doctor</option>
@@ -123,11 +123,23 @@
                 </div>
                 <div class="basis-1/2">
                   <label for="">Gender<em>*</em></label><br />
-                  <select class="rounded border border-gray-600 text-lg pl-2 pt-2" placeholder="Select Gender" v-model="gender">
-                    <option value="" selected disabled>---Select Gender--</option>
+                  <select class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" placeholder="Select Gender" v-model="gender">
+                    <option value="" selected disabled>---Select Gender---</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex mb-4">
+                <div class="basis-1/2">
+                  <label for="">Department<em>*</em></label><br />
+                  <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
+                      <option v-for="dep in departmentsArray" :key="dep.id" :value="dep.name" :label="dep.name" :selected="dep.name===departmentEditing">({{dep.code}}) - {{ dep.name }}</option> 
+                  </select>
+                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" v-else>
+                      <option value="" disabled selected>--Select Department--</option>
+                      <option v-for="dep in departmentsArray" >({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
                 </div>
               </div>
@@ -233,7 +245,7 @@ export default{
       search_name: '',
       last_name: '',
       email: '',
-      search_email: '',
+      search_user_department: '',
       image:null,
       imgName: "",
       phone_number: '',
@@ -247,6 +259,7 @@ export default{
       userDetails: [],
       staffList: [],
       department: '',
+      departmentEditing: '',
       payroll_number: '',
       specialization: '',
       temporary_password: '',
@@ -263,6 +276,11 @@ export default{
       showNextBtn: false,
       showPreviousBtn: false,
       showOptions: false,
+      departmentsArray: [],
+      selectedDep: 0,
+      selectedUpdateDep: 0,
+      depID: 0,
+      depUpdateID: 0,
     }
   },
     components: {
@@ -273,20 +291,64 @@ export default{
         MyPagination
     },
     methods:{
+      fetchDepartments(){
+        this.axios
+        .get("api/v1/department-list/")
+        .then((response)=>{
+          this.departmentsArray = response.data.results;
+        })
+        .catch((error)=>{
+          console.log(error.message)
+        })
+        .finally(()=>{
+          
+        })
+      },
+      setDepartmentID(){
+        this.depID = 0;
+        if(this.$refs.departmentSelect.selectedIndex > 0){
+            this.selectedDep = this.$refs.departmentSelect.selectedIndex - 1;
+            this.depID = this.departmentsArray[this.selectedDep].id;
+        }
+      },
+      setUpdateDepartmentID(){
+        this.depUpdateID = 0;
+        if(this.$refs.departmentUpdateSelect.selectedIndex >= 0){
+            this.selectedUpdateDep = this.$refs.departmentUpdateSelect.selectedIndex;
+            this.depUpdateID = this.departmentsArray[this.selectedUpdateDep].id;
+            let depName = this.departmentsArray[this.selectedUpdateDep].name;
+            console.log("SElected depID is ",this.depUpdateID);
+            console.log("SElected depName is ",depName);
+        }
+      },
       onFileChange(e){
         this.image = e.target.files[0];
         console.log(this.image)
       },
       showModal(){
+        if(this.isEditing == false){
+          this.first_name = "";
+          this.last_name = "";
+          this.email = "";
+          this.id_number = "";
+          this.dob = "";
+          this.gender = "";
+          this.phone_number = "";
+          this.department = "";
+          this.profile = "";
+        }
         this.isModalVisible = !this.isModalVisible;
+        this.fetchDepartments();
       },
       closeModal(){
         this.isModalVisible = false;
+        this.isEditing = false;
       },
       createStaff(){
+
         this.showLoader();
         if(this.first_name === '' || this.last_name === '' || this.email === '' || this.id_number === '' ||
-        this.gender === '' || this.profile === '' || this.dob === '' || this.phone_number === '' ){
+        this.gender === '' || this.profile === '' || this.dob === '' || this.phone_number === '' || this.department === '' ){
           this.$toast.error("Please Enter User Details",{
             duration: 5000,
             dismissible: true
@@ -313,7 +375,8 @@ export default{
             formData.append('profile', this.profile);
             formData.append('password', this.temporary_password);
             formData.append('is_staff', this.is_staff);
-            formData.append('active', this.is_staff);
+            formData.append('is_active', this.is_staff);
+            formData.append('user_department', this.depID);
             // formData.append('image', this.image);
               
             this.axios
@@ -348,6 +411,7 @@ export default{
                 this.dob = "";
                 this.gender = "";
                 this.phone_number = "";
+                this.department = "";
                 this.profile = "";
                 this.image = null,
                 this.hideLoader();
@@ -364,6 +428,7 @@ export default{
         this.axios
         .get(`api/v1/systemusers/?page=${this.currentPage}`)
         .then((response)=>{
+          console.log("The staff are ",response.data.results);
           for(let i=0; i<response.data.results.length; i++){
             if(response.data.results[i].profile != "Super Admin" && response.data.results[i].profile != "Patient"){
               this.staffList.push(response.data.results[i]);
@@ -391,8 +456,9 @@ export default{
         let selectedStaff = arguments[0];
         this.staffID = this.staffList[selectedStaff].id;
         this.axios
-        .get(`api/v1/users/${this.staffID}/`)
+        .get(`api/v1/systemusers/${this.staffID}/`)
         .then((response)=>{
+          console.log("The response data is ",response.data);
             this.first_name = response.data.first_name;
             this.last_name = response.data.last_name;
             this.email = response.data.email;
@@ -402,6 +468,8 @@ export default{
             this.profile = response.data.profile;
             this.gender = response.data.gender;
             this.image = response.data.image;
+            this.departmentEditing = response.data.user_department;
+            console.log("The department is ",this.departmentEditing);
         })
         .catch((error)=>{
             console.log(error.message);
@@ -428,6 +496,7 @@ export default{
                     duration:5000,
                     dismissible: true
                 })
+                this.hideLoader();
             }
             else{
 
@@ -443,7 +512,7 @@ export default{
               formData.append('password', this.temporary_password);
               formData.append('is_staff', this.is_staff);
               formData.append('is_active', this.is_staff);
-              // formData.append('image', this.image);
+              formData.append('user_department', this.depUpdateID);
 
               this.axios
               .put("api/v1/users/"+this.staffID+"/", formData)
@@ -673,7 +742,7 @@ export default{
         searchStaff(){
             this.staffList = [];
             let formData = {
-              email: this.search_email,
+              user_department: this.search_user_department,
               name: this.search_name,
               is_active: this.status,
               identification_no: this.search_id_number,
@@ -761,7 +830,8 @@ export default{
             .finally(()=>{
                 this.hideLoader();
             })
-        }
+        },
+        
     },
     mounted(){
       this.fetchStaff();
@@ -782,4 +852,5 @@ export default{
 em{
   color: red;
 }
+
 </style>

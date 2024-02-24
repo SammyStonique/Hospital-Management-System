@@ -262,6 +262,7 @@ export default{
                     duration:5000,
                     dismissible: true
                 })
+                this.hideLoader();
             }
             else{
                 let formData = {

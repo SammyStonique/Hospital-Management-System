@@ -131,13 +131,14 @@ def generate_staff_excel(request):
     worksheet = workbook.add_sheet("Staff")
 
     row_num = 0
-    columns = ['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile']
+    columns = ['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile','Department']
+    style1 = xlwt.easyxf('font:bold 1')
     for col_num in range(len(columns)):
-        worksheet.write(row_num, col_num, columns[col_num])
+        worksheet.write(row_num, col_num, columns[col_num],style = style1)
 
     for stf in staff:
         row_num += 1
-        row = [stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile]
+        row = [stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile,stf.user_department.name]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -156,8 +157,8 @@ def generate_staff_csv(request):
     response['Content-Disposition'] = 'attachment; filename=Staff.csv'
 
     writer = csv.writer(response)
-    writer.writerow(['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile'])
+    writer.writerow(['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile','Department'])
 
     for stf in staff:
-        writer.writerow([stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile])
+        writer.writerow([stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile,stf.user_department.name])
     return response

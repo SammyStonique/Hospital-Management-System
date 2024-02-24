@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'lab_management',
     'patients_registration',
     'payroll',
+    'xtra',
     'statistical_data',
     'users.apps.UsersConfig',
     'django_filters'

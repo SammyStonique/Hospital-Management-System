@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
 from PIL import Image
+from xtra.models import Department
 
 
 class CustomAccountManager(BaseUserManager):
@@ -47,6 +48,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     phone_number = models.CharField(max_length=250)
     profile = models.CharField(max_length=250,choices=PROFILES,default='',blank=True)
     image = models.ImageField(default='default.png', upload_to='profile_pics')
+    user_department = models.ForeignKey(Department, related_name='user_departments', on_delete=models.DO_NOTHING, blank=True)
     is_staff = models.BooleanField(default= False)
     is_active = models.BooleanField(default= False)
     start_date = models.DateTimeField(auto_now_add=True)
@@ -54,7 +56,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','image','is_staff','is_active']
+    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','image','is_staff','is_active','user_department']
 
     def __str__(self):
         return f'{self.email}'
