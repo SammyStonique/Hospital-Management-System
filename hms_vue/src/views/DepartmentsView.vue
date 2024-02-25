@@ -213,7 +213,15 @@ export default{
             depResults: [],
             newDepList: [],
             depList: [],
+            manager_department: 0,
+            manager_user: 0,
+            manager_start_date: "",
+            manager_phone_number: "",
+            manager_status: "",
+            manager_id: 0,
             managerList: [],
+            managerArr: [],
+            newManagerArr: [],
             pageCount: 0,
             showNextBtn: false,
             showPreviousBtn: false,
@@ -259,6 +267,10 @@ export default{
         }
       },
       showModal(){
+        if(this.isEditing == false){
+          this.dep_code = "";
+          this.dep_name = "";
+        }
         this.isModalVisible = !this.isModalVisible;
       },
       showManagerModal(){
@@ -272,8 +284,6 @@ export default{
       closeModal(){
         this.isModalVisible = false;
         this.isEditing = false;
-        this.dep_code = "";
-        this.dep_name = "";
       },
       closeManagerModal(){
         this.managerModalVisible = false;
@@ -341,13 +351,14 @@ export default{
                     this.axios
                     .get(`api/v1/get-manager/${this.newDepList[i].id}`)
                     .then((response)=>{
+                       
                         if(response.data.managers.length){
                             this.managerList = response.data.managers[0];
                             this.newDepList[i] = this.managerList;
                         }
                     })
                     .catch((error)=>{
-                        console.log(error.message);
+                        // console.log(error.message);
                     })
                 }
                 this.depList = this.newDepList;
@@ -357,6 +368,7 @@ export default{
             this.isEditing = true;
             let selectedDepartment = arguments[0];
             this.depID = this.depList[selectedDepartment].id;
+            console.log("The depList is ",this.depList);
             this.axios
             .get(`api/v1/department-details/${this.depID}/`)
             .then((response)=>{
@@ -571,24 +583,72 @@ export default{
                 .post("api/v1/manager-list/", formData)
                 .then((response)=>{
                     console.log(response.data);
-                    this.$toast.success("Manager Added Succesfully",{
-                    duration: 3000,
-                    dismissible: true
-                })
+                    
                 })
                 .catch((error)=>{
                     console.log(error.message);
                 })
                 .finally(()=>{
-                    this.department = "";
-                    this.user = "";
-                    this.start_date = "";
-                    this.end_date = "";
-                    this.status = "";
-                    this.phone_number = "";
-                    this.hideLoader();
-                    this.closeManagerModal();
-                    this.$store.commit('reloadingPage');
+                    this.axios
+                    .get("api/v1/manager-list/")
+                    .then((response)=>{
+                        this.managerArr = response.data.results;
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                    .finally(()=>{
+                        for(let i=1; i<this.managerArr.length; i++){
+                            if(this.managerArr[i].department == this.managerDepID){
+                                this.newManagerArr.push(this.managerArr[i]);
+                            }
+                        }
+                        this.manager_status= "Inactive";
+                        this.manager_department = this.newManagerArr[0].department;
+                        this.manager_user = this.newManagerArr[0].user;
+                        this.manager_phone_number = this.newManagerArr[0].phone_number;
+                        this.manager_start_date = this.newManagerArr[0].start_date;
+                        this.manager_id = this.newManagerArr[0].id;
+
+                        let formData = {
+                            department: this.manager_department,
+                            user: this.manager_user,
+                            start_date: this.manager_start_date,
+                            phone_number: this.manager_phone_number,
+                            end_date: this.start_date,
+                            status: this.manager_status,
+                        }
+                        this.axios
+                           .put("api/v1/manager-details/"+this.manager_id+"/", formData)
+                           .then((response)=>{
+
+                           })
+                           .catch((error)=>{
+                            console.log(error.message);
+                           })
+                           .finally(()=>{
+                                this.$toast.success("Manager Added Succesfully",{
+                                    duration: 3000,
+                                    dismissible: true
+                                })
+                                this.department = "";
+                                this.user = "";
+                                this.start_date = "";
+                                this.end_date = "";
+                                this.status = "";
+                                this.phone_number = "";
+                                this.manager_status= "Inactive";
+                                this.manager_department = 0;
+                                this.manager_user = 0;
+                                this.manager_phone_number = "";
+                                this.manager_start_date = "";
+                                this.manager_id = 0;
+                                this.hideLoader();
+                                this.closeManagerModal();
+                                this.$store.commit('reloadingPage');
+                           })
+                    })
+                    
                 })
             }
         },

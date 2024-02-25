@@ -19,3 +19,9 @@ class ManagerSerializer(serializers.ModelSerializer):
         manager = Manager.objects.create(**validated_data)
             
         return manager
+    
+    def update(self, instance, validated_data):
+        instance.status = validated_data.get('status', instance.status)
+
+        instance.save()
+        return instance

@@ -187,6 +187,7 @@ def getManager(request,dep_id):
 
     if len(manager):
         obj = {
+            "id":department.id,
             "code": department.code,
             "name": department.name,
             "manager_first_name": manager[0].user.first_name,
