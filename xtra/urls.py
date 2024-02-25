@@ -15,6 +15,4 @@ urlpatterns = [
     path("export-departments-pdf/", views.generate_departments_pdf, name="export-departments-pdf"),
     path("export-departments-excel/", views.generate_departments_excel, name="export-departments-excel"),
     path("export-departments-csv/", views.generate_departments_csv, name="export-departments-csv"),
-    path("manager-list/", views.ManagerList.as_view()),
-    path("manager-details/<int:id>/", views.ManagerDetails.as_view()),
 ]

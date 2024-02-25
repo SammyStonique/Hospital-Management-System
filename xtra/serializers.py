@@ -18,13 +18,3 @@ class DepartmentSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-class ManagerSerializer(serializers.ModelSerializer):
-    department = serializers.ReadOnlyField(source='department.name')
-    class Meta:
-        model = Manager
-        fields = ['id','name','start_date','phone_number','department','end_date','status']
-
-    def create(self, validated_data):
-        manager = Manager.objects.create(**validated_data)
-            
-        return manager

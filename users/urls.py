@@ -20,4 +20,7 @@ urlpatterns = [
     path("export-staff-pdf/", views.generate_staff_pdf, name="export-staff-pdf"),
     path("export-staff-excel/", views.generate_staff_excel, name="export-staff-excel"),
     path("export-staff-csv/", views.generate_staff_csv, name="export-staff-csv"),
+    path("manager-list/", views.ManagerList.as_view()),
+    path("manager-details/<int:pk>/", views.ManagerDetails.as_view()),
+    path("get-manager/<int:dep_id>/", views.getManager, name="get-manager")
 ]

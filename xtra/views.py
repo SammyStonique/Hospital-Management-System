@@ -2,6 +2,7 @@ import os
 from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse
 from .models import *
+from users.models import Manager
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -48,7 +49,30 @@ class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DepartmentSerializer
 
 def generate_departments_pdf(request):
-    departments = Department.objects.all()
+    departments = []
+    departmentList = Department.objects.all()
+    empty = ""
+
+    for department in departmentList:
+        manager = Manager.objects.filter(department=department)
+        if len(manager):
+            obj = {
+                "code": department.code,
+                "name": department.name,
+                "manager_first_name": manager[0].user.first_name,
+                "manager_last_name": manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departments.append(obj)
+        else:
+            obj = {
+                "code": department.code,
+                "name": department.name,
+                "manager_first_name": empty,
+                "manager_last_name": empty,
+                "start_date": empty
+            }
+            departments.append(obj)
 
     context = {"departments":departments}
 
@@ -76,7 +100,29 @@ def generate_departments_pdf(request):
     return response
 
 def generate_departments_excel(request):
-    departments = Department.objects.all()
+    departments = []
+    departmentList = Department.objects.all()
+    empty = ""
+
+    for department in departmentList:
+        manager = Manager.objects.filter(department=department)
+        if len(manager):
+            obj = {
+                "code": department.code,
+                "name": department.name,
+                "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departments.append(obj)
+        else:
+            obj = {
+                "code": department.code,
+                "name": department.name,
+                "manager_name": empty,
+                "start_date": empty
+            }
+            departments.append(obj)
+
 
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=Departments.xls'
@@ -93,7 +139,7 @@ def generate_departments_excel(request):
 
     for dep in departments:
         row_num += 1
-        row = [dep.code,dep.name]
+        row = [dep['code'],dep['name'],dep['manager_name'],dep['start_date']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -101,7 +147,28 @@ def generate_departments_excel(request):
     return response
 
 def generate_departments_csv(request):
-    departments = Department.objects.all()
+    departments = []
+    departmentList = Department.objects.all()
+    empty = ""
+
+    for department in departmentList:
+        manager = Manager.objects.filter(department=department)
+        if len(manager):
+            obj = {
+                "code": department.code,
+                "name": department.name,
+                "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departments.append(obj)
+        else:
+            obj = {
+                "code": department.code,
+                "name": department.name,
+                "manager_name": empty,
+                "start_date": empty
+            }
+            departments.append(obj)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=Departments.csv'
@@ -110,15 +177,5 @@ def generate_departments_csv(request):
     writer.writerow(['Code', 'Name', 'Manager', 'Start Date'])
 
     for dep in departments:
-        writer.writerow([dep.code, dep.name])
+        writer.writerow([dep['code'],dep['name'],dep['manager_name'],dep['start_date']])
     return response
-
-            #MANAGER VIEWS
-    
-class ManagerList(generics.ListCreateAPIView):
-    queryset = Manager.objects.all()
-    serializer_class = ManagerSerializer
-
-class ManagerDetails(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Manager.objects.all()
-    serializer_class = ManagerSerializer

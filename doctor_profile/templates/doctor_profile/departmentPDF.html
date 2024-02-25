@@ -23,8 +23,8 @@
 				<td></td>
 				<td>{{ dep.code }}</td>
 				<td>{{ dep.name }}</td>
-				<td>{{ manager }}</td>
-				<td>{{ start_date }}</td>
+				<td>{{ dep.manager_first_name }} {{ dep.manager_last_name }}</td>
+				<td>{{ dep.start_date }}</td>
 			</tr>
 			{% endfor %}
 		</tbody>

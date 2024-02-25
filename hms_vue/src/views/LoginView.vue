@@ -5,7 +5,7 @@
                 <div class="text-center grid place-items-center">
                     <div class="flex w-36">
                     <div class="w-1/2 rounded-full">
-                        <img src="@/assets/download.png" alt="Logo" class="">
+                        <img src="@/assets/logo.jpeg" alt="Logo" class="">
                     </div>
                     <div class="w-1/2 pl-2">
                         <h4 class="text-2xl py-4">K.H.S</h4>

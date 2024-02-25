@@ -72,6 +72,56 @@
                     </template>
                     <template v-slot:footer> HMS. </template>
                 </Modal>
+                <!-- MODAL component for adding a new manager -->
+                <Modal v-show="managerModalVisible" @close="closeManagerModal" :index="index">
+                    <template v-slot:header> Manager Details </template>
+                    <template v-slot:body>
+                    <form action="" @submit.prevent="">
+                        <div class="flex mb-4">
+                            <div class="basis-1/2 mr-4">
+                                <label for="">Department<em>*</em></label><br />
+                                <input type="text" name="" disabled id="" class="rounded border border-gray-600 bg-gray-200 text-lg pl-2" placeholder="Department" v-model="department">
+                            </div>
+                            <div class="basis-1/2">
+                                <label for="">Manager<em>*</em></label><br />
+                                <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="manager">
+                                    <option value="" disabled selected>---Select Manager---</option> 
+                                    <option v-for="stf in staffArray">{{stf.first_name}}  {{stf.last_name}} - #{{ stf.identification_no }}</option> 
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex mb-4">
+                            <div class="basis-1/2 mr-4">
+                                <label for="">Start Date<em>*</em></label><br />
+                                <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="start_date">
+                            </div>
+                            <div class="basis-1/2">
+                                <label for="">End Date<em></em></label><br />
+                                <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="end_date">
+                            </div>
+                        </div>
+                        <div class="flex mb-4">
+                            <div class="basis-1/2 mr-4">
+                                <label for="">Phone Number<em>*</em></label><br />
+                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" placeholder="e.g 07XXXX" v-model="phone_number">
+                            </div>
+                            <div class="basis-1/2">
+                                <label for="">Status<em>*</em></label><br />
+                                <select name="" ref="" id="" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60"  v-model="status">
+                                  <option value="" selected disabled>---Select Status</option>
+                                  <option value="Active">Active</option>
+                                  <option value="Inactive">Inactive</option> 
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createManager">Save</button>
+                        </div>
+
+                    </form>
+                    </template>
+                    <template v-slot:footer> HMS. </template>
+                </Modal>
                 <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8">
                     <table class="min-w-full bg-white"> 
                         <thead class="bg-gray-800 text-white">
@@ -90,15 +140,15 @@
                             <td>{{ index + 1 }}.</td>
                             <td class="text-left py-3 px-4">{{ det.code }}</td>
                             <td class="text-left py-3 px-4">{{ det.name }}</td>
-                            <td class="text-left py-3 px-4"></td>
-                            <td class="text-left py-3 px-4"></td>
+                            <td class="text-left py-3 px-4">{{ det.manager_first_name }} {{ det.manager_last_name }}</td>
+                            <td class="text-left py-3 px-4">{{ det.start_date }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/3">
                                         <button @click="editDepartment(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
                                     </div>
                                     <div class="basis-1/3">
-                                        <button><i class="fa fa-plus-square-o" aria-hidden="true" title="Add Manager"></i></button>
+                                        <button @click="showManagerModal(index)"><i class="fa fa-plus-square-o" aria-hidden="true" title="Add Manager"></i></button>
                                     </div>
                                     <div class="basis-1/3">
                                         <button @click="removeDepartment(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
@@ -134,6 +184,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBar from '@/components/SideBar.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import { getTransitionRawChildren } from 'vue'
 
 
 export default{
@@ -143,22 +194,33 @@ export default{
         return{
             title: 'Departments',
             isModalVisible: false,
+            managerModalVisible: false,
             dep_code: "",
             dep_name: "",
+            department: "",
             start_date: "",
+            end_date: "",
+            manager: "",
+            phone_number: "",
+            status: "",
             isEditing: false,
-            depID: "",
+            depID: 0,
+            managerDepID: 0,
+            userID: 0,
             currentPage: 1,
             depCount: 0,
             depArrLen: 0,
             depResults: [],
+            newDepList: [],
             depList: [],
+            managerList: [],
             pageCount: 0,
             showNextBtn: false,
             showPreviousBtn: false,
             code: '',
             name: '',
             showOptions: false,
+            staffArray: [],
         }
     },
     components: {
@@ -169,14 +231,57 @@ export default{
         Loader
     },
     methods:{
+        fetchStaff(department){
+        this.staffArray = [];
+        this.axios
+        .get("api/v1/user-list/")
+        .then((response)=>{
+            for(let i=0; i<response.data.results.length; i++){
+                if(response.data.results[i].profile != "Super Admin" && response.data.results[i].profile != "Patient" && response.data.results[i].user_department == department  ){
+                    this.staffArray.push(response.data.results[i]);
+                }
+            }
+        })
+        .catch((error)=>{
+          console.log(error.message)
+        })
+        .finally(()=>{
+          
+        })
+      },
+      setUserID(){
+        this.userID = 0;
+        if(this.$refs.userSelect.selectedIndex > 0){
+            this.selectedDep = this.$refs.userSelect.selectedIndex - 1;
+            this.userID = this.staffArray[this.selectedDep].id;
+            this.phone_number = this.staffArray[this.selectedDep].phone_number;
+            let userName = this.staffArray[this.selectedDep].first_name;
+        }
+      },
       showModal(){
         this.isModalVisible = !this.isModalVisible;
+      },
+      showManagerModal(){
+        this.scrollToTop();
+        let selectedDepartment = arguments[0];
+        this.department = this.depList[selectedDepartment].name;
+        this.managerDepID = this.depList[selectedDepartment].id;
+        this.managerModalVisible = !this.managerModalVisible;
+        this.fetchStaff(this.department);
       },
       closeModal(){
         this.isModalVisible = false;
         this.isEditing = false;
         this.dep_code = "";
         this.dep_name = "";
+      },
+      closeManagerModal(){
+        this.managerModalVisible = false;
+        this.manager = "";
+        this.start_date = "";
+        this.end_date = "";
+        this.phone_number = "";
+        this.status = "";
       },
       createDepartment(){
         this.showLoader();
@@ -215,9 +320,9 @@ export default{
             this.axios
             .get(`api/v1/departments/?page=${this.currentPage}`)
             .then((response)=>{
-                this.depList = response.data.results;
+                this.newDepList = response.data.results;
                 this.depResults = response.data;
-                this.depArrLen = this.depList.length;
+                this.depArrLen = this.newDepList.length;
                 this.depCount = this.depResults.count;
                 this.pageCount = Math.ceil(this.depCount / 10);
 
@@ -232,7 +337,20 @@ export default{
                 console.log(error.message);
             })
             .finally(()=>{
-
+                for(let i=0; i<this.newDepList.length; i++){
+                    this.axios
+                    .get(`api/v1/get-manager/${this.newDepList[i].id}`)
+                    .then((response)=>{
+                        if(response.data.managers.length){
+                            this.managerList = response.data.managers[0];
+                            this.newDepList[i] = this.managerList;
+                        }
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                }
+                this.depList = this.newDepList;
             })
         },
         editDepartment(){
@@ -428,7 +546,52 @@ export default{
             .finally(()=>{
                 this.hideLoader();
             })
-        }
+        },
+
+        // MANAGER METHODS
+        createManager(){
+            this.showLoader();
+            if(this.department === '' || this.manager === '' || this.start_date === ''
+                 || this.phone_number === '' || this.status === ''){
+                this.$toast.error("Please Enter Manager Details",{
+                    duration: 3000,
+                    dismissible: true
+                })
+                this.hideLoader();
+            }
+            else{
+                let formData = {
+                    department: this.managerDepID,
+                    user: this.userID,
+                    start_date: this.start_date,
+                    phone_number: this.phone_number,
+                    status: this.status,
+                }
+                this.axios
+                .post("api/v1/manager-list/", formData)
+                .then((response)=>{
+                    console.log(response.data);
+                    this.$toast.success("Manager Added Succesfully",{
+                    duration: 3000,
+                    dismissible: true
+                })
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    this.department = "";
+                    this.user = "";
+                    this.start_date = "";
+                    this.end_date = "";
+                    this.status = "";
+                    this.phone_number = "";
+                    this.hideLoader();
+                    this.closeManagerModal();
+                    this.$store.commit('reloadingPage');
+                })
+            }
+        },
     },
     mounted(){
         this.fetchDepartments();

@@ -7,7 +7,7 @@ import re
 import json
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import *
 from .serializers import *
 from rest_framework.views import APIView
@@ -39,6 +39,11 @@ class BasePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
+class DefaultPagination(PageNumberPagination):
+    page_size = 1000
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
             #DOCTORS VIEWS
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -49,6 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class UserList(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = DefaultPagination
 
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
@@ -162,3 +168,35 @@ def generate_staff_csv(request):
     for stf in staff:
         writer.writerow([stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile,stf.user_department.name])
     return response
+
+            #MANAGER VIEWS
+    
+class ManagerList(generics.ListCreateAPIView):
+    queryset = Manager.objects.all()
+    serializer_class = ManagerSerializer
+
+class ManagerDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Manager.objects.all()
+    serializer_class = ManagerSerializer
+
+@csrf_exempt
+def getManager(request,dep_id):
+    managersList = []
+    department = get_object_or_404(Department, id=dep_id)
+    manager = Manager.objects.filter(status="Active",department=department)
+
+    if len(manager):
+        obj = {
+            "code": department.code,
+            "name": department.name,
+            "manager_first_name": manager[0].user.first_name,
+            "manager_last_name": manager[0].user.last_name,
+            "start_date": manager[0].start_date.strftime("%d %b, %Y")
+        }
+        managersList.append(obj)
+
+        return JsonResponse({'managers': managersList})
+    else:
+        return HttpResponse("The manager's status is inactive")
+
+    
