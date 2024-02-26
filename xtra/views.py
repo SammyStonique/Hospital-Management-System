@@ -18,6 +18,10 @@ import xlwt
 #CSV
 import csv
 
+import json
+from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+
 # Create your views here.
 
         #PAGINATION
@@ -48,17 +52,74 @@ class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
+# def generate_departments_pdf(request):
+#     departments = []
+#     departmentList = Department.objects.all()
+#     empty = ""
+
+#     for department in departmentList:
+#         manager = Manager.objects.filter(department=department)
+#         if len(manager):
+#             obj = {
+#                 "code": department.code,
+#                 "name": department.name,
+#                 "manager_first_name": manager[0].user.first_name,
+#                 "manager_last_name": manager[0].user.last_name,
+#                 "start_date": manager[0].start_date.strftime("%d %b, %Y")
+#             }
+#             departments.append(obj)
+#         else:
+#             obj = {
+#                 "code": department.code,
+#                 "name": department.name,
+#                 "manager_first_name": empty,
+#                 "manager_last_name": empty,
+#                 "start_date": empty
+#             }
+#             departments.append(obj)
+
+#     context = {"departments":departments}
+
+#     template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/doctor_profile/templates/doctor_profile')
+#     template_env = jinja2.Environment(loader=template_loader)
+
+#     template  = template_env.get_template('departmentPDF.html')
+#     output_text = template.render(context)
+
+#     config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+#     options={"enable-local-file-access": None,
+#              }
+
+#     pdfkit.from_string(output_text, 'Departments.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/doctor_profile/static/doctor_profile/departmentPDF.css")
+
+#     path = 'Departments.pdf'
+#     with open(path, 'rb') as pdf:
+#         contents = pdf.read()
+
+#     response = HttpResponse(contents, content_type='application/pdf')
+
+#     response['Content-Disposition'] = 'attachment; filename=Departments.pdf'
+#     pdf.close()
+#     os.remove("Departments.pdf")  # remove the locally created pdf file.
+#     return response
+
+@csrf_exempt   
 def generate_departments_pdf(request):
     departments = []
-    departmentList = Department.objects.all()
     empty = ""
+    data = json.loads(request.body)
+    code = data['code']
+    name = data['name']
 
-    for department in departmentList:
-        manager = Manager.objects.filter(department=department)
+    departList = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+
+    for dep in departList:
+        manager = Manager.objects.filter(department=dep)
         if len(manager):
             obj = {
-                "code": department.code,
-                "name": department.name,
+                "id": dep.id,
+                "code": dep.code,
+                "name": dep.name,
                 "manager_first_name": manager[0].user.first_name,
                 "manager_last_name": manager[0].user.last_name,
                 "start_date": manager[0].start_date.strftime("%d %b, %Y")
@@ -66,8 +127,9 @@ def generate_departments_pdf(request):
             departments.append(obj)
         else:
             obj = {
-                "code": department.code,
-                "name": department.name,
+                "id": dep.id,
+                "code": dep.code,
+                "name": dep.name,
                 "manager_first_name": empty,
                 "manager_last_name": empty,
                 "start_date": empty
@@ -99,25 +161,32 @@ def generate_departments_pdf(request):
     os.remove("Departments.pdf")  # remove the locally created pdf file.
     return response
 
+@csrf_exempt
 def generate_departments_excel(request):
     departments = []
-    departmentList = Department.objects.all()
     empty = ""
+    data = json.loads(request.body)
+    code = data['code']
+    name = data['name']
 
-    for department in departmentList:
-        manager = Manager.objects.filter(department=department)
+    departList = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+
+    for dep in departList:
+        manager = Manager.objects.filter(department=dep)
         if len(manager):
             obj = {
-                "code": department.code,
-                "name": department.name,
+                "id": dep.id,
+                "code": dep.code,
+                "name": dep.name,
                 "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
                 "start_date": manager[0].start_date.strftime("%d %b, %Y")
             }
             departments.append(obj)
         else:
             obj = {
-                "code": department.code,
-                "name": department.name,
+                "id": dep.id,
+                "code": dep.code,
+                "name": dep.name,
                 "manager_name": empty,
                 "start_date": empty
             }
@@ -146,25 +215,32 @@ def generate_departments_excel(request):
     workbook.save(response)
     return response
 
+@csrf_exempt
 def generate_departments_csv(request):
     departments = []
-    departmentList = Department.objects.all()
     empty = ""
+    data = json.loads(request.body)
+    code = data['code']
+    name = data['name']
 
-    for department in departmentList:
-        manager = Manager.objects.filter(department=department)
+    departList = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+
+    for dep in departList:
+        manager = Manager.objects.filter(department=dep)
         if len(manager):
             obj = {
-                "code": department.code,
-                "name": department.name,
+                "id": dep.id,
+                "code": dep.code,
+                "name": dep.name,
                 "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
                 "start_date": manager[0].start_date.strftime("%d %b, %Y")
             }
             departments.append(obj)
         else:
             obj = {
-                "code": department.code,
-                "name": department.name,
+                "id": dep.id,
+                "code": dep.code,
+                "name": dep.name,
                 "manager_name": empty,
                 "start_date": empty
             }

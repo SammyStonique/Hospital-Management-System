@@ -114,7 +114,10 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center" v-if="hasManager">
+                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="replaceManager">Replace</button>
+                        </div>
+                        <div class="text-center" v-else>
                             <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createManager">Save</button>
                         </div>
 
@@ -147,8 +150,11 @@
                                     <div class="basis-1/3">
                                         <button @click="editDepartment(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
                                     </div>
-                                    <div class="basis-1/3">
+                                    <div class="basis-1/3" v-if="!det.manager_first_name">
                                         <button @click="showManagerModal(index)"><i class="fa fa-plus-square-o" aria-hidden="true" title="Add Manager"></i></button>
+                                    </div>
+                                    <div class="basis-1/3" v-else>
+                                        <button @click="showReplaceManagerModal(index)"><i class="fa fa-plus-square-o" aria-hidden="true" title="Replace Manager"></i></button>
                                     </div>
                                     <div class="basis-1/3">
                                         <button @click="removeDepartment(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
@@ -201,6 +207,7 @@ export default{
             start_date: "",
             end_date: "",
             manager: "",
+            hasManager: false,
             phone_number: "",
             status: "",
             isEditing: false,
@@ -230,6 +237,7 @@ export default{
             name: '',
             showOptions: false,
             staffArray: [],
+            empty: "",
         }
     },
     components: {
@@ -275,6 +283,15 @@ export default{
         this.isModalVisible = !this.isModalVisible;
       },
       showManagerModal(){
+        this.scrollToTop();
+        let selectedDepartment = arguments[0];
+        this.department = this.depList[selectedDepartment].name;
+        this.managerDepID = this.depList[selectedDepartment].id;
+        this.managerModalVisible = !this.managerModalVisible;
+        this.fetchStaff(this.department);
+      },
+      showReplaceManagerModal(){
+        this.hasManager = true;
         this.scrollToTop();
         let selectedDepartment = arguments[0];
         this.department = this.depList[selectedDepartment].name;
@@ -549,8 +566,12 @@ export default{
         },
         exportDepartmentsPDF(){
             this.showLoader();
+            let formData = {
+                code: this.code,
+                name: this.name
+            }
             this.axios
-            .get("api/v1/export-departments-pdf/", { responseType: 'blob' })
+            .post("api/v1/export-departments-pdf/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -570,8 +591,12 @@ export default{
         },
         exportDepartmentsExcel(){
             this.showLoader();
+            let formData = {
+                code: this.code,
+                name: this.name
+            }
             this.axios
-            .get("api/v1/export-departments-excel/", { responseType: 'blob' })
+            .post("api/v1/export-departments-excel/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -591,8 +616,12 @@ export default{
         },
         exportDepartmentsCSV(){
             this.showLoader();
+            let formData = {
+                code: this.code,
+                name: this.name
+            }
             this.axios
-            .get("api/v1/export-departments-csv/", { responseType: 'blob' })
+            .post("api/v1/export-departments-csv/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -613,6 +642,51 @@ export default{
 
         // MANAGER METHODS
         createManager(){
+            this.showLoader();
+            if(this.department === '' || this.manager === '' || this.start_date === ''
+                 || this.phone_number === '' || this.status === ''){
+                this.$toast.error("Please Enter Manager Details",{
+                    duration: 3000,
+                    dismissible: true
+                })
+                this.hideLoader();
+            }
+            else{
+                let formData = {
+                    department: this.managerDepID,
+                    user: this.userID,
+                    start_date: this.start_date,
+                    phone_number: this.phone_number,
+                    status: this.status,
+                }
+                this.axios
+                .post("api/v1/manager-list/", formData)
+                .then((response)=>{
+                    
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    this.$toast.success("Manager Added Succesfully",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                    this.department = "";
+                    this.user = "";
+                    this.start_date = "";
+                    this.end_date = "";
+                    this.status = "";
+                    this.phone_number = "";
+                    this.hideLoader();
+                    this.closeManagerModal();
+                    this.$store.commit('reloadingPage');
+                    
+                })
+            }
+        },
+        replaceManager(){
+
             this.showLoader();
             if(this.department === '' || this.manager === '' || this.start_date === ''
                  || this.phone_number === '' || this.status === ''){
@@ -692,6 +766,7 @@ export default{
                                 this.manager_phone_number = "";
                                 this.manager_start_date = "";
                                 this.manager_id = 0;
+                                this.hasManager = false;
                                 this.hideLoader();
                                 this.closeManagerModal();
                                 this.$store.commit('reloadingPage');
@@ -701,6 +776,7 @@ export default{
                 })
             }
         },
+        
     },
     mounted(){
         this.fetchDepartments();

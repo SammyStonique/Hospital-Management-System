@@ -17,6 +17,10 @@ import xlwt
 #CSV
 import csv
 
+import json
+from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+
 
 # Create your views here.
 
@@ -48,8 +52,34 @@ class DoctorDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
 
+@csrf_exempt   
 def generate_doctors_pdf(request):
-    doctors = Doctor.objects.all()
+    doctors = []
+    data = json.loads(request.body)
+    first_name = data['first_name']
+    last_name = data['last_name']
+    specialization = data['specialization']
+    department = data['department']
+    payroll_number = data['payroll_number']
+    phone_number = data['phone_number']
+
+    doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
+                                & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
+
+    
+
+    for doct in doctorsList:
+        obj = {
+            "id": doct.id,
+            "email": doct.email,
+            "first_name": doct.first_name,
+            "last_name": doct.last_name,
+            "specialization": doct.specialization,
+            "payroll_number": doct.payroll_number,
+            "phone_number": doct.phone_number,
+            "department": doct.department.name,
+        }
+        doctors.append(obj)
 
     context = {"doctors":doctors}
 
@@ -76,8 +106,34 @@ def generate_doctors_pdf(request):
     os.remove("Doctors.pdf")  # remove the locally created pdf file.
     return response
 
+@csrf_exempt  
 def generate_doctors_excel(request):
-    doctors = Doctor.objects.all()
+    doctors = []
+    data = json.loads(request.body)
+    first_name = data['first_name']
+    last_name = data['last_name']
+    specialization = data['specialization']
+    department = data['department']
+    payroll_number = data['payroll_number']
+    phone_number = data['phone_number']
+
+    doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
+                                & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
+
+    
+
+    for doct in doctorsList:
+        obj = {
+            "id": doct.id,
+            "email": doct.email,
+            "first_name": doct.first_name,
+            "last_name": doct.last_name,
+            "specialization": doct.specialization,
+            "payroll_number": doct.payroll_number,
+            "phone_number": doct.phone_number,
+            "department": doct.department.name,
+        }
+        doctors.append(obj)
 
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=Doctors.xls'
@@ -94,15 +150,41 @@ def generate_doctors_excel(request):
 
     for doct in doctors:
         row_num += 1
-        row = [doct.first_name,doct.last_name,doct.email,doct.payroll_number,doct.phone_number,doct.department.name,doct.specialization]
+        row = [doct['first_name'],doct['last_name'],doct['email'],doct['payroll_number'],doct['phone_number'],doct['department'],doct['specialization']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
     workbook.save(response)
     return response
 
+@csrf_exempt
 def generate_doctors_csv(request):
-    doctors = Doctor.objects.all()
+    doctors = []
+    data = json.loads(request.body)
+    first_name = data['first_name']
+    last_name = data['last_name']
+    specialization = data['specialization']
+    department = data['department']
+    payroll_number = data['payroll_number']
+    phone_number = data['phone_number']
+
+    doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
+                                & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
+
+    
+
+    for doct in doctorsList:
+        obj = {
+            "id": doct.id,
+            "email": doct.email,
+            "first_name": doct.first_name,
+            "last_name": doct.last_name,
+            "specialization": doct.specialization,
+            "payroll_number": doct.payroll_number,
+            "phone_number": doct.phone_number,
+            "department": doct.department.name,
+        }
+        doctors.append(obj)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=Doctors.csv'
@@ -111,5 +193,5 @@ def generate_doctors_csv(request):
     writer.writerow(['First Name', 'Last Name', 'Email', 'Payroll Number','Phone Number','Department','Specialization'])
 
     for doct in doctors:
-        writer.writerow([doct.first_name,doct.last_name,doct.email,doct.payroll_number,doct.phone_number,doct.department.name,doct.specialization])
+        writer.writerow([doct['first_name'],doct['last_name'],doct['email'],doct['payroll_number'],doct['phone_number'],doct['department'],doct['specialization']])
     return response

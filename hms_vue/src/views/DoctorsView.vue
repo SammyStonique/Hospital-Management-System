@@ -223,6 +223,7 @@ export default{
       selectedUpdateDep: 0,
       depID: 0,
       depUpdateID: 0,
+      isSearching: false,
     }
   },
     components: {
@@ -510,34 +511,68 @@ export default{
             });
         },
         loadNext(){
-            if(this.currentPage >= this.pageCount){
-                this.currentPage = this.pageCount;
-            }else if(this.currentPage < this.pageCount){
-                this.currentPage += 1;
+          if(this.isSearching){
+                if(this.currentPage >= this.pageCount){
+                    this.currentPage = this.pageCount;
+                }else if(this.currentPage < this.pageCount){
+                    this.currentPage += 1;
+                }
+
+                this.searchDoctor();
+
             }
-            this.fetchDoctor();
+            else{
+                if(this.currentPage >= this.pageCount){
+                    this.currentPage = this.pageCount;
+                }else if(this.currentPage < this.pageCount){
+                    this.currentPage += 1;
+                }
+
+                this.fetchDoctor();
+            }
         },
         loadPrev(){
-            if (this.currentPage <= 1){
-                this.currentPage = 1;
+          if(this.isSearching){
+                if (this.currentPage <= 1){
+                    this.currentPage = 1;
+                }else{
+                    this.currentPage -= 1;
+                }
+                
+                this.searchDoctor();
+
             }else{
-                this.currentPage -= 1;
+                if (this.currentPage <= 1){
+                    this.currentPage = 1;
+                }else{
+                    this.currentPage -= 1;
+                }
+                
+                this.fetchDoctor();
             }
-            this.fetchDoctor();
         },
         firstPage(){
-            if(this.pageCount > 1){
-              this.currentPage = 1;
-              this.fetchDoctor();
+          if(this.isSearching){
+                this.currentPage = 1;
+                this.searchDoctor();
+            }else{
+                this.currentPage = 1;
+                this.fetchDoctor();
             }
         },
         lastPage(){
-            if(this.pageCount > 1){
-              this.currentPage = this.pageCount;
-              this.fetchDoctor();
+          if(this.isSearching){
+                this.currentPage = this.pageCount;
+                this.searchDoctor();
+            }else{
+                this.currentPage = this.pageCount;
+                this.fetchDoctor();
             }
         },
         searchDoctor(){
+            this.isSearching = true;
+            this.showNextBtn = false;
+            this.showPreviousBtn = false;
             this.doctorsList = [];
             let formData = {
               first_name: this.search_first_name,
@@ -548,10 +583,22 @@ export default{
               phone_number: this.search_phone_number,
             }
             this.axios
-            .post("api/v1/doctor-search/",formData)
+            .post(`api/v1/doctor-search/?page=${this.currentPage}`,formData)
             .then((response)=>{
-                this.doctorsList = response.data.doctors;
-                this.doctArrLen = response.data.doctors.length;
+                this.doctorsList = response.data.results;
+                this.doctResults = response.data;
+                this.doctArrLen = this.doctorsList.length;
+                this.doctCount = this.doctResults.count;
+                this.pageCount = Math.ceil(this.doctCount / 10);
+                console.log("The arrLen is ",this.doctArrLen);
+                console.log("The count is ",this.doctCount);
+
+                if(response.data.next){
+                    this.showNextBtn = true;
+                }
+                if(response.data.previous){
+                    this.showPreviousBtn = true;
+                }
             })
             .catch((error)=>{
                 console.log(error);
@@ -562,8 +609,16 @@ export default{
         },
         exportDoctorPDF(){
             this.showLoader();
+            let formData = {
+              first_name: this.search_first_name,
+              last_name: this.search_last_name,
+              specialization: this.search_specialization,
+              department: this.search_doctor_department,
+              payroll_number: this.search_payroll_number,
+              phone_number: this.search_phone_number,
+            }
             this.axios
-            .get("api/v1/export-doctors-pdf/", { responseType: 'blob' })
+            .post("api/v1/export-doctors-pdf/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -583,8 +638,16 @@ export default{
         },
         exportDoctorExcel(){
             this.showLoader();
+            let formData = {
+              first_name: this.search_first_name,
+              last_name: this.search_last_name,
+              specialization: this.search_specialization,
+              department: this.search_doctor_department,
+              payroll_number: this.search_payroll_number,
+              phone_number: this.search_phone_number,
+            }
             this.axios
-            .get("api/v1/export-doctors-excel/", { responseType: 'blob' })
+            .post("api/v1/export-doctors-excel/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -604,8 +667,16 @@ export default{
         },
         exportDoctorCSV(){
             this.showLoader();
+            let formData = {
+              first_name: this.search_first_name,
+              last_name: this.search_last_name,
+              specialization: this.search_specialization,
+              department: this.search_doctor_department,
+              payroll_number: this.search_payroll_number,
+              phone_number: this.search_phone_number,
+            }
             this.axios
-            .get("api/v1/export-doctors-csv/", { responseType: 'blob' })
+            .post("api/v1/export-doctors-csv/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
