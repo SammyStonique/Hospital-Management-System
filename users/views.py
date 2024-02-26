@@ -13,6 +13,8 @@ from .serializers import *
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from datetime import datetime,timedelta
 #Pagination
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -178,6 +180,22 @@ class ManagerList(generics.ListCreateAPIView):
 class ManagerDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Manager.objects.all()
     serializer_class = ManagerSerializer
+
+@api_view(['PUT'])
+def replaceManager(request,manager_id):
+    manager = get_object_or_404(Manager, id=manager_id)
+    end_date = request.data.get('end_date')
+    serializer = ManagerSerializer(manager, data=request.data, partial=True)
+    new_end_date= (datetime.strptime(end_date, "%Y-%m-%d")- timedelta(days=1)).strftime("%Y-%m-%d")
+
+    if serializer.is_valid():
+        serializer.save(end_date=new_end_date)
+
+    else:
+        print(serializer.errors)    
+        
+    return Response(serializer.data)
+
 
 @csrf_exempt
 def getManager(request,dep_id):

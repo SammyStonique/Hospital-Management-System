@@ -84,6 +84,7 @@ class Manager(models.Model):
     end_date = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=250, choices=STATUS, default='')
 
+
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name} - {self.department.name} Manager'
     

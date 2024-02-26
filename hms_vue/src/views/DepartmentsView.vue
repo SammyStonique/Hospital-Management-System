@@ -204,6 +204,7 @@ export default{
             phone_number: "",
             status: "",
             isEditing: false,
+            isSearching: false,
             depID: 0,
             managerDepID: 0,
             userID: 0,
@@ -368,6 +369,7 @@ export default{
             this.isEditing = true;
             let selectedDepartment = arguments[0];
             this.depID = this.depList[selectedDepartment].id;
+            console.log("The depID is ",this.depID);
             console.log("The depList is ",this.depList);
             this.axios
             .get(`api/v1/department-details/${this.depID}/`)
@@ -452,42 +454,91 @@ export default{
             });
         },
         loadNext(){
-            if(this.currentPage >= this.pageCount){
-                this.currentPage = this.pageCount;
-            }else if(this.currentPage < this.pageCount){
-                this.currentPage += 1;
-            }
+            if(this.isSearching){
+                if(this.currentPage >= this.pageCount){
+                    this.currentPage = this.pageCount;
+                }else if(this.currentPage < this.pageCount){
+                    this.currentPage += 1;
+                }
 
-            this.fetchDepartments();
-        },
-        loadPrev(){
-            if (this.currentPage <= 1){
-                this.currentPage = 1;
-            }else{
-                this.currentPage -= 1;
+                this.searchDepartment();
+
+            }
+            else{
+                if(this.currentPage >= this.pageCount){
+                    this.currentPage = this.pageCount;
+                }else if(this.currentPage < this.pageCount){
+                    this.currentPage += 1;
+                }
+
+                this.fetchDepartments();
             }
             
-            this.fetchDepartments();
+        },
+        loadPrev(){
+            if(this.isSearching){
+                if (this.currentPage <= 1){
+                    this.currentPage = 1;
+                }else{
+                    this.currentPage -= 1;
+                }
+                
+                this.searchDepartment();
+
+            }else{
+                if (this.currentPage <= 1){
+                    this.currentPage = 1;
+                }else{
+                    this.currentPage -= 1;
+                }
+                
+                this.fetchDepartments();
+            }
+            
         },
         firstPage(){
-            this.currentPage = 1;
-            this.fetchDepartments();
+            if(this.isSearching){
+                this.currentPage = 1;
+                this.searchDepartment();
+            }else{
+                this.currentPage = 1;
+                this.fetchDepartments();
+            }
+            
         },
         lastPage(){
-            this.currentPage = this.pageCount;
-            this.fetchDepartments();
+            if(this.isSearching){
+                this.currentPage = this.pageCount;
+                this.searchDepartment();
+            }else{
+                this.currentPage = this.pageCount;
+                this.fetchDepartments();
+            }
+            
         },
         searchDepartment(){
+            this.isSearching = true;
+            this.showNextBtn = false;
+            this.showPreviousBtn = false;
             let formData = {
                 code: this.code,
                 name: this.name,
             }
             this.axios
-            .post("api/v1/department-search/",formData)
+            .post(`api/v1/department-search/?page=${this.currentPage}`,formData)
             .then((response)=>{
-                this.depList = response.data.departments;
-                this.depArrLen = response.data.departments.length;
-                // this.fetchDepartments();
+                this.depList = response.data.results;
+                this.depResults = response.data;
+                this.depArrLen = this.depList.length;
+                this.depCount = this.depResults.count;
+                this.pageCount = Math.ceil(this.depCount / 10);
+
+                if(response.data.next){
+                    this.showNextBtn = true;
+                }
+                if(response.data.previous){
+                    this.showPreviousBtn = true;
+                }
             })
             .catch((error)=>{
                 console.log(error);
@@ -582,7 +633,6 @@ export default{
                 this.axios
                 .post("api/v1/manager-list/", formData)
                 .then((response)=>{
-                    console.log(response.data);
                     
                 })
                 .catch((error)=>{
@@ -619,9 +669,8 @@ export default{
                             status: this.manager_status,
                         }
                         this.axios
-                           .put("api/v1/manager-details/"+this.manager_id+"/", formData)
+                           .put("api/v1/replace-manager/"+this.manager_id+"/", formData)
                            .then((response)=>{
-
                            })
                            .catch((error)=>{
                             console.log(error.message);

@@ -1,12 +1,18 @@
 import json
 from django.db.models import Q
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view
 
 from .models import *
 from users.models import *
 
+class BasePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+@api_view(['POST'])
 @csrf_exempt
 def departmentSearch(request):
     departList = []
@@ -21,6 +27,7 @@ def departmentSearch(request):
         manager = Manager.objects.filter(department=dep)
         if len(manager):
             obj = {
+                "id": dep.id,
                 "code": dep.code,
                 "name": dep.name,
                 "manager_first_name": manager[0].user.first_name,
@@ -30,6 +37,7 @@ def departmentSearch(request):
             departList.append(obj)
         else:
             obj = {
+                "id": dep.id,
                 "code": dep.code,
                 "name": dep.name,
                 "manager_first_name": empty,
@@ -38,4 +46,9 @@ def departmentSearch(request):
             }
             departList.append(obj)
 
-    return JsonResponse({'departments': departList})
+    pagination_class = BasePagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(departList, request)
+
+    return  paginator.get_paginated_response(page)

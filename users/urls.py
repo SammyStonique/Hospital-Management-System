@@ -22,5 +22,6 @@ urlpatterns = [
     path("export-staff-csv/", views.generate_staff_csv, name="export-staff-csv"),
     path("manager-list/", views.ManagerList.as_view()),
     path("manager-details/<int:pk>/", views.ManagerDetails.as_view()),
-    path("get-manager/<int:dep_id>/", views.getManager, name="get-manager")
+    path("get-manager/<int:dep_id>/", views.getManager, name="get-manager"),
+    path("replace-manager/<int:manager_id>/", views.replaceManager, name="replace-manager"),
 ]
