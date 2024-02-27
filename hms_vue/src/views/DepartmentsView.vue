@@ -43,7 +43,7 @@
                     <template v-slot:header> Department Details </template>
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
-                        <div class="flex mb-4">
+                        <div class="flex mb-6">
                         <div class="basis-1/2">
                             <label for="">Department ID<em>*</em></label>
                             <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="dep_code">
@@ -52,7 +52,7 @@
 
                         </div>
                     </div>
-                    <div class="flex mb-4">
+                    <div class="flex mb-6">
                         <div class="basis-1/2">
                             <label for="">Department Name<em>*</em></label><br />
                             <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="dep_name">
@@ -77,20 +77,20 @@
                     <template v-slot:header> Manager Details </template>
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
-                        <div class="flex mb-4">
+                        <div class="flex mb-6">
                             <div class="basis-1/2 mr-4">
                                 <label for="">Department<em>*</em></label><br />
                                 <input type="text" name="" disabled id="" class="rounded border border-gray-600 bg-gray-200 text-lg pl-2" placeholder="Department" v-model="department">
                             </div>
                             <div class="basis-1/2">
                                 <label for="">Manager<em>*</em></label><br />
-                                <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="manager">
+                                <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="manager">
                                     <option value="" disabled selected>---Select Manager---</option> 
                                     <option v-for="stf in staffArray">{{stf.first_name}}  {{stf.last_name}} - #{{ stf.identification_no }}</option> 
                                 </select>
                             </div>
                         </div>
-                        <div class="flex mb-4">
+                        <div class="flex mb-6">
                             <div class="basis-1/2 mr-4">
                                 <label for="">Start Date<em>*</em></label><br />
                                 <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="start_date">
@@ -100,14 +100,14 @@
                                 <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="end_date">
                             </div>
                         </div>
-                        <div class="flex mb-4">
+                        <div class="flex mb-6">
                             <div class="basis-1/2 mr-4">
                                 <label for="">Phone Number<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" placeholder="e.g 07XXXX" v-model="phone_number">
                             </div>
                             <div class="basis-1/2">
                                 <label for="">Status<em>*</em></label><br />
-                                <select name="" ref="" id="" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60"  v-model="status">
+                                <select name="" ref="" id="" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60"  v-model="status">
                                   <option value="" selected disabled>---Select Status</option>
                                   <option value="Active">Active</option>
                                   <option value="Inactive">Inactive</option> 
@@ -320,9 +320,15 @@ export default{
           })
         }
         else{
+            let new_dep_name = "";
+            let x = this.dep_name.split(" ");
+            for(let i=0; i<x.length; i++){
+                new_dep_name += x[i][0].toUpperCase()+ x[i].slice(1).toLowerCase() + " ";
+            }
+            let new_dep_code = this.dep_code.toUpperCase();
             let formData = {
-                code: this.dep_code,
-                name: this.dep_name
+                code: new_dep_code,
+                name: new_dep_name
             }
           this.axios
           .post("api/v1/department-list/", formData)
@@ -386,8 +392,6 @@ export default{
             this.isEditing = true;
             let selectedDepartment = arguments[0];
             this.depID = this.depList[selectedDepartment].id;
-            console.log("The depID is ",this.depID);
-            console.log("The depList is ",this.depList);
             this.axios
             .get(`api/v1/department-details/${this.depID}/`)
             .then((response)=>{
@@ -414,9 +418,15 @@ export default{
                 this.hideLoader();
             }
             else{
+                let new_dep_name = "";
+                let x = this.dep_name.split(" ");
+                for(let i=0; i<x.length; i++){
+                    new_dep_name += x[i][0].toUpperCase()+ x[i].slice(1).toLowerCase() + " ";
+                }
+                let new_dep_code = this.dep_code.toUpperCase();
                 let formData = {
-                    code: this.dep_code,
-                    name: this.dep_name,
+                    code: new_dep_code,
+                    name: new_dep_name,
                 }
                 this.axios
                 .put("api/v1/department-details/"+this.depID+"/", formData)

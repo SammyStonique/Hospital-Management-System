@@ -57,12 +57,12 @@
             </div>
           </div>
         </div>
-        <!-- MODAL component for adding a new user -->
+        <!-- MODAL component for adding a new doctor -->
         <Modal v-show="isModalVisible" @close="closeModal">
             <template v-slot:header> Doctor Details </template>
             <template v-slot:body>
               <form action="" @submit.prevent="">
-                <div class="flex mb-4">
+                <div class="flex mb-6">
                   <div class="basis-1/2">
                     <label for="">First Name<em>*</em></label>
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="first_name">
@@ -72,7 +72,7 @@
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="last_name">
                   </div>
               </div>
-              <div class="flex mb-4">
+              <div class="flex mb-6">
                   <div class="basis-1/2">
                     <label for="">Email<em>*</em></label><br />
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="email">
@@ -82,7 +82,7 @@
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" placeholder="e.g 07XXXX" v-model="phone_number">
                   </div>
               </div>
-              <div class="flex mb-4">
+              <div class="flex mb-6">
                 <div class="basis-1/2">
                     <label for="">Payroll Number<em></em></label><br />
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="payroll_number">
@@ -92,13 +92,13 @@
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="specialization">
                 </div>
               </div>
-              <div class="flex mb-4">
+              <div class="flex mb-6">
                 <div class="basis-1/2">
                   <label for="">Department<em>*</em></label><br />
-                  <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
+                  <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
                       <option v-for="dep in departmentsArray" :key="dep.id" :value="dep.name" :label="dep.name" :selected="dep.name===departmentEditing">({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
-                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" v-else>
+                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" v-else>
                       <option value="" disabled selected>--Select Department--</option>
                       <option v-for="dep in departmentsArray" >({{dep.code}}) - {{ dep.name }}</option> 
                   </select>

@@ -163,7 +163,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DJOSER = {
     'LOGIN_FIELD': 'email',
     # 'ACTIVATION_URL': 'my-account/activate/{uid}/{token}',
-    'PASSWORD_RESET_CONFIRM_URL': '/password-reset/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'api/v1/password-reset/{uid}/{token}',
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'LOGOUT_ON_PASSWORD_CHANGE': True
 }
@@ -179,3 +179,11 @@ CORS_ALLOW_HEADERS = list(default_headers) + []
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080',]
 CSRF_COOKIE_SECURE = False
+
+#Email Settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')

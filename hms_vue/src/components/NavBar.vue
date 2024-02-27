@@ -44,7 +44,8 @@
           </div>
         </div>
         <button class="fixed inset-0 bg-gray-50 opacity-25 cursor-default w-full" v-if="dropdown" @click="dropdown = !dropdown"></button>
-        <div class="dropdown-content mt-3 absolute rounded bg-white w-36 py-2 px-2 shadow-md shadow-slate-500" v-if="dropdown">
+        <div class="dropdown-content mt-3 absolute rounded bg-white w-40 py-2 px-2 shadow-md shadow-slate-500" v-if="dropdown">
+          <router-link to="/my-account"><strong>My Account</strong></router-link><br />
           <router-link to="/login"><strong>Logout</strong></router-link>
         </div>
       </div>

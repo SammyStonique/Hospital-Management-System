@@ -36,6 +36,9 @@ import json
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 
+from django.contrib.auth import get_user_model
+UserModel = get_user_model()
+
 # Create your views here.
 
         #PAGINATION
@@ -88,6 +91,17 @@ def send_user_credentials(request, user_id):
     sms.send(f'Dear {first_name}, Your KHS Username: {email}, Temporary Password: {temporary_password}',[f'{pn}'],callback=send_user_credentials)
 
     return HttpResponse("Credentials successfully sent")
+
+api_view(['POST'])
+@csrf_exempt
+def reset_password(request,user_id):
+    data = json.loads(request.body)
+    new_password = data['new_password']
+    user = UserModel.objects.get(id=user_id)
+    user.set_password(new_password)
+    user.save()
+
+    return HttpResponse("Password Changed Succesfully")
 
 def get_user_image(request, user_id):
     selected_user = get_object_or_404(User, id=user_id)

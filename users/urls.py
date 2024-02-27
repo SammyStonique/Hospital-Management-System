@@ -14,6 +14,7 @@ urlpatterns = [
     path("user-list/", views.UserList.as_view()),
     path("user-details/<int:pk>/", views.UserDetails.as_view()),
     path('pass-gen/', pass_generator.password_generator),
+    path("reset-password/<int:user_id>/", views.reset_password, name="reset-password"),
     path('user-credentials/<int:user_id>/', views.send_user_credentials, name="user-credentials"),
     path('user-image/<int:user_id>/', views.get_user_image, name="user-image"),
     path("staff-search/", staffSearch, name="staff_search"),
@@ -24,4 +25,5 @@ urlpatterns = [
     path("manager-details/<int:pk>/", views.ManagerDetails.as_view()),
     path("get-manager/<int:dep_id>/", views.getManager, name="get-manager"),
     path("replace-manager/<int:manager_id>/", views.replaceManager, name="replace-manager"),
+
 ]

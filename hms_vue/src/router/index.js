@@ -12,6 +12,7 @@ import PayrollView from '../views/PayrollView.vue'
 import AccountsView from '../views/AccountsView.vue'
 import LabManagementView from '../views/LabManagementView.vue'
 import InventoryView from '../views/InventoryView.vue'
+import MyAccountView from '../views/MyAccountView.vue'
 
 const routes = [
   {
@@ -92,6 +93,14 @@ const routes = [
     path: '/accounts',
     name: 'accounts',
     component: AccountsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/my-account',
+    name: 'my-account',
+    component: MyAccountView,
     meta:{
       requireLogin: true
     }

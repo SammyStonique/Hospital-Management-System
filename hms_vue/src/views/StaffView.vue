@@ -76,7 +76,7 @@
             <template v-slot:header> User Details </template>
             <template v-slot:body>
               <form action="" @submit.prevent="">
-                <div class="flex mb-4">
+                <div class="flex mb-6">
                   <div class="basis-1/2">
                     <label for="">First Name<em>*</em></label>
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="first_name">
@@ -86,8 +86,12 @@
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="last_name">
                   </div>
               </div>
-              <div class="flex mb-4">
-                  <div class="basis-1/2">
+              <div class="flex mb-6">
+                  <div class="basis-1/2" v-if="isEditing">
+                    <label for="">Email<em>*</em></label><br />
+                    <input type="text" name="" disabled id="" class="rounded border border-gray-600 bg-gray-100 text-lg pl-2" v-model="email">
+                  </div>
+                  <div class="basis-1/2" v-else>
                     <label for="">Email<em>*</em></label><br />
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="email">
                   </div>
@@ -96,7 +100,7 @@
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="id_number">
                   </div>
               </div>
-              <div class="flex mb-4">
+              <div class="flex mb-6">
                 <div class="basis-1/2">
                     <label for="">Phone Number<em>*</em></label><br />
                     <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" placeholder="e.g 07XXXX" v-model="phone_number">
@@ -106,10 +110,10 @@
                     <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="dob">
                   </div>
               </div>
-              <div class="flex mb-4">
+              <div class="flex mb-6">
                 <div class="basis-1/2">
                   <label for="">Profile<em>*</em></label><br />
-                  <select name="" id="" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" placeholder="Select Profile" v-model="profile">
+                  <select name="" id="" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" placeholder="Select Profile" v-model="profile">
                     <option value="" selected disabled>---Select Profile---</option>
                     <option value="Admin">Admin</option>
                     <option value="Doctor">Doctor</option>
@@ -123,7 +127,7 @@
                 </div>
                 <div class="basis-1/2">
                   <label for="">Gender<em>*</em></label><br />
-                  <select class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" placeholder="Select Gender" v-model="gender">
+                  <select class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" placeholder="Select Gender" v-model="gender">
                     <option value="" selected disabled>---Select Gender---</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -131,13 +135,13 @@
                   </select>
                 </div>
               </div>
-              <div class="flex mb-4">
+              <div class="flex mb-6">
                 <div class="basis-1/2">
                   <label for="">Department<em>*</em></label><br />
-                  <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
+                  <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
                       <option v-for="dep in departmentsArray" :key="dep.id" :value="dep.name" :label="dep.name" :selected="dep.name===departmentEditing">({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
-                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" v-else>
+                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" v-else>
                       <option value="" disabled selected>--Select Department--</option>
                       <option v-for="dep in departmentsArray" >({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
@@ -318,8 +322,6 @@ export default{
             this.selectedUpdateDep = this.$refs.departmentUpdateSelect.selectedIndex;
             this.depUpdateID = this.departmentsArray[this.selectedUpdateDep].id;
             let depName = this.departmentsArray[this.selectedUpdateDep].name;
-            console.log("SElected depID is ",this.depUpdateID);
-            console.log("SElected depName is ",depName);
         }
       },
       onFileChange(e){
@@ -365,10 +367,12 @@ export default{
             console.log(error.message)
           })
           .finally(()=>{
+            let new_first_name = this.first_name[0].toUpperCase() + this.first_name.slice(1).toLowerCase();
+            let new_last_name = this.last_name[0].toUpperCase() + this.last_name.slice(1).toLowerCase();
             let formData = new FormData();
-            formData.append('first_name', this.first_name);
+            formData.append('first_name', new_first_name);
             formData.append('email', this.email);
-            formData.append('last_name', this.last_name);
+            formData.append('last_name', new_last_name);
             formData.append('identification_no', this.id_number);
             formData.append('birth_date', this.dob);
             formData.append('gender', this.gender);
@@ -500,11 +504,12 @@ export default{
                 this.hideLoader();
             }
             else{
-
+              let new_first_name = this.first_name[0].toUpperCase() + this.first_name.slice(1).toLowerCase();
+              let new_last_name = this.last_name[0].toUpperCase() + this.last_name.slice(1).toLowerCase();
               let formData = new FormData();
-              formData.append('first_name', this.first_name);
+              formData.append('first_name', new_first_name);
               formData.append('email', this.email);
-              formData.append('last_name', this.last_name);
+              formData.append('last_name', new_last_name);
               formData.append('identification_no', this.id_number);
               formData.append('birth_date', this.dob);
               formData.append('gender', this.gender);
