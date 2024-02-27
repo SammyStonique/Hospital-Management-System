@@ -2,9 +2,18 @@ import json
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view
+
 
 from .models import *
 
+class BasePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+@api_view(['POST'])
 @csrf_exempt
 def staffSearch(request):
     staffList = []
@@ -27,17 +36,23 @@ def staffSearch(request):
     
 
     for staff in users:
-        obj = {
-            "id": staff.id,
-            "email": staff.email,
-            "first_name": staff.first_name,
-            "last_name": staff.last_name,
-            "is_active": staff.is_active,
-            "identification_no": staff.identification_no,
-            "profile": staff.profile,
-            "phone_number": staff.phone_number,
-            "user_department": staff.user_department.name,
-        }
-        staffList.append(obj)
+        if staff.profile != "Super Admin" and staff.profile != "Patient":
+            obj = {
+                "id": staff.id,
+                "email": staff.email,
+                "first_name": staff.first_name,
+                "last_name": staff.last_name,
+                "is_active": staff.is_active,
+                "identification_no": staff.identification_no,
+                "profile": staff.profile,
+                "phone_number": staff.phone_number,
+                "user_department": staff.user_department.name,
+            }
+            staffList.append(obj)
 
-    return JsonResponse({'staff': staffList})
+    pagination_class = BasePagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(staffList, request)
+
+    return  paginator.get_paginated_response(page)

@@ -52,56 +52,6 @@ class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
-# def generate_departments_pdf(request):
-#     departments = []
-#     departmentList = Department.objects.all()
-#     empty = ""
-
-#     for department in departmentList:
-#         manager = Manager.objects.filter(department=department)
-#         if len(manager):
-#             obj = {
-#                 "code": department.code,
-#                 "name": department.name,
-#                 "manager_first_name": manager[0].user.first_name,
-#                 "manager_last_name": manager[0].user.last_name,
-#                 "start_date": manager[0].start_date.strftime("%d %b, %Y")
-#             }
-#             departments.append(obj)
-#         else:
-#             obj = {
-#                 "code": department.code,
-#                 "name": department.name,
-#                 "manager_first_name": empty,
-#                 "manager_last_name": empty,
-#                 "start_date": empty
-#             }
-#             departments.append(obj)
-
-#     context = {"departments":departments}
-
-#     template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/doctor_profile/templates/doctor_profile')
-#     template_env = jinja2.Environment(loader=template_loader)
-
-#     template  = template_env.get_template('departmentPDF.html')
-#     output_text = template.render(context)
-
-#     config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
-#     options={"enable-local-file-access": None,
-#              }
-
-#     pdfkit.from_string(output_text, 'Departments.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/doctor_profile/static/doctor_profile/departmentPDF.css")
-
-#     path = 'Departments.pdf'
-#     with open(path, 'rb') as pdf:
-#         contents = pdf.read()
-
-#     response = HttpResponse(contents, content_type='application/pdf')
-
-#     response['Content-Disposition'] = 'attachment; filename=Departments.pdf'
-#     pdf.close()
-#     os.remove("Departments.pdf")  # remove the locally created pdf file.
-#     return response
 
 @csrf_exempt   
 def generate_departments_pdf(request):

@@ -267,6 +267,7 @@ export default{
       is_active: false,
       status: "",
       isEditing: false,
+      isSearching: false,
       staffID: 0,
       currentPage: 1,
       staffCount: 0,
@@ -717,7 +718,7 @@ export default{
             }else if(this.currentPage < this.pageCount){
                 this.currentPage += 1;
             }
-            this.fetchStaff();
+            this.searchStaff();
         },
         loadPrev(){
             if (this.currentPage <= 1){
@@ -725,21 +726,24 @@ export default{
             }else{
                 this.currentPage -= 1;
             }
-            this.fetchStaff();
+            this.searchStaff();
         },
         firstPage(){
             if(this.pageCount > 1){
               this.currentPage = 1;
-              this.fetchStaff();
+              this.searchStaff();
             }
         },
         lastPage(){
             if(this.pageCount > 1){
               this.currentPage = this.pageCount;
-              this.fetchStaff();
+              this.searchStaff();
             }
         },
         searchStaff(){
+            this.isSearching = true;
+            this.showNextBtn = false;
+            this.showPreviousBtn = false;
             this.staffList = [];
             let formData = {
               user_department: this.search_user_department,
@@ -750,16 +754,24 @@ export default{
               phone_number: this.search_phone_number,
             }
             this.axios
-            .post("api/v1/staff-search/",formData)
+            .post(`api/v1/staff-search/?page=${this.currentPage}`,formData)
             .then((response)=>{
-              for(let i=0; i<response.data.staff.length; i++){
-                if(response.data.staff[i].profile != "Super Admin" && response.data.staff[i].profile != "Patient"){
-                  this.staffList.push(response.data.staff[i]);
+              for(let i=0; i<response.data.results.length; i++){
+                if(response.data.results[i].profile != "Super Admin" && response.data.results[i].profile != "Patient"){
+                  this.staffList.push(response.data.results[i]);
                 }
               }
-              console.log("The staff details from search are ",this.staffList);
-                // this.staffList = response.data.staff;
-                this.staffArrLen = response.data.staff.length;
+                this.staffResults = response.data;
+                this.staffArrLen = this.staffList.length;
+                this.staffCount = this.staffResults.count;
+                this.pageCount = Math.ceil(this.staffCount / 10);
+
+                if(response.data.next){
+                    this.showNextBtn = true;
+                }
+                if(response.data.previous){
+                    this.showPreviousBtn = true;
+                }
             })
             .catch((error)=>{
                 console.log(error);
@@ -770,8 +782,16 @@ export default{
         },
         exportStaffPDF(){
             this.showLoader();
+            let formData = {
+              user_department: this.search_user_department,
+              name: this.search_name,
+              is_active: this.status,
+              identification_no: this.search_id_number,
+              profile: this.search_profile,
+              phone_number: this.search_phone_number,
+            }
             this.axios
-            .get("api/v1/export-staff-pdf/", { responseType: 'blob' })
+            .post(`api/v1/export-staff-pdf/?page=${this.currentPage}`, formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -791,8 +811,16 @@ export default{
         },
         exportStaffExcel(){
             this.showLoader();
+            let formData = {
+              user_department: this.search_user_department,
+              name: this.search_name,
+              is_active: this.status,
+              identification_no: this.search_id_number,
+              profile: this.search_profile,
+              phone_number: this.search_phone_number,
+            }
             this.axios
-            .get("api/v1/export-staff-excel/", { responseType: 'blob' })
+            .post(`api/v1/export-staff-excel/?page=${this.currentPage}`, formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -812,8 +840,16 @@ export default{
         },
         exportStaffCSV(){
             this.showLoader();
+            let formData = {
+              user_department: this.search_user_department,
+              name: this.search_name,
+              is_active: this.status,
+              identification_no: this.search_id_number,
+              profile: this.search_profile,
+              phone_number: this.search_phone_number,
+            }
             this.axios
-            .get("api/v1/export-staff-csv/", { responseType: 'blob' })
+            .post(`api/v1/export-staff-csv/?page=${this.currentPage}`, formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -834,7 +870,7 @@ export default{
         
     },
     mounted(){
-      this.fetchStaff();
+      this.searchStaff();
     }
 }
 </script>

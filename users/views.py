@@ -32,6 +32,10 @@ import xlwt
 #CSV
 import csv
 
+import json
+from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+
 # Create your views here.
 
         #PAGINATION
@@ -90,13 +94,41 @@ def get_user_image(request, user_id):
     user_image = selected_user.image
     return HttpResponse(str(user_image))
 
+@csrf_exempt 
 def generate_staff_pdf(request):
-    users = User.objects.all()
     staff = []
+    data = json.loads(request.body)
+    user_department = data['user_department']
+    name = data['name']
+    status = data['is_active']
+    identification_no = data['identification_no']
+    profile = data['profile']
+    phone_number = data['phone_number']
 
-    for stf in users:
-        if(stf.profile != "Super Admin" and stf.profile != "Patient"):
-            staff.append(stf)
+    staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+                                & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        staffList = staffList.filter(is_active = status)
+
+    if profile:
+        staffList = staffList.filter(profile = profile)
+    
+
+    for stf in staffList:
+        if stf.profile != "Super Admin" and stf.profile != "Patient":
+            obj = {
+                "id": stf.id,
+                "email": stf.email,
+                "first_name": stf.first_name,
+                "last_name": stf.last_name,
+                "is_active": stf.is_active,
+                "identification_no": stf.identification_no,
+                "profile": stf.profile,
+                "phone_number": stf.phone_number,
+                "user_department": stf.user_department.name,
+            }
+            staff.append(obj)
 
     context = {"staff":staff}
 
@@ -123,13 +155,41 @@ def generate_staff_pdf(request):
     os.remove("Staff.pdf")  # remove the locally created pdf file.
     return response
 
+@csrf_exempt
 def generate_staff_excel(request):
-    users = User.objects.all()
     staff = []
+    data = json.loads(request.body)
+    user_department = data['user_department']
+    name = data['name']
+    status = data['is_active']
+    identification_no = data['identification_no']
+    profile = data['profile']
+    phone_number = data['phone_number']
 
-    for stf in users:
-        if(stf.profile != "Super Admin" and stf.profile != "Patient"):
-            staff.append(stf)
+    staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+                                & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        staffList = staffList.filter(is_active = status)
+
+    if profile:
+        staffList = staffList.filter(profile = profile)
+    
+
+    for stf in staffList:
+        if stf.profile != "Super Admin" and stf.profile != "Patient":
+            obj = {
+                "id": stf.id,
+                "email": stf.email,
+                "first_name": stf.first_name,
+                "last_name": stf.last_name,
+                "is_active": stf.is_active,
+                "identification_no": stf.identification_no,
+                "profile": stf.profile,
+                "phone_number": stf.phone_number,
+                "user_department": stf.user_department.name,
+            }
+            staff.append(obj)
 
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=Staff.xls'
@@ -146,20 +206,48 @@ def generate_staff_excel(request):
 
     for stf in staff:
         row_num += 1
-        row = [stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile,stf.user_department.name]
+        row = [stf['first_name'],stf['last_name'], stf['email'], stf['phone_number'], stf['identification_no'],stf['profile'],stf['user_department']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
     workbook.save(response)
     return response
 
+@csrf_exempt
 def generate_staff_csv(request):
-    users = User.objects.all()
     staff = []
+    data = json.loads(request.body)
+    user_department = data['user_department']
+    name = data['name']
+    status = data['is_active']
+    identification_no = data['identification_no']
+    profile = data['profile']
+    phone_number = data['phone_number']
 
-    for stf in users:
-        if(stf.profile != "Super Admin" and stf.profile != "Patient"):
-            staff.append(stf)
+    staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+                                & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        staffList = staffList.filter(is_active = status)
+
+    if profile:
+        staffList = staffList.filter(profile = profile)
+    
+
+    for stf in staffList:
+        if stf.profile != "Super Admin" and stf.profile != "Patient":
+            obj = {
+                "id": stf.id,
+                "email": stf.email,
+                "first_name": stf.first_name,
+                "last_name": stf.last_name,
+                "is_active": stf.is_active,
+                "identification_no": stf.identification_no,
+                "profile": stf.profile,
+                "phone_number": stf.phone_number,
+                "user_department": stf.user_department.name,
+            }
+            staff.append(obj)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=Staff.csv'
@@ -168,7 +256,7 @@ def generate_staff_csv(request):
     writer.writerow(['First Name','Last Name', 'Email', 'Phone Number', 'ID Number', 'Profile','Department'])
 
     for stf in staff:
-        writer.writerow([stf.first_name,stf.last_name, stf.email, stf.phone_number, stf.identification_no,stf.profile,stf.user_department.name])
+        writer.writerow([stf['first_name'],stf['last_name'], stf['email'], stf['phone_number'], stf['identification_no'],stf['profile'],stf['user_department']])
     return response
 
             #MANAGER VIEWS
