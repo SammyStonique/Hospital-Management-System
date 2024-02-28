@@ -27,7 +27,7 @@
                 <div class="rounded bg-gray-100 w-full py-8">
                     <div class="web-links py-2 px-3 pl-4 hover:bg-slate-300 hover:rounded hover:w-full">
                         <button class="flex" @click="showDashboard">
-                            <p class="text-lg">Dashboard</p>
+                            <p class="text-lg">My Dashboard</p>
                         </button>
                     </div> 
                     <div class="web-links py-2 px-3 pl-4 hover:bg-slate-300 hover:rounded hover:w-full">
@@ -65,7 +65,58 @@
             <div class="rounded basis-3/4 bg-gray-100 py-4 px-4">
                 <div class="account-tabs rounded bg-white px-4 py-4">
                     <div id="" v-if="this.showDash">
-                        <p class="font-bold mb-8 text-center">Dashboard</p>
+                        <p class="font-bold mb-8 text-center">My Dashboard</p>
+                        <div class="w-full rounded-lg py-3 px-2 bg-white mr-2">
+                            <h1 class="font-bold mb-2">Activity Overview</h1>
+                            <div class="flex w-full mb-3">
+                            <div class="w-1/2 rounded-lg h-16 border-2 p-2 mr-4">
+                                <div class="w-full flex">
+                                <div class="w-1/4 rounded-lg bg-cyan-600 h-10 grid place-items-center">
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                </div>
+                                <div class="w-3/4 px-2">
+                                    <p class="font-bold">500</p>
+                                    <p class="font-light text-sm">Appointments</p>
+                                </div>
+                                </div>
+                            </div>
+                            <div class="w-1/2 rounded-lg h-16 border-2 p-2">
+                                <div class="w-full flex">
+                                <div class="w-1/4 rounded-lg bg-orange-400 h-10 grid place-items-center">
+                                    <i class="fa fa-scissors" aria-hidden="true"></i>
+                                </div>
+                                <div class="w-3/4 px-2">
+                                    <p class="font-bold">400</p>
+                                    <p class="font-light text-sm">Operations</p>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                            <div class="flex w-full mb-3">
+                            <div class="w-1/2 rounded-lg h-16 border-2 p-2 mr-4">
+                                <div class="w-full flex">
+                                <div class="w-1/4 rounded-lg bg-indigo-600 h-10 grid place-items-center">
+                                    <i class="fa fa-bed" aria-hidden="true"></i>
+                                </div>
+                                <div class="w-3/4 px-2">
+                                    <p class="font-bold">150</p>
+                                    <p class="font-light text-sm">New Patients</p>
+                                </div>
+                                </div>
+                            </div>
+                            <div class="w-1/2 rounded-lg h-16 border-2 p-2">
+                                <div class="w-full flex">
+                                <div class="w-1/4 rounded-lg bg-rose-600 h-10 grid place-items-center">
+                                    <i class="fa fa-user-md" aria-hidden="true"></i>
+                                </div>
+                                <div class="w-3/4 px-2">
+                                    <p class="font-bold">60</p>
+                                    <p class="font-light text-sm">Doctors</p>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
                     </div>
                     <div id="" v-if="this.showAcc">
                         <p class="font-bold mb-8 text-center">Account Details</p>
@@ -145,7 +196,7 @@
                             </div>
                             <div class="basis-3/4">
                                 <p class="font-bold mb-3">Currently: <a :href="`${this.userDetails.image}`" target="blank" class="text-blue-500">{{ this.imgName }}</a></p>
-                                <label for="" class="mb-2 font-bold">Choose New Picture:</label><br />
+                                <label for="" class="mb-2 font-bold">Choose New Picture(jpg, jpeg or png only):</label><br />
                                 <input type="file" ref="file" @change="onFileChange" accept="image/jpg, image/png, image/jpeg" >
                             </div>
                         </div>
@@ -155,17 +206,23 @@
                     </div>
                     <div v-if="this.showPassChange" class="px-12">
                         <p class="font-bold mb-10 text-center">Password Change</p>
-                        <!-- <div class="mb-6"> 
-                            <label for="">Current Password:</label><br />
-                            <input type="password" name="" id="" class="rounded border border-gray-600 bg-gray-100 text-lg pl-2">
-                        </div> -->
                         <div class="mb-6">
                             <label for="">New Password:<em>*</em></label><br />
-                            <input type="password" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="new_password">
+                            <input :type="passType ? 'text' : 'password'" class="rounded border border-gray-600 text-lg pl-2" v-model="new_password">
+                            <button type="button" class="show-password" @click="showPassword()">
+                                <i class="fa fa-eye-slash" v-if="!passType"></i>
+                                <i class="fa fa-eye" v-else></i>
+                            </button><br />
+                            <span v-if="watcherMsg.new_password" :style="{color: pStyle, fontSize:12 + 'px' }">{{watcherMsg.new_password}}</span>
                         </div>
                         <div class="mb-6"> 
                             <label for="">Confirm Password:<em>*</em></label><br />
-                            <input type="password" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="new_password2">
+                            <input :type="pass2Type ? 'text' : 'password'" class="rounded border border-gray-600 text-lg pl-2" v-model="new_password2">
+                            <button type="button" class="show-password" @click="showPassword2()">
+                                <i class="fa fa-eye-slash" v-if="!pass2Type"></i>
+                                <i class="fa fa-eye" v-else></i>
+                            </button><br />
+                            <span v-if="watcherMsg.new_password2" :style="{color: passStyle , fontSize:12 + 'px' }">{{watcherMsg.new_password2}}</span>
                         </div>
                         <div class="text-center">
                             <button class="rounded border bg-green-400 mt-3 w-52 py-2 px-4 text-white text-lg" @click="changePassword()">Change Password</button>
@@ -216,7 +273,14 @@ export default{
             showPat:false,
             showPay:false,
             showPassChange: false,
-            shwPicChange: false
+            shwPicChange: false,
+            watcherMsg:[],
+            pStyle: null,
+            passStyle: null,
+            passType: false,
+            pass2Type: false,
+            showPass: false,
+            showPass2: false,
         }
     },
     components: {
@@ -226,13 +290,22 @@ export default{
         Loader,
         MyPagination
     },
+    watch:{
+        new_password(value){
+            this.new_password = value;
+            this.validatePassword(value)
+        },
+        new_password2(value){
+            this.new_password2 = value;
+            this.validatePasswordConfirmation(value)
+        }
+    },
     methods:{
         fetchUserAccount(){
             this.axios
             .get("api/v1/users/me/")
             .then((response)=>{
                 this.userDetails = response.data;
-                console.log("The user details ",this.userDetails);
                 this.first_name = this.userDetails.first_name;
                 this.last_name = this.userDetails.last_name;
                 this.email = this.userDetails.email;
@@ -270,7 +343,7 @@ export default{
             this.showPat = false,
             this.showPay = false,
             this.showPassChange =  false,
-            this.shwPicChange =  false,
+            this.showPicChange =  false,
             this.scrollToTop();
         },
         showAccountDetails(){
@@ -280,7 +353,7 @@ export default{
             this.showPat = false,
             this.showPay = false,
             this.showPassChange =  false,
-            this.shwPicChange =  false,
+            this.showPicChange =  false,
             this.scrollToTop();
         },
         showAppointments(){
@@ -290,7 +363,7 @@ export default{
             this.showPat = false,
             this.showPay = false,
             this.showPassChange =  false,
-            this.shwPicChange =  false,
+            this.showPicChange =  false,
             this.scrollToTop();
         },
         showPatients(){
@@ -300,7 +373,7 @@ export default{
             this.showPat = true,
             this.showPay = false,
             this.showPassChange =  false,
-            this.shwPicChange =  false,
+            this.showPicChange =  false,
             this.scrollToTop();
         },
         showPayslips(){
@@ -310,7 +383,7 @@ export default{
             this.showPat = false,
             this.showPay = true,
             this.showPassChange =  false,
-            this.shwPicChange =  false,
+            this.showPicChange =  false,
             this.scrollToTop();
         },
         showProfileChange(){
@@ -423,29 +496,86 @@ export default{
                     dismissible: true
                 })
                 this.hideLoader();
+            }else if(this.watcherMsg.new_password || this.watcherMsg.new_password2){
+                this.$toast.error("Invalid Password Entered",{
+                    duration: 3000,
+                    dismissible: true
+                })
             }else{
-                let formData = {
-                    new_password : this.new_password,
-                }
-                this.axios
-                .post(`api/v1/reset-password/${this.userID}/`, formData)
-                .then((response)=>{
-                    this.$toast.success("Password Succesfully Changed",{
-                        duration: 3000,
-                        dismissible: true
+                if(this.new_password == this.new_password2){
+                    let formData = {
+                        new_password : this.new_password,
+                    }
+                    this.axios
+                    .post(`api/v1/reset-password/${this.userID}/`, formData)
+                    .then((response)=>{
+                        this.$toast.success("Password Succesfully Changed",{
+                            duration: 3000,
+                            dismissible: true
+                        })
                     })
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                })
-                .finally(()=>{
-                    this.hideLoader();
-                    this.new_password = "";
-                    this.new_password2 = "";
-                    this.$router.push('/login')
-                })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                    .finally(()=>{
+                        this.hideLoader();
+                        this.new_password = "";
+                        this.new_password2 = "";
+                        this.$router.push('/login')
+                    })
+                }    
             }
-        }
+        },
+        validatePassword(value){
+            if (value.length > 0 && value.length < 8){
+                this.watcherMsg['new_password'] = 'Must be a minimum of 8 characters!'
+                this.pStyle = 'red'
+                this.bWidth = 2
+            }else{
+                if(value.length == 0){
+                   this.watcherMsg['new_password'] = ''
+                   this.pStyle = ''
+                }
+            else{
+                    this.pStyle = 'green'
+                    this.watcherMsg['new_password'] = ''
+                    this.bWidth = 2
+                }
+            }
+        },
+        validatePasswordConfirmation(value){
+            if (value === this.new_password){
+                this.passStyle = 'green'
+                this.watcherMsg['new_password2'] = ''
+                this.bWidth = 2
+            }else{
+                this.watcherMsg['new_password2'] = 'The passwords do not match'
+                this.passStyle = 'red'
+                this.bWidth = 2
+            }
+        },
+        showPassword(){
+            if(!this.showPass){
+                this.showPass = true;
+                this.passType = true;
+            }
+            else{
+                this.showPass = false;
+                this.passType = false;
+            }
+        }, 
+        showPassword2(){
+            if(!this.showPass2){
+                this.showPass2 = true;
+                this.pass2Type = true;
+                console.log("ShowPass PassType",this.showPass2);
+            }
+            else{
+                this.showPass2 = false;
+                this.pass2Type = false;
+                console.log("ShowPass PassType",this.showPass2);
+            }
+        },
     },
     mounted(){
         this.fetchUserAccount();
@@ -469,7 +599,22 @@ export default{
 em{
   color: red;
 }
-/* #account-details{
-    display: none;
-} */
+.show-password{
+    float: right;
+    /* margin-top: -50px; */
+    margin-left: -30px;
+    position: absolute;
+    z-index: 1;
+    cursor:pointer;
+    height: 35px;
+    border:0px;
+    background-color: inherit;
+    color:grey;
+}
+.show-password:focus{
+    outline: none;
+}
+.show-password:hover{
+    color: black !important;
+}
 </style>

@@ -63,33 +63,39 @@
             <template v-slot:body>
               <form action="" @submit.prevent="">
                 <div class="flex mb-6">
-                  <div class="basis-1/2">
-                    <label for="">First Name<em>*</em></label>
-                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="first_name">
+                  <div class="basis-1/2 mr-6">
+                    <label for="">First Name<em>*</em></label><br />
+                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="first_name" required>
                   </div>
                   <div class="basis-1/2">
                     <label for="">Last Name<em>*</em></label><br />
-                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="last_name">
+                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="last_name" required>
                   </div>
               </div>
               <div class="flex mb-6">
-                  <div class="basis-1/2">
+                  <div class="basis-1/2 mr-6" v-if="isEditing">
                     <label for="">Email<em>*</em></label><br />
-                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="email">
+                    <input type="text" name="" disabled id="" class="rounded border border-gray-600 bg-gray-100 text-lg pl-2 w-60" v-model="email" required>
+                  </div>
+                  <div class="basis-1/2 mr-6" v-else>
+                    <label for="">Email<em>*</em></label><br />
+                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 focus:outline-none w-60" v-model="email" :style="{borderColor: eStyle,borderWidth: bWidth+'px' }" required><br />
+                    <span v-if="watcherMsg.email" :style="{color: eStyle, fontSize:10 + 'px'}">{{watcherMsg.email}}</span>
                   </div>
                   <div class="basis-1/2">
                     <label for="">Phone Number<em>*</em></label><br />
-                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" placeholder="e.g 07XXXX" v-model="phone_number">
+                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 focus:outline-none w-60" placeholder="e.g 07XXXX" v-model="phone_number" :style="{borderColor: nStyle,borderWidth: bWidth+'px' }" required><br />
+                    <span v-if="watcherMsg.phone_number" :style="{color: nStyle, fontSize:10 + 'px'}">{{watcherMsg.phone_number}}</span>
                   </div>
               </div>
               <div class="flex mb-6">
-                <div class="basis-1/2">
+                <div class="basis-1/2 mr-6">
                     <label for="">Payroll Number<em></em></label><br />
-                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="payroll_number">
+                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="payroll_number">
                 </div>
                 <div class="basis-1/2">
                     <label for="">Specialization<em></em></label><br />
-                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="specialization">
+                    <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="specialization">
                 </div>
               </div>
               <div class="flex mb-6">
@@ -98,7 +104,7 @@
                   <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
                       <option v-for="dep in departmentsArray" :key="dep.id" :value="dep.name" :label="dep.name" :selected="dep.name===departmentEditing">({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
-                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" v-else>
+                  <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" required v-else>
                       <option value="" disabled selected>--Select Department--</option>
                       <option v-for="dep in departmentsArray" >({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
@@ -112,7 +118,7 @@
               </div>
               </form>
             </template>
-            <template v-slot:footer> HMS. </template>
+            <template v-slot:footer> We Value Your Partnership </template>
         </Modal>
 
 
@@ -224,6 +230,8 @@ export default{
       depID: 0,
       depUpdateID: 0,
       isSearching: false,
+      watcherMsg: [],
+      eStyle: null, nStyle:null, bWidth: null,
     }
   },
     components: {
@@ -233,7 +241,55 @@ export default{
         Loader,
         MyPagination
     },
+    watch:{
+      email(value){
+        // binding this to the data value in the email input  
+        this.email = value; 
+        this.validateEmail(value);
+        },
+        phone_number(value){
+            this.phone_number = value;
+            this.validatePhoneNumber(value)
+        },
+    },
     methods:{
+      validateEmail(value){  
+          if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)){ 
+              this.watcherMsg['email'] = '';
+              this.eStyle = 'green';
+              this.bWidth = 2
+
+          } else{
+              if(value == ''){
+                  this.watcherMsg['email'] = ''; 
+                  this.eStyle = ''
+
+              }
+              else{
+                  this.watcherMsg['email'] = 'Invalid Email Address'; 
+                  this.eStyle = 'red'
+                  this.bWidth = 2
+              }
+          }  
+      },
+      validatePhoneNumber(value){
+          if ((/^(?:254|\+254|0)?((?:(?:7(?:(?:[01249][0-9])|(?:5[789])|(?:6[89])))|(?:1(?:[1][0-5])))[0-9]{6})$/.test(value))|| (/^(?:254|\+254|0)?((?:(?:7(?:(?:3[0-9])|(?:5[0-6])|(8[5-9])))|(?:1(?:[0][0-2])))[0-9]{6})$/.test(value))){
+                  this.nStyle = 'green';
+                  this.watcherMsg['phone_number'] = ''
+                  this.bWidth = 2
+
+          }else{
+              if(value == ''){
+                  this.nStyle = '';
+                  this.watcherMsg['phone_number'] = ''                        
+              }
+              else{
+                  this.nStyle = 'red';
+                  this.watcherMsg['phone_number'] = 'Invalid Phone Number'
+                  this.bWidth = 2
+              }
+          }
+      },
       fetchDepartments(){
         this.axios
         .get("api/v1/department-list/")

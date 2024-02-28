@@ -20,9 +20,9 @@
   
           <footer class="modal-footer">
             <slot name="footer">This is the default footer!</slot>
-            <button type="button" class="btn-green" @click="close" aria-label="Close modal">
+            <!-- <button type="button" class="btn-green" @click="close" aria-label="Close modal">
               Close
-            </button>
+            </button> -->
           </footer>
         </div>
       </div>
@@ -73,6 +73,8 @@
   .modal-footer {
     padding: 15px;
     display: flex;
+    color: #4aae9b;
+    text-align: center;
   }
   
   .modal-header {

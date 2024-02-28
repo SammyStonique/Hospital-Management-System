@@ -70,7 +70,7 @@
 
                     </form>
                     </template>
-                    <template v-slot:footer> HMS. </template>
+                    <template v-slot:footer> We Value Your Partnership </template>
                 </Modal>
                 <!-- MODAL component for adding a new manager -->
                 <Modal v-show="managerModalVisible" @close="closeManagerModal" :index="index">
@@ -123,7 +123,7 @@
 
                     </form>
                     </template>
-                    <template v-slot:footer> HMS. </template>
+                    <template v-slot:footer>We Value Your Partnership </template>
                 </Modal>
                 <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8">
                     <table class="min-w-full bg-white"> 
