@@ -2,7 +2,7 @@
     <transition name="modal-fade">
       <div class="modal-backdrop">
         <div
-          class="modal"
+          class="modal rounded-lg"
           role="dialog"
           aria-labelledby="modalTitle"
           aria-describedby="modalDescription"
@@ -43,7 +43,8 @@
   
   <style scoped>
   .modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.3);
+    /* background-color: rgba(0, 0, 0, 0.3); */
+    background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -59,7 +60,7 @@
   
   .modal {
     background: #ffffff;
-    box-shadow: 2px 2px 20px 1px;
+    box-shadow: 2px 2px 12px 1px;
     overflow-x: auto;
     display: flex;
     flex-direction: column;

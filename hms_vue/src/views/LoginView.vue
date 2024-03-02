@@ -74,11 +74,6 @@ export default {
                 this.$store.commit('setToken', token);
                 axios.defaults.headers.common['Authorization'] = "Token " + token
                 localStorage.setItem('token',token)
-                this.$toast.success('Login Succesful',{
-                    duration: 5000
-                })
-                this.$router.push('/')
-                // this.$store.commit('reloadingPage')
             })    
             .catch((error)=>{
                 if (error.response) {
@@ -91,6 +86,16 @@ export default {
                     console.log(JSON.stringify(error))
                 }
             })
+            .finally(()=>{
+                this.axios
+                .get("/api/v1/users/me/")
+                .then((response)=>{
+                    const company_id = response.data.allowed_company;
+                    this.$store.commit('fetchCompanyID', company_id);
+                    localStorage.setItem('company_id', company_id)
+                    this.$router.push('/')
+                })
+            })
 
         }else{
             this.$toast.error('Please Enter your Login Credentials!',{
@@ -101,6 +106,7 @@ export default {
   },
   mounted(){
     this.$store.commit('removeToken');
+    this.$store.commit('removeCompanyID');
   }
 }
 </script>

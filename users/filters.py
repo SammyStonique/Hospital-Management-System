@@ -24,6 +24,7 @@ def staffSearch(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     users = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
@@ -36,7 +37,7 @@ def staffSearch(request):
     
 
     for staff in users:
-        if staff.profile != "Super Admin" and staff.profile != "Patient":
+        if (staff.profile != "Super Admin") and (staff.profile != "Patient") and (str(staff.allowed_company.company_id) == hospital_id):
             obj = {
                 "id": staff.id,
                 "email": staff.email,

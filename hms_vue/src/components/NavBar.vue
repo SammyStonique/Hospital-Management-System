@@ -1,21 +1,21 @@
 <template>
-<div class="navbar fixed flex z-30 top-0 w-full sticky-navbar bg-white border-b border-slate-300 shadow-sm shadow-slate-200 px-12 py-2">
+<div class="navbar fixed flex z-30 top-0 w-full sticky-navbar bg-white border-b border-slate-300 shadow-sm shadow-slate-200 px-6 py-2">
   <div class="w-1/4 flex">
     <div class="w-12 h-12 rounded-full">
-      <img src="@/assets/logo.jpeg" alt="Logo" class="">
+      <img :src="`${this.company_logo}`" alt="Logo" class="object-cover w-full h-full">
     </div>
-    <div class="ml-4">
-      <h4 class="text-2xl py-2">K.H.S</h4>
+    <div class="ml-2">
+      <h4 class="text-sm font-bold uppercase py-2">{{company_name}}</h4>
     </div>               
   </div>
   <div class="w-2/4 py-2 flex">
-    <div class="w-1/2">
-      <h5 class="bold text-2xl">{{title}}</h5>
+    <div class="w-full">
+      <h5 class="font-bold text-lg">{{title}}</h5>
     </div>
-    <div class="relative w-1/2 grid justify-items-center">   
+    <!-- <div class="relative w-1/2 grid justify-items-center">   
       <input type="search" name="" id="" class="relative rounded-sm w-full text-xs border border-gray-300 px-8 h-8 bg-gray-100" placeholder="Search here..">
       <i class="fa fa-search absolute left-0 p-2" aria-hidden="true"></i>
-    </div>
+    </div> -->
   </div>
   <div class="w-1/4 flex">
     <div class="w-1/4 grid justify-items-center py-2">
@@ -62,6 +62,9 @@ export default{
     return{
       userDetails: [],
       dropdown: false,
+      company_name: "",
+      companyID: "",
+      company_logo: "",
     }
   },
   props:['title'],
@@ -92,10 +95,24 @@ export default{
     },
     showDropdown(){
       this.dropdown = !this.dropdown ;
+    },
+    fetchCompanyName(){
+      this.axios
+      .get(`api/v1/companies/${this.companyID}/`)
+      .then((response)=>{
+        this.company_name = response.data.name;
+        this.company_logo = response.data.logo;
+      })
+      .catch((error)=>{
+        console.log(error.message);
+      })
     }
   },
   mounted(){
+    this.companyID = localStorage.getItem("company_id")
+    this.fetchCompanyName();
     this.getUserDetails();
+
   }
 
 }

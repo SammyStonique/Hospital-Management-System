@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
 from PIL import Image
 from xtra.models import Department
+from company.models import Company
+import uuid
 
 
 class CustomAccountManager(BaseUserManager):
@@ -39,6 +41,7 @@ class User(AbstractBaseUser,PermissionsMixin):
                 ('Accountant','Accountant'),('Human Resource','Human Resource'),('Nurse','Nurse'),('Lab Technician','Lab Technician'),
                 ('Office Clerk','Office Clerk'),('Clinical Officer','Clinical Officer'),)
 
+    user_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     email = models.EmailField(_('email_address'), unique=True)
     first_name = models.CharField(max_length=250,blank=True)
     last_name = models.CharField(max_length=250,blank=True)
@@ -48,21 +51,22 @@ class User(AbstractBaseUser,PermissionsMixin):
     phone_number = models.CharField(max_length=250)
     profile = models.CharField(max_length=250,choices=PROFILES,default='',blank=True)
     image = models.ImageField(default='default.png', upload_to='profile_pics')
-    user_department = models.ForeignKey(Department, related_name='user_departments', on_delete=models.DO_NOTHING, blank=True)
+    user_department = models.ForeignKey(Department, related_name='user_departments', on_delete=models.DO_NOTHING)
     is_staff = models.BooleanField(default= False)
     is_active = models.BooleanField(default= False)
     start_date = models.DateTimeField(auto_now_add=True)
+    allowed_company = models.ForeignKey(Company, related_name='user_company', on_delete=models.CASCADE)
 
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','image','is_staff','is_active','user_department']
+    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','image','is_staff','is_active','user_department','allowed_company']
 
     def __str__(self):
         return f'{self.email}'
     
     class Meta:
-        ordering = [('id')]
+        ordering = [('first_name')]
     
     def save(self,*args,**kwargs):
         super(User,self).save()
@@ -77,6 +81,7 @@ class User(AbstractBaseUser,PermissionsMixin):
 class Manager(models.Model):
     STATUS = (('','Select Status'),('Active','Active'),('Inactive','Inactive'))
 
+    manager_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     department = models.ForeignKey(Department, related_name='dep_manager', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name="user_manager", on_delete=models.CASCADE)
     start_date = models.DateField()

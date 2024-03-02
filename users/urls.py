@@ -11,11 +11,13 @@ router.register("systemusers",views.UserViewSet, basename="systemusers")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("create-staff/", views.createStaff, name="create-staff"),
+    path("staff-list/<str:hospital_id>/", views.getStaff, name="staff-list"),
     path("user-list/", views.UserList.as_view()),
     path("user-details/<int:pk>/", views.UserDetails.as_view()),
     path('pass-gen/', pass_generator.password_generator),
-    path("reset-password/<int:user_id>/", views.reset_password, name="reset-password"),
-    path('user-credentials/<int:user_id>/', views.send_user_credentials, name="user-credentials"),
+    path("reset-password/<str:user_id>/", views.reset_password, name="reset-password"),
+    path('user-credentials/<str:user_id>/', views.send_user_credentials, name="user-credentials"),
     path('user-image/<int:user_id>/', views.get_user_image, name="user-image"),
     path("staff-search/", staffSearch, name="staff_search"),
     path("export-staff-pdf/", views.generate_staff_pdf, name="export-staff-pdf"),

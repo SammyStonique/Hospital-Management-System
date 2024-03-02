@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'corsheaders',
     'djoser',
     'rest_framework',
@@ -42,14 +41,16 @@ INSTALLED_APPS = [
     'bookings',
     'customer_support',
     'doctor_profile.apps.DoctorProfileConfig',
+    'company',
     'inventory_management',
     'lab_management',
     'patients_registration',
     'payroll',
-    'xtra',
+    'xtra.apps.XtraConfig',
     'statistical_data',
     'users.apps.UsersConfig',
-    'django_filters'
+    'django_filters',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,7 @@ DATABASES = {
         "TEST": {
             "NAME": env('TEST_DATABASE'),
         },
+
     }
 }
 
@@ -110,7 +112,10 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
 }
 
 

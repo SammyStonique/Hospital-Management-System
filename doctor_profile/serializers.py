@@ -5,9 +5,10 @@ from .models import *
 class DoctorSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.email')
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(),many=False)
+    hospital = serializers.ReadOnlyField(source='hospital.name')
     class Meta:
         model = Doctor
-        fields = ['id','first_name','last_name','email','phone_number','specialization','department','payroll_number','user']
+        fields = ['doctor_id','first_name','last_name','email','phone_number','specialization','department','payroll_number','user','hospital']
 
     def create(self, validated_data):
         doctor = Doctor.objects.create(**validated_data)

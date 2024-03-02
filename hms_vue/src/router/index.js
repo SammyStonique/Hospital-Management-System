@@ -1,18 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store'
 import HomeView from '../views/HomeView.vue'
-import AppointmentsView from '../views/AppointmentsView.vue'
-import DepartmentsView from '../views/DepartmentsView.vue'
-import DoctorsView from '../views/DoctorsView.vue'
+import DashboardView from '../views/HMS/DashboardView.vue'
+import AppointmentsView from '../views/HMS/AppointmentsView.vue'
+import DepartmentsView from '../views/HMS/DepartmentsView.vue'
+import DoctorsView from '../views/HMS/DoctorsView.vue'
 import LoginView from '../views/LoginView.vue'
 import LogoutView from '../views/LogoutView.vue'
-import PatientsView from '../views/PatientsView.vue'
-import StaffView from '../views/StaffView.vue'
-import PayrollView from '../views/PayrollView.vue'
-import AccountsView from '../views/AccountsView.vue'
-import LabManagementView from '../views/LabManagementView.vue'
-import InventoryView from '../views/InventoryView.vue'
-import MyAccountView from '../views/MyAccountView.vue'
+import PatientsView from '../views/HMS/PatientsView.vue'
+import StaffView from '../views/HMS/StaffView.vue'
+import PayrollView from '../views/HR/PayrollView.vue'
+import AccountsView from '../views/FA/AccountsView.vue'
+import LabManagementView from '../views/HMS/LabManagementView.vue'
+import InventoryView from '../views/INV/InventoryView.vue'
+import MyAccountView from '../views/HMS/MyAccountView.vue'
 
 const routes = [
   {
@@ -24,29 +25,37 @@ const routes = [
     }
   },
   {
+    path: '/hms/dashboard',
+    name: 'hms-dashboard',
+    component: DashboardView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
     path: '/login',
     name: 'login',
     component: LoginView
   },
   {
-    path: '/appointments',
-    name: 'appointments',
+    path: '/hms/appointments',
+    name: 'hms-appointments',
     component: AppointmentsView,
     meta:{
       requireLogin: true
     }
   },
   {
-    path: '/departments',
-    name: 'departments',
+    path: '/hms/departments',
+    name: 'hms-departments',
     component: DepartmentsView,
     meta:{
       requireLogin: true
     }
   },
   {
-    path: '/doctors',
-    name: 'doctors',
+    path: '/hms/doctors',
+    name: 'hms-doctors',
     component: DoctorsView,
     meta:{
       requireLogin: true
@@ -58,40 +67,40 @@ const routes = [
     component: LogoutView
   },
   {
-    path: '/patients',
-    name: 'patients',
+    path: '/hms/patients',
+    name: 'hms-patients',
     component: PatientsView,
     meta:{
       requireLogin: true
     }
   },
   {
-    path: '/lab-management',
-    name: 'lab-management',
+    path: '/hms/lab-management',
+    name: 'hms-lab-management',
     component: LabManagementView,
     meta:{
       requireLogin: true
     }
   },
   {
-    path: '/staff',
-    name: 'staff',
+    path: '/hms/staff',
+    name: 'hms-staff',
     component: StaffView,
     meta:{
       requireLogin: true
     }
   },
   {
-    path: '/payroll',
-    name: 'payroll',
+    path: '/hr/payroll',
+    name: 'hr-payroll',
     component: PayrollView,
     meta:{
       requireLogin: true
     }
   },
   {
-    path: '/accounts',
-    name: 'accounts',
+    path: '/fa/accounts',
+    name: 'fa-accounts',
     component: AccountsView,
     meta:{
       requireLogin: true
@@ -106,8 +115,8 @@ const routes = [
     }
   },
   {
-    path: '/inventory',
-    name: 'inventory',
+    path: '/inv/inventory',
+    name: 'inv-inventory',
     component: InventoryView,
     meta:{
       requireLogin: true

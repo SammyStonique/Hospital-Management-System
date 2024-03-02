@@ -10,7 +10,7 @@ UserModel = get_user_model()
 def create_doctor(sender, instance, created, **kwargs):
     if created and instance.profile == "Doctor":
         Doctor.objects.create(user=instance, first_name=instance.first_name, last_name=instance.last_name,
-                                  phone_number=instance.phone_number, email=instance.email, department=instance.user_department)
+                                  phone_number=instance.phone_number, email=instance.email, department=instance.user_department, hospital=instance.allowed_hospital)
         print("DOCTOR CREATED SUCCESSFULLY")
     else:
         print("MISSION NOT SUCCESFUL")

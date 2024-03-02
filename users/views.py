@@ -9,6 +9,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from .models import *
+from company.models import Company
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -35,6 +36,8 @@ import csv
 import json
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
+
+import uuid
 
 from django.contrib.auth import get_user_model
 UserModel = get_user_model()
@@ -69,6 +72,32 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+@csrf_exempt
+@api_view(['POST'])
+def createStaff(request):
+    allowed_hospital = request.data.get("allowed_hospital")
+    hospital_uuid = uuid.UUID(allowed_hospital)
+    hospital_id = get_object_or_404(Company, hospital_id=hospital_uuid)
+    serializer = UserSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(hospital=hospital_id)
+
+    else:
+        print(serializer.errors) 
+
+    return Response(serializer.data)
+    
+@csrf_exempt
+@api_view(['GET'])
+def getStaff(request, hospital_id):
+    hospital_uuid = uuid.UUID(hospital_id)
+    allowed_hospital = get_object_or_404(Company, hospital_id=hospital_uuid)
+    staff = User.objects.filter(allowed_hospital=allowed_hospital)
+
+    serializer = UserSerializer(staff, many=True)
+
+    return Response(serializer.data)
 
 @csrf_exempt
 def send_user_credentials(request, user_id): 
@@ -97,7 +126,7 @@ api_view(['POST'])
 def reset_password(request,user_id):
     data = json.loads(request.body)
     new_password = data['new_password']
-    user = UserModel.objects.get(id=user_id)
+    user = UserModel.objects.get(user_id=user_id)
     user.set_password(new_password)
     user.save()
 
@@ -118,6 +147,7 @@ def generate_staff_pdf(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
@@ -130,7 +160,7 @@ def generate_staff_pdf(request):
     
 
     for stf in staffList:
-        if stf.profile != "Super Admin" and stf.profile != "Patient":
+        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == hospital_id):
             obj = {
                 "id": stf.id,
                 "email": stf.email,
@@ -179,6 +209,7 @@ def generate_staff_excel(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
@@ -191,7 +222,7 @@ def generate_staff_excel(request):
     
 
     for stf in staffList:
-        if stf.profile != "Super Admin" and stf.profile != "Patient":
+        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == hospital_id):
             obj = {
                 "id": stf.id,
                 "email": stf.email,
@@ -237,6 +268,7 @@ def generate_staff_csv(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
@@ -249,7 +281,7 @@ def generate_staff_csv(request):
     
 
     for stf in staffList:
-        if stf.profile != "Super Admin" and stf.profile != "Patient":
+        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == hospital_id):
             obj = {
                 "id": stf.id,
                 "email": stf.email,

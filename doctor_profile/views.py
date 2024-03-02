@@ -62,6 +62,7 @@ def generate_doctors_pdf(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -69,17 +70,18 @@ def generate_doctors_pdf(request):
     
 
     for doct in doctorsList:
-        obj = {
-            "id": doct.id,
-            "email": doct.email,
-            "first_name": doct.first_name,
-            "last_name": doct.last_name,
-            "specialization": doct.specialization,
-            "payroll_number": doct.payroll_number,
-            "phone_number": doct.phone_number,
-            "department": doct.department.name,
-        }
-        doctors.append(obj)
+        if (str(doct.hospital.company_id) == hospital_id):
+            obj = {
+                "id": doct.id,
+                "email": doct.email,
+                "first_name": doct.first_name,
+                "last_name": doct.last_name,
+                "specialization": doct.specialization,
+                "payroll_number": doct.payroll_number,
+                "phone_number": doct.phone_number,
+                "department": doct.department.name,
+            }
+            doctors.append(obj)
 
     context = {"doctors":doctors}
 
@@ -116,6 +118,7 @@ def generate_doctors_excel(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -123,17 +126,18 @@ def generate_doctors_excel(request):
     
 
     for doct in doctorsList:
-        obj = {
-            "id": doct.id,
-            "email": doct.email,
-            "first_name": doct.first_name,
-            "last_name": doct.last_name,
-            "specialization": doct.specialization,
-            "payroll_number": doct.payroll_number,
-            "phone_number": doct.phone_number,
-            "department": doct.department.name,
-        }
-        doctors.append(obj)
+        if (str(doct.hospital.company_id) == hospital_id):
+            obj = {
+                "id": doct.id,
+                "email": doct.email,
+                "first_name": doct.first_name,
+                "last_name": doct.last_name,
+                "specialization": doct.specialization,
+                "payroll_number": doct.payroll_number,
+                "phone_number": doct.phone_number,
+                "department": doct.department.name,
+            }
+            doctors.append(obj)
 
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=Doctors.xls'
@@ -167,6 +171,7 @@ def generate_doctors_csv(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -174,17 +179,18 @@ def generate_doctors_csv(request):
     
 
     for doct in doctorsList:
-        obj = {
-            "id": doct.id,
-            "email": doct.email,
-            "first_name": doct.first_name,
-            "last_name": doct.last_name,
-            "specialization": doct.specialization,
-            "payroll_number": doct.payroll_number,
-            "phone_number": doct.phone_number,
-            "department": doct.department.name,
-        }
-        doctors.append(obj)
+        if (str(doct.hospital.company_id) == hospital_id):
+            obj = {
+                "id": doct.id,
+                "email": doct.email,
+                "first_name": doct.first_name,
+                "last_name": doct.last_name,
+                "specialization": doct.specialization,
+                "payroll_number": doct.payroll_number,
+                "phone_number": doct.phone_number,
+                "department": doct.department.name,
+            }
+            doctors.append(obj)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=Doctors.csv'

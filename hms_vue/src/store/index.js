@@ -5,6 +5,7 @@ export default createStore({
     token: '',
     isAuthenticated: false,
     reloaded: false,
+    company_id: "",
   },
   getters: {
   },
@@ -44,6 +45,14 @@ export default createStore({
       state.isAuthenticated = false
       localStorage.removeItem('token')
     },
+    //FETCHING HOSPITAL ID
+    fetchComapnyID(state, company_id){
+      state.company_id = company_id;
+    },
+    removeCompanyID(state){
+      state.company_id = ""
+      localStorage.removeItem('company_id')
+    }
   },
   actions: {
   },

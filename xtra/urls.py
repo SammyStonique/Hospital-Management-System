@@ -9,10 +9,14 @@ router.register("departments",views.DepartmentViewSet, basename="departments")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("create-department/", views.createDepartment, name="create-department"),
+    path("fetch-department/", views.getDepartment, name="fetch-department"),
     path("department-list/", views.DepartmentList.as_view()),
-    path("department-details/<int:pk>/", views.DepartmentDetails.as_view()),
+    path("department-details/<str:pk>/", views.DepartmentDetails.as_view()),
     path("department-search/", departmentSearch, name="department_search"),
     path("export-departments-pdf/", views.generate_departments_pdf, name="export-departments-pdf"),
     path("export-departments-excel/", views.generate_departments_excel, name="export-departments-excel"),
     path("export-departments-csv/", views.generate_departments_csv, name="export-departments-csv"),
+    path("display-import-excel/", views.display_import_excel, name="display-import-excel"),
+    path("import-departments-excel/", views.import_departments_excel, name="import-departments-excel"),
 ]

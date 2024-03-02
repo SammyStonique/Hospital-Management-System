@@ -2,9 +2,10 @@ from rest_framework import serializers
 from .models import *
 
 class DepartmentSerializer(serializers.ModelSerializer):
+    company = serializers.ReadOnlyField(source='company.company_id')
     class Meta:
         model = Department
-        fields = ['id','code','name']
+        fields = ['department_id','code','name','company']
 
     def create(self, validated_data):
         department = Department.objects.create(**validated_data)

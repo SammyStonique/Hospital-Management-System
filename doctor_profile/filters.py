@@ -23,6 +23,7 @@ def doctorSearch(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
+    hospital_id = data['hospital_id']
 
     doctors = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -30,17 +31,18 @@ def doctorSearch(request):
     
 
     for doct in doctors:
-        obj = {
-            "id": doct.id,
-            "email": doct.email,
-            "first_name": doct.first_name,
-            "last_name": doct.last_name,
-            "specialization": doct.specialization,
-            "payroll_number": doct.payroll_number,
-            "phone_number": doct.phone_number,
-            "department": doct.department.name,
-        }
-        doctorsList.append(obj)
+        if (str(doct.hospital.company_id) == hospital_id):
+            obj = {
+                "id": doct.id,
+                "email": doct.email,
+                "first_name": doct.first_name,
+                "last_name": doct.last_name,
+                "specialization": doct.specialization,
+                "payroll_number": doct.payroll_number,
+                "phone_number": doct.phone_number,
+                "department": doct.department.name,
+            }
+            doctorsList.append(obj)
 
     pagination_class = BasePagination
     paginator = pagination_class()

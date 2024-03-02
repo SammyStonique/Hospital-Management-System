@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/home/sammyb/Hospital Management System/hms/djangoenv/bin/python3" "$0" "$@"
+'''exec' "/home/sammyb/Hospital Management System/hms/djangoenv/bin/python" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
