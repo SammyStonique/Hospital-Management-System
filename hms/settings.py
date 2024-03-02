@@ -20,7 +20,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost',
                  '127.0.0.1',
-                 'http://localhost:8080'
+                 'http://localhost:8080',
+                 'c6c2-102-0-6-211.ngrok-free.app'
                  ]
 
 
@@ -174,15 +175,18 @@ DJOSER = {
 }
 
         #CORS SETTINGS
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_METHODS = list(default_methods) + []
 
-CORS_ALLOW_HEADERS = list(default_headers) + []
+CORS_ALLOW_HEADERS = list(default_headers) + ["cache-control"]
+
+print(CORS_ALLOW_HEADERS )
 
         #CSRF SETTINGS
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8080',]
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8080','https://c6c2-102-0-6-211.ngrok-free.app']
 CSRF_COOKIE_SECURE = False
 
 #Email Settings

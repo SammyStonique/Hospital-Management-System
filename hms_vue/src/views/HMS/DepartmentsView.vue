@@ -133,7 +133,20 @@
                     
                     <form action="" @submit.prevent="importDepartmentsExcel" enctype="multipart/form-data" class="import-form">
                         <div class="border-2 rounded-lg py-4 px-3 mb-6">
-                            
+                            <div class="relative border h-18 w-76 mb-6">
+                                <!-- paramName="departments_excel" -->
+                                <DropZone 
+                                    :maxFiles="Number(10000000000)"
+                                    url=""
+                                    :uploadOnDrop="false"
+                                    :multipleUpload="true"
+                                    :parallelUpload="3"
+                                    method="POST"
+                                    @addedFile="onFileAdd"
+                                    :headers="{'Cache-Control': '' ,'X-Requested-With': ''}"
+                                    
+                                />
+                            </div>
                             <div>
                                 <label for="" class="mb-2 mr-3">Select Excel To Import:<em>*</em></label>
                                 <input type="text" name="" class="rounded border-2 border-gray-600 text-gray-500 text-sm pl-2 mr-2 mb-4 w-72 h-8" placeholder="" v-model="filePath" >
@@ -236,7 +249,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
-import Dropzone from '@/components/Dropzone.vue'
+import DropZone from 'dropzone-vue';
 
 
 export default{
@@ -297,13 +310,21 @@ export default{
         Modal,
         MyPagination,
         Loader,
-        Dropzone
+        DropZone
     },
     methods:{
         onFileChange(e){
             this.excel_file = e.target.files[0];
+            console.log("The target is ",e.target);
             console.log(this.excel_file)
             this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
+        },
+        onFileAdd(item){
+            this.excel_file = item.file;
+            console.log("The excel file is ",this.excel_file);
+            console.log("The excel file name is ",this.excel_file.name);
+            this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
+            this.displayExcelData();
         },
         fetchStaff(department){
         this.staffArray = [];
@@ -334,6 +355,7 @@ export default{
         }
       },
       showModal(){
+        this.scrollToTop();
         if(this.isEditing == false){
           this.dep_code = "";
           this.dep_name = "";
@@ -743,6 +765,8 @@ export default{
                     this.hideLoader();
                     this.excelDepList = [];
                     this.excel_file = "";
+                    this.$router.push("/hms/departments")
+                    this.$store.commit('reloadingPage')
                 })
             }
                 
