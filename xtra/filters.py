@@ -22,31 +22,33 @@ def departmentSearch(request):
     name = data['name']
     company_id = data['company_id']
 
-    departments = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+    company_uuid = uuid.UUID(company_id)
+    company_departments = Department.objects.filter(company=company_uuid)
+
+    departments = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departments:
-        if (str(dep.company.company_id) == company_id):
-            manager = Manager.objects.filter(department=dep)
-            if len(manager):
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_first_name": manager[0].user.first_name,
-                    "manager_last_name": manager[0].user.last_name,
-                    "start_date": manager[0].start_date.strftime("%d %b, %Y")
-                }
-                departList.append(obj)
-            else:
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_first_name": empty,
-                    "manager_last_name": empty,
-                    "start_date": empty
-                }
-                departList.append(obj)
+        manager = Manager.objects.filter(department=dep)
+        if len(manager):
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_first_name": manager[0].user.first_name,
+                "manager_last_name": manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departList.append(obj)
+        else:
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_first_name": empty,
+                "manager_last_name": empty,
+                "start_date": empty
+            }
+            departList.append(obj)
 
     pagination_class = BasePagination
     paginator = pagination_class()

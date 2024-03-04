@@ -141,7 +141,7 @@
                 <div class="basis-1/2">
                   <label for="">Department<em>*</em></label><br />
                   <select name="departmentUpdate" ref="departmentUpdateSelect" id="selectUpdateDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateDepartmentID" onfocus="this.selectedIndex = -1;" v-model="departmentEditing" v-if="isEditing">
-                      <option v-for="dep in departmentsArray" :key="dep.id" :value="dep.name" :label="dep.name" :selected="dep.name===departmentEditing">({{dep.code}}) - {{ dep.name }}</option> 
+                      <option v-for="dep in departmentsArray" :key="dep.department_id" :value="dep.name" :label="dep.name" :selected="dep.name===departmentEditing">({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
                   <select name="department" ref="departmentSelect" id="selectDepartment" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDepartmentID" onfocus="this.selectedIndex = -1;" v-model="department" required v-else>
                       <option value="" disabled selected>--Select Department--</option>
@@ -165,27 +165,29 @@
           <table class="min-w-full bg-white"> 
             <thead class="bg-gray-800 text-white">
               <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
-                <th class="text-left py-3 px-4">#</th>
-                <th class="text-left py-3 px-4">Name</th>
-                <th class="text-left py-3 px-4">Email</th>
-                <th class="text-left py-3 px-4">Phone Number</th>
-                <th class="text-left py-3 px-4">ID Number</th>
-                <th class="text-left py-3 px-4">Profile</th>
-                <th class="text-left py-3 px-4">Status</th>
-                <th class="text-left py-3 px-4">Actions</th>
+                <th class="text-left py-3 px-2">#</th>
+                <th class="text-left py-3 px-2">Name</th>
+                <th class="text-left py-3 px-2">Email</th>
+                <th class="text-left py-3 px-2">Phone Number</th>
+                <th class="text-left py-3 px-2">ID Number</th>
+                <th class="text-left py-3 px-2">Profile</th>
+                <th class="text-left py-3 px-2">Department</th>
+                <th class="text-left py-3 px-2">Status</th>
+                <th class="text-left py-3 px-2">Actions</th>
               </tr>
             </thead>
             <tbody>
         
-              <tr v-for="(staff,index) in staffList" :key="staff.id" class="even:bg-gray-100">
-                <td class="text-left py-3 px-4">{{ index + 1 }}</td>
-                <td class="text-left py-3 px-4">{{ staff.first_name }} {{ staff.last_name }}</td>
-                <td class="text-left py-3 px-4">{{ staff.email }}</td>
-                <td class="text-left py-3 px-4">{{ staff.phone_number }}</td>
-                <td class="text-left py-3 px-4">{{ staff.identification_no }}</td>
-                <td class="text-left py-3 px-4">{{ staff.profile }}</td>
-                <td v-if="staff.is_active" class="text-left py-3 px-4">Active</td>
-                <td v-else class="text-left py-3 px-4">Inactive</td>
+              <tr v-for="(staff,index) in staffList" :key="staff.user_id" class="even:bg-gray-100">
+                <td class="text-left py-3 px-2">{{ index + 1 }}</td>
+                <td class="text-left py-3 px-2">{{ staff.first_name }} {{ staff.last_name }}</td>
+                <td class="text-left py-3 px-2">{{ staff.email }}</td>
+                <td class="text-left py-3 px-2">{{ staff.phone_number }}</td>
+                <td class="text-left py-3 px-2">{{ staff.identification_no }}</td>
+                <td class="text-left py-3 px-2">{{ staff.profile }}</td>
+                <td class="text-left py-3 px-2">{{ staff.user_department }}</td>
+                <td v-if="staff.is_active" class="text-left py-3 px-2">Active</td>
+                <td v-else class="text-left py-3 px-2">Inactive</td>
                 <td>
                     <div class="flex">
                         <div class="basis-1/3">
@@ -254,6 +256,7 @@ export default{
       userDetails: [],
       staffList: [],
       department: '',
+      department_name: "",
       departmentEditing: '',
       payroll_number: '',
       specialization: '',
@@ -264,7 +267,7 @@ export default{
       isEditing: false,
       isSearching: false,
       staffID: 0,
-      hospID: "",
+      companyID: "",
       currentPage: 1,
       staffCount: 0,
       staffArrLen: 0,
@@ -277,7 +280,10 @@ export default{
       selectedDep: 0,
       selectedUpdateDep: 0,
       depID: 0,
+      department_id: "",
+      depName: "",
       depUpdateID: 0,
+      depUpdateName: "",
       watcherMsg: [],
       eStyle: null, nStyle:null, bWidth: null,
     }
@@ -355,15 +361,15 @@ export default{
         this.depID = 0;
         if(this.$refs.departmentSelect.selectedIndex > 0){
             this.selectedDep = this.$refs.departmentSelect.selectedIndex - 1;
-            this.depID = this.departmentsArray[this.selectedDep].id;
+            this.depID = this.departmentsArray[this.selectedDep].department_id;
         }
       },
       setUpdateDepartmentID(){
         this.depUpdateID = 0;
         if(this.$refs.departmentUpdateSelect.selectedIndex >= 0){
             this.selectedUpdateDep = this.$refs.departmentUpdateSelect.selectedIndex;
-            this.depUpdateID = this.departmentsArray[this.selectedUpdateDep].id;
-            let depName = this.departmentsArray[this.selectedUpdateDep].name;
+            this.depUpdateID = this.departmentsArray[this.selectedUpdateDep].department_id;
+            this.depUpdateName = this.departmentsArray[this.selectedUpdateDep].name;
         }
       },
       onFileChange(e){
@@ -412,9 +418,10 @@ export default{
           .finally(()=>{
             let new_first_name = this.first_name[0].toUpperCase() + this.first_name.slice(1).toLowerCase();
             let new_last_name = this.last_name[0].toUpperCase() + this.last_name.slice(1).toLowerCase();
+            let new_email = this.email.toLowerCase();
             let formData = new FormData();
             formData.append('first_name', new_first_name);
-            formData.append('email', this.email);
+            formData.append('email', new_email);
             formData.append('last_name', new_last_name);
             formData.append('identification_no', this.id_number);
             formData.append('birth_date', this.dob);
@@ -425,13 +432,14 @@ export default{
             formData.append('is_staff', this.is_staff);
             formData.append('is_active', this.is_staff);
             formData.append('user_department', this.depID);
-            formData.append('allowed_hospital', this.hospID);
+            formData.append('allowed_company', this.companyID);
             // formData.append('image', this.image);
               
             this.axios
             .post("api/v1/users/", formData)
             .then((response)=>{
                 this.userDetails = response.data;
+                console.log("The user details are ",this.userDetails);
                 console.log("The temporary password is ", this.temporary_password);
                 this.$toast.success("User Created Succesfully",{
                   duration: 5000,
@@ -446,25 +454,55 @@ export default{
                 temporary_password: this.temporary_password,
               }
               this.axios
-              .post(`api/v1/user-credentials/${this.userDetails.id}/`, formData)
+              .post(`api/v1/user-credentials/${this.userDetails.user_id}/`, formData)
               .then((response)=>{
               })
               .catch((error)=>{
-                console.log(error);
+                console.log(error.message);
               })
               .finally(()=>{
-                this.first_name = "";
-                this.last_name = "";
-                this.email = "";
-                this.id_number = "";
-                this.dob = "";
-                this.gender = "";
-                this.phone_number = "";
-                this.department = "";
-                this.profile = "";
-                this.image = null,
-                this.hideLoader();
-                this.$router.push("/staff")
+                let formData = {
+                  company: this.companyID,
+                  department: this.userDetails.user_department
+                }
+                this.axios
+                .post("api/v1/fetch-departments/", formData)
+                .then((response)=>{
+                    this.department_name = response.data.name;
+                })
+                .catch((error)=>{
+                  console.log(error.message);
+                })
+                .finally(()=>{
+                  let formData = {
+                    user_department_name: this.department_name,
+                    phone_number: this.userDetails.phone_number,
+                    birth_date: this.userDetails.birth_date,
+                    allowed_company: this.userDetails.allowed_company,
+                    user_department: this.userDetails.user_department
+                  }
+                  this.axios
+                  .put(`api/v1/users/${this.userDetails.user_id}/`, formData)
+                  .then((response)=>{
+                    console.log(response.data);
+                  })
+                  .catch((error)=>{
+                    console.log(error.message);
+                  }).finally(()=>{
+                    this.first_name = "";
+                    this.last_name = "";
+                    this.email = "";
+                    this.id_number = "";
+                    this.dob = "";
+                    this.gender = "";
+                    this.phone_number = "";
+                    this.department = "";
+                    this.profile = "";
+                    this.image = null,
+                    this.hideLoader();
+                    this.$store.commit('reloadingPage')
+                  })
+                })
               })
             })
 
@@ -502,7 +540,7 @@ export default{
       editStaff(){
         this.isEditing = true;
         let selectedStaff = arguments[0];
-        this.staffID = this.staffList[selectedStaff].id;
+        this.staffID = this.staffList[selectedStaff].user_id;
         this.axios
         .get(`api/v1/systemusers/${this.staffID}/`)
         .then((response)=>{
@@ -516,7 +554,8 @@ export default{
             this.profile = response.data.profile;
             this.gender = response.data.gender;
             this.image = response.data.image;
-            this.departmentEditing = response.data.user_department;
+            this.departmentEditing = response.data.user_department_name;
+            this.department_id = response.data.user_department;
         })
         .catch((error)=>{
             console.log(error.message);
@@ -524,14 +563,6 @@ export default{
         .finally(()=>{
             this.scrollToTop();
             this.showModal();
-            this.axios
-            .get(`api/v1/user-image/${this.staffID}/`)
-            .then((response)=>{
-              this.imgName = response.data;
-            })
-            .catch((error)=>{
-              console.log(error.message)
-            })
         })
 
       },
@@ -560,8 +591,15 @@ export default{
               formData.append('password', this.temporary_password);
               formData.append('is_staff', this.is_staff);
               formData.append('is_active', this.is_staff);
-              formData.append('user_department', this.depUpdateID);
-              formData.append('allowed_hospital', this.hospID);
+              console.log("The depUpdateID is ",this.depUpdateID);
+              if(this.depUpdateID != 0){
+                formData.append('user_department', this.depUpdateID);
+                formData.append('user_department_name', this.depUpdateName);
+              }else{
+                formData.append('user_department', this.department_id);
+                formData.append('user_department_name', this.departmentEditing);
+              }
+              formData.append('allowed_company', this.companyID);
 
               this.axios
               .put("api/v1/users/"+this.staffID+"/", formData)
@@ -593,7 +631,7 @@ export default{
         lockStaff(){
           this.is_active = false;
           let selectedStaff = arguments[0];
-          this.staffID = this.staffList[selectedStaff].id;
+          this.staffID = this.staffList[selectedStaff].user_id;
           this.$swal({
                 title: "Are you sure?",
                 text: `Do you wish to lock ${this.staffList[selectedStaff].first_name}'s account?`,
@@ -617,6 +655,7 @@ export default{
                       this.profile = response.data.profile;
                       this.gender = response.data.gender;
                       this.image = response.data.image;
+                      this.depID = response.data.user_department;
                   })
                   .catch((error)=>{
                       console.log(error.message);
@@ -634,7 +673,8 @@ export default{
                     formData.append('password', this.temporary_password);
                     formData.append('is_staff', this.is_staff);
                     formData.append('is_active', this.is_active);
-                    formData.append('allowed_hospital', this.hospID);
+                    formData.append('user_department', this.depID);
+                    formData.append('allowed_company', this.companyID);
                     this.axios
                     .put("api/v1/users/"+ this.staffID+ "/", formData)
                     .then((response)=>{
@@ -660,7 +700,7 @@ export default{
         unlockStaff(){
           this.is_active = true;
           let selectedStaff = arguments[0];
-          this.staffID = this.staffList[selectedStaff].id;
+          this.staffID = this.staffList[selectedStaff].user_id;
           this.$swal({
                 title: "Are you sure?",
                 text: `Do you wish to unlock ${this.staffList[selectedStaff].first_name}'s account?`,
@@ -684,6 +724,7 @@ export default{
                       this.profile = response.data.profile;
                       this.gender = response.data.gender;
                       this.image = response.data.image;
+                      this.depID = response.data.user_department;
                   })
                   .catch((error)=>{
                       console.log(error.message);
@@ -701,7 +742,8 @@ export default{
                     formData.append('password', this.temporary_password);
                     formData.append('is_staff', this.is_staff);
                     formData.append('is_active', this.is_active);
-                    formData.append('allowed_hospital', this.hospID);
+                    formData.append('user_department', this.depID);
+                    formData.append('allowed_company', this.companyID);
                     this.axios
                     .put("api/v1/users/"+ this.staffID+ "/", formData)
                     .then((response)=>{
@@ -726,7 +768,7 @@ export default{
         },
         removeStaff(){
           let selectedStaff = arguments[0];
-          this.staffID = this.staffList[selectedStaff].id;
+          this.staffID = this.staffList[selectedStaff].user_id;
           this.$swal({
                 title: "Are you sure?",
                 text: `Do you wish to delete ${this.staffList[selectedStaff].first_name}'s account?`,
@@ -799,7 +841,7 @@ export default{
               identification_no: this.search_id_number,
               profile: this.search_profile,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              company_id: this.companyID,
             }
             this.axios
             .post(`api/v1/staff-search/?page=${this.currentPage}`,formData)
@@ -833,7 +875,7 @@ export default{
               identification_no: this.search_id_number,
               profile: this.search_profile,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              company_id: this.companyID,
             }
             this.axios
             .post(`api/v1/export-staff-pdf/?page=${this.currentPage}`, formData, { responseType: 'blob' })
@@ -863,7 +905,7 @@ export default{
               identification_no: this.search_id_number,
               profile: this.search_profile,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              company_id: this.companyID,
             }
             this.axios
             .post(`api/v1/export-staff-excel/?page=${this.currentPage}`, formData, { responseType: 'blob' })
@@ -893,7 +935,7 @@ export default{
               identification_no: this.search_id_number,
               profile: this.search_profile,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              company_id: this.companyID,
             }
             this.axios
             .post(`api/v1/export-staff-csv/?page=${this.currentPage}`, formData, { responseType: 'blob' })
@@ -917,7 +959,7 @@ export default{
         
     },
     mounted(){
-      this.hospID = localStorage.getItem("hospital_id")
+      this.companyID = localStorage.getItem("company_id")
       this.searchStaff();
     }
 }

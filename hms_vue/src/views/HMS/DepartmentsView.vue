@@ -17,10 +17,10 @@
                         <button class="rounded bg-green-400 text-white px-3 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Deptmnt</button>
                     </div>
                     <div class="basis-1/5 pl-3 items-center">
-                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code" v-model="code" @keyup.enter="searchDepartment">
+                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code..." v-model="code" @keyup.enter="searchDepartment">
                     </div>
                     <div class="basis-1/5 pl-3 items-center">
-                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name" v-model="name"  @keyup.enter="searchDepartment">
+                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name..." v-model="name"  @keyup.enter="searchDepartment">
                     </div>
                     <div class="basis-1/5 pl-3">
                         <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchDepartment"><i class="fa fa-binoculars" aria-hidden="true"></i> Search</button>
@@ -134,7 +134,6 @@
                     <form action="" @submit.prevent="importDepartmentsExcel" enctype="multipart/form-data" class="import-form">
                         <div class="border-2 rounded-lg py-4 px-3 mb-6">
                             <div class="relative border h-18 w-76 mb-6">
-                                <!-- paramName="departments_excel" -->
                                 <DropZone 
                                     :maxFiles="Number(10000000000)"
                                     url=""
@@ -151,7 +150,7 @@
                                 <label for="" class="mb-2 mr-3">Select Excel To Import:<em>*</em></label>
                                 <input type="text" name="" class="rounded border-2 border-gray-600 text-gray-500 text-sm pl-2 mr-2 mb-4 w-72 h-8" placeholder="" v-model="filePath" >
                                 <input type="file" name="file-input" @change="onFileChange" id="file-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-                                <label class="rounded-lg border bg-gray-200 p-2" for="file-input">Browse...</label>
+                                <label class="rounded-lg border bg-gray-200 p-2 cursor-pointer" for="file-input">Browse...</label>
                             </div>
                             <div class="text-center">
                                 <button type="button" class="rounded border bg-green-400 w-24 py-2 px-2 text-white text-lg" @click="displayExcelData">Import</button>
@@ -289,6 +288,8 @@ export default{
             manager_phone_number: "",
             manager_status: "",
             manager_id: 0,
+            manager_name: "",
+            managerDetails: [],
             managerList: [],
             managerArr: [],
             newManagerArr: [],
@@ -326,14 +327,17 @@ export default{
             this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
             this.displayExcelData();
         },
-        fetchStaff(department){
+        fetchStaff(){
         this.staffArray = [];
+        let formData = {
+            company: this.companyID,
+            department: this.managerDepID
+        }
         this.axios
-        .get(`api/v1/staff-list/${this.companyID}/`)
+        .post("api/v1/department-staff-list/", formData)
         .then((response)=>{
-            console.log("The response data is ",response.data);
             for(let i=0; i<response.data.length; i++){
-                if(response.data[i].profile != "Super Admin" && response.data[i].profile != "Patient" && response.data[i].user_department == department  ){
+                if(response.data[i].profile != "Super Admin" && response.data[i].profile != "Patient"){
                     this.staffArray.push(response.data[i]);
                 }
             }
@@ -349,7 +353,7 @@ export default{
         this.userID = 0;
         if(this.$refs.userSelect.selectedIndex > 0){
             this.selectedDep = this.$refs.userSelect.selectedIndex - 1;
-            this.userID = this.staffArray[this.selectedDep].id;
+            this.userID = this.staffArray[this.selectedDep].user_id;
             this.phone_number = this.staffArray[this.selectedDep].phone_number;
             let userName = this.staffArray[this.selectedDep].first_name;
         }
@@ -368,7 +372,7 @@ export default{
         this.department = this.depList[selectedDepartment].name;
         this.managerDepID = this.depList[selectedDepartment].department_id;
         this.managerModalVisible = !this.managerModalVisible;
-        this.fetchStaff(this.department);
+        this.fetchStaff();
       },
       showReplaceManagerModal(){
         this.hasManager = true;
@@ -377,9 +381,10 @@ export default{
         this.department = this.depList[selectedDepartment].name;
         this.managerDepID = this.depList[selectedDepartment].department_id;
         this.managerModalVisible = !this.managerModalVisible;
-        this.fetchStaff(this.department);
+        this.fetchStaff();
       },
       showImportModal(){
+        this.showOptions = false;
         this.importModalVisible = ! this.importModalVisible;
         this.scrollToTop();
       },
@@ -399,90 +404,54 @@ export default{
         this.importModalVisible = false;
       },
       createDepartment(){
-        this.showLoader();
-        if(this.dep_code === '' || this.dep_name === ''){
-          this.$toast.error("Please Enter Department Details",{
-            duration: 5000,
-            dismissible: true
-          })
-        }
-        else{
-            let new_dep_name = "";
-            let x = this.dep_name.split(" ");
-            for(let i=0; i<x.length; i++){
-                new_dep_name += x[i][0].toUpperCase()+ x[i].slice(1).toLowerCase() + " ";
-            }
-            let new_dep_code = this.dep_code.toUpperCase();
-            let formData = {
-                code: new_dep_code,
-                name: new_dep_name,
-                company: this.companyID
-            }
-          this.axios
-          .post("api/v1/create-department/", formData)
-          .then((response)=>{
-            this.$toast.success("Department Successfully Added",{
+            this.showLoader();
+            if(this.dep_code === '' || this.dep_name === ''){
+            this.$toast.error("Please Enter Department Details",{
                 duration: 5000,
                 dismissible: true
             })
-          })
-          .catch((error)=>{
-            console.log(error.message);
-          })
-          .finally(()=>{
-            this.hideLoader();
-            this.dep_code = "";
-            this.dep_name = "";
-          })
-        }
-      },
-      fetchDepartments(){
-            this.showNextBtn = false;
-            this.showPreviousBtn = false;
+            }
+            else{
+                let new_dep_name = "";
+                let x = this.dep_name.split(" ");
+                for(let i=0; i<x.length; i++){
+                    new_dep_name += x[i][0].toUpperCase()+ x[i].slice(1).toLowerCase() + " ";
+                }
+                let new_dep_code = this.dep_code.toUpperCase();
+                let formData = {
+                    code: new_dep_code,
+                    name: new_dep_name,
+                    company: this.companyID
+                }
             this.axios
-            .get(`api/v1/departments/?page=${this.currentPage}`)
+            .post("api/v1/create-department/", formData)
             .then((response)=>{
-                this.newDepList = response.data.results;
-                this.depResults = response.data;
-                this.depArrLen = this.newDepList.length;
-                this.depCount = this.depResults.count;
-                this.pageCount = Math.ceil(this.depCount / 10);
-
-                if(response.data.next){
-                    this.showNextBtn = true;
-                }
-                if(response.data.previous){
-                    this.showPreviousBtn = true;
-                }
+                this.$toast.success("Department Successfully Added",{
+                    duration: 5000,
+                    dismissible: true
+                })
             })
             .catch((error)=>{
                 console.log(error.message);
             })
             .finally(()=>{
-                for(let i=0; i<this.newDepList.length; i++){
-                    this.axios
-                    .get(`api/v1/get-manager/${this.newDepList[i].department_id}`)
-                    .then((response)=>{
-                       
-                        if(response.data.managers.length){
-                            this.managerList = response.data.managers[0];
-                            this.newDepList[i] = this.managerList;
-                        }
-                    })
-                    .catch((error)=>{
-                        // console.log(error.message);
-                    })
-                }
-                this.depList = this.newDepList;
+                this.hideLoader();
+                this.dep_code = "";
+                this.dep_name = "";
             })
+            }
         },
         editDepartment(){
             this.isEditing = true;
             let selectedDepartment = arguments[0];
             this.depID = this.depList[selectedDepartment].department_id;
-            console.log(this.depList);
+            
+            let formData ={
+                company: this.companyID,
+                department: this.depID
+            }
             this.axios
-            .get(`api/v1/departments/${this.depID}/`)
+            .post("api/v1/fetch-departments/", formData)
             .then((response)=>{
                 this.dep_code = response.data.code;
                 this.dep_name = response.data.name;
@@ -516,9 +485,11 @@ export default{
                 let formData = {
                     code: new_dep_code,
                     name: new_dep_name,
+                    company: this.companyID,
+                    department: this.depID
                 }
                 this.axios
-                .put("api/v1/department-details/"+this.depID+"/", formData)
+                .put("api/v1/update-department/", formData)
                 .then((response)=>{
                     this.$toast.success("Department Succesfully Updated",{
                         duration:5000,
@@ -550,19 +521,23 @@ export default{
                 showLoaderOnConfirm: true,
             }).then((result) => {
                 if (result.value) {
-                this.axios
-                .delete("api/v1/department-details/"+this.depID+"/")
-                .then((response)=>{
-                    this.$swal("Poof! Department removed succesfully!", {
-                        icon: "success",
-                    });
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                })
-                .finally(()=>{
-                    this.$store.commit("reloadingPage");
-                })
+                    let formData = {
+                        company: this.companyID,
+                        department: this.depID
+                    }
+                    this.axios
+                    .post("api/v1/delete-department/", formData)
+                    .then((response)=>{
+                        this.$swal("Poof! Department removed succesfully!", {
+                            icon: "success",
+                        });
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                    .finally(()=>{
+                        this.$store.commit("reloadingPage");
+                    })
                 
                 } else {
                     this.$swal(`${this.depName} has not been deleted!`);
@@ -785,35 +760,75 @@ export default{
             }
             else{
                 let formData = {
+                    company: this.companyID,
                     department: this.managerDepID,
                     user: this.userID,
                     start_date: this.start_date,
                     phone_number: this.phone_number,
                     status: this.status,
                 }
+                console.log(formData);
                 this.axios
-                .post("api/v1/manager-list/", formData)
+                .post("api/v1/create-department-manager/", formData)
                 .then((response)=>{
-                    
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                })
-                .finally(()=>{
+                    this.managerDetails = response.data;
                     this.$toast.success("Manager Added Succesfully",{
                         duration: 3000,
                         dismissible: true
                     })
-                    this.department = "";
-                    this.user = "";
-                    this.start_date = "";
-                    this.end_date = "";
-                    this.status = "";
-                    this.phone_number = "";
-                    this.hideLoader();
-                    this.closeManagerModal();
-                    this.$store.commit('reloadingPage');
-                    
+                })
+                .catch((error)=>{
+                    this.$toast.error("Operation Failed",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    let formData = {
+                        company: this.companyID,
+                        staff: this.managerDetails.user,
+                        department: this.managerDetails.department
+                    }
+                    this.axios
+                    .post("api/v1/department-staff-list/", formData)
+                    .then((response)=>{
+                        this.manager_name = response.data.first_name + " " + response.data.last_name;
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                    .finally(()=>{
+                        let formData = {
+                            manager: this.managerDetails.manager_id,
+                            user: this.managerDetails.user,
+                            start_date: this.managerDetails.start_date,
+                            phone_number: this.managerDetails.phone_number,
+                            department: this.managerDetails.department,
+                            status: this.managerDetails.status,
+                            company: this.companyID,
+                            manager_name: this.manager_name
+                        }
+                        this.axios
+                        .put("api/v1/update-department-manager/", formData)
+                        .then((response)=>{
+
+                        })
+                        .catch((error)=>{
+                            console.log(error.mesage);
+                        })
+                        .finally(()=>{
+                            this.department = "";
+                            this.user = "";
+                            this.start_date = "";
+                            this.end_date = "";
+                            this.status = "";
+                            this.phone_number = "";
+                            this.hideLoader();
+                            this.closeManagerModal();
+                            this.$store.commit('reloadingPage');
+                        })
+                    })  
                 })
             }
         },
@@ -830,6 +845,7 @@ export default{
             }
             else{
                 let formData = {
+                    company: this.companyID,
                     department: this.managerDepID,
                     user: this.userID,
                     start_date: this.start_date,
@@ -837,72 +853,108 @@ export default{
                     status: this.status,
                 }
                 this.axios
-                .post("api/v1/manager-list/", formData)
+                .post("api/v1/create-department-manager/", formData)
                 .then((response)=>{
-                    
+                    this.managerDetails = response.data;
+                    this.$toast.success("Manager Added Succesfully",{
+                        duration: 3000,
+                        dismissible: true
+                    })
                 })
                 .catch((error)=>{
                     console.log(error.message);
                 })
                 .finally(()=>{
+                    let formData = {
+                        company: this.companyID,
+                        staff: this.managerDetails.user,
+                        department: this.managerDetails.department
+                    }
                     this.axios
-                    .get("api/v1/manager-list/")
+                    .post("api/v1/department-staff-list/", formData)
                     .then((response)=>{
-                        this.managerArr = response.data.results;
+                        this.manager_name = response.data.first_name + " " + response.data.last_name;
                     })
                     .catch((error)=>{
                         console.log(error.message);
                     })
                     .finally(()=>{
-                        for(let i=1; i<this.managerArr.length; i++){
-                            if(this.managerArr[i].department == this.managerDepID){
-                                this.newManagerArr.push(this.managerArr[i]);
-                            }
-                        }
-                        this.manager_status= "Inactive";
-                        this.manager_department = this.newManagerArr[0].department;
-                        this.manager_user = this.newManagerArr[0].user;
-                        this.manager_phone_number = this.newManagerArr[0].phone_number;
-                        this.manager_start_date = this.newManagerArr[0].start_date;
-                        this.manager_id = this.newManagerArr[0].id;
-
                         let formData = {
-                            department: this.manager_department,
-                            user: this.manager_user,
-                            start_date: this.manager_start_date,
-                            phone_number: this.manager_phone_number,
-                            end_date: this.start_date,
-                            status: this.manager_status,
+                            manager: this.managerDetails.manager_id,
+                            user: this.managerDetails.user,
+                            start_date: this.managerDetails.start_date,
+                            phone_number: this.managerDetails.phone_number,
+                            department: this.managerDetails.department,
+                            status: this.managerDetails.status,
+                            company: this.companyID,
+                            manager_name: this.manager_name
                         }
                         this.axios
-                           .put("api/v1/replace-manager/"+this.manager_id+"/", formData)
-                           .then((response)=>{
-                           })
-                           .catch((error)=>{
-                            console.log(error.message);
-                           })
-                           .finally(()=>{
-                                this.$toast.success("Manager Added Succesfully",{
-                                    duration: 3000,
-                                    dismissible: true
-                                })
-                                this.department = "";
-                                this.user = "";
-                                this.start_date = "";
-                                this.end_date = "";
-                                this.status = "";
-                                this.phone_number = "";
+                        .put("api/v1/update-department-manager/", formData)
+                        .then((response)=>{
+
+                        })
+                        .catch((error)=>{
+                            console.log(error.mesage);
+                        })
+                        .finally(()=>{
+                            let formData = {
+                                company: this.companyID,
+                                department: this.managerDetails.department
+                            }
+                            this.axios
+                            .post("api/v1/get-department-managers/", formData)
+                            .then((response)=>{
+                                this.managerArr = response.data;
+                            })
+                            .catch((error)=>{
+                                console.log(error.message);
+                            })
+                            .finally(()=>{
                                 this.manager_status= "Inactive";
-                                this.manager_department = 0;
-                                this.manager_user = 0;
-                                this.manager_phone_number = "";
-                                this.manager_start_date = "";
-                                this.manager_id = 0;
-                                this.hasManager = false;
-                                this.hideLoader();
-                                this.closeManagerModal();
-                                this.$store.commit('reloadingPage');
-                           })
+                                this.manager_department = this.managerArr[1].department;
+                                this.manager_user = this.managerArr[1].user;
+                                this.manager_phone_number = this.managerArr[1].phone_number;
+                                this.manager_start_date = this.managerArr[1].start_date;
+                                this.manager_id = this.managerArr[1].manager_id;
+
+                                let formData = {
+                                    company: this.companyID,
+                                    department: this.manager_department,
+                                    user: this.manager_user,
+                                    start_date: this.manager_start_date,
+                                    phone_number: this.manager_phone_number,
+                                    end_date: this.start_date,
+                                    status: this.manager_status,
+                                    manager: this.manager_id
+                                }
+                                this.axios
+                                .put("api/v1/replace-manager/", formData)
+                                .then((response)=>{
+                                })
+                                .catch((error)=>{
+                                    console.log(error.message);
+                                })
+                                .finally(()=>{
+                                    this.department = "";
+                                    this.user = "";
+                                    this.start_date = "";
+                                    this.end_date = "";
+                                    this.status = "";
+                                    this.phone_number = "";
+                                    this.manager_status= "Inactive";
+                                    this.manager_department = 0;
+                                    this.manager_user = 0;
+                                    this.manager_phone_number = "";
+                                    this.manager_start_date = "";
+                                    this.manager_id = 0;
+                                    this.hasManager = false;
+                                    this.hideLoader();
+                                    this.closeManagerModal();
+                                    this.$store.commit('reloadingPage');
+                                })
+                            })
+                        })
                     })
                     
                 })

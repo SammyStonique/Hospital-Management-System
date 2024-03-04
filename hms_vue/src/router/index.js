@@ -14,6 +14,7 @@ import AccountsView from '../views/FA/AccountsView.vue'
 import LabManagementView from '../views/HMS/LabManagementView.vue'
 import InventoryView from '../views/INV/InventoryView.vue'
 import MyAccountView from '../views/HMS/MyAccountView.vue'
+import ManagersView from '../views/HMS/ManagersView.vue'
 
 const routes = [
   {
@@ -49,6 +50,14 @@ const routes = [
     path: '/hms/departments',
     name: 'hms-departments',
     component: DepartmentsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/managers',
+    name: 'hms-managers',
+    component: ManagersView,
     meta:{
       requireLogin: true
     }

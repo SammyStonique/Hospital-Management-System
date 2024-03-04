@@ -58,17 +58,18 @@ class DepartmentList(generics.ListCreateAPIView):
 class DepartmentDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+        
 
 @csrf_exempt
 @api_view(['POST'])
 def createDepartment(request):
-    company = request.data.get("company")
-    company_uuid = uuid.UUID(company)
-    company_id = get_object_or_404(Company, company_id=company_uuid)
+    company_id = request.data.get("company")
+    company_uuid = uuid.UUID(company_id)
+    company = get_object_or_404(Company, company_id=company_uuid)
     serializer = DepartmentSerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save(company=company_id)
+        serializer.save(company=company)
 
     else:
         print(serializer.errors) 
@@ -78,15 +79,64 @@ def createDepartment(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
-def getDepartment(request, company_id):
-    company_uuid = uuid.UUID(company_id)
-    company = get_object_or_404(Company, company_id=company_uuid)
-    department = Department.objects.filter(company=company)
+@api_view(['POST'])
+def getDepartments(request):
+    department_id = request.data.get("department")
+    company_id = request.data.get("company")
 
-    serializer = DepartmentSerializer(department, many=True)
+    if department_id is not None:
+        company_uuid = uuid.UUID(company_id)
+        department_uuid = uuid.UUID(department_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        department = Department.objects.get(company=company, department_id=department_uuid)
 
+        serializer = DepartmentSerializer(department)
+        return Response(serializer.data)
+
+    else:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        department = Department.objects.filter(company=company)
+
+        serializer = DepartmentSerializer(department, many=True)
+        return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['PUT'])
+def updateDepartment(request):
+    department_id = request.data.get("department")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    department_uuid = uuid.UUID(department_id)
+    department = Department.objects.get(company=company_id,department_id=department_uuid)
+    
+    serializer = DepartmentSerializer(department, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    else:
+        print(serializer.errors) 
+
+    
     return Response(serializer.data)
+
+@csrf_exempt
+@api_view(['POST'])
+def deleteDepartment(request):
+    department_id = request.data.get("department")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    department_uuid = uuid.UUID(department_id)
+    department = Department.objects.get(company=company_id,department_id=department_uuid)
+
+    department.delete() 
+    message = {'msg':"The department has been succesfully deleted"} 
+    return Response(message)
+
 
 @csrf_exempt   
 def generate_departments_pdf(request):
@@ -97,31 +147,33 @@ def generate_departments_pdf(request):
     name = data['name']
     company_id = data['company_id']
 
-    departList = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+    company_uuid = uuid.UUID(company_id)
+    company_departments = Department.objects.filter(company=company_uuid)
+
+    departList = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departList:
-        if (str(dep.company.company_id) == company_id):
-            manager = Manager.objects.filter(department=dep)
-            if len(manager):
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_first_name": manager[0].user.first_name,
-                    "manager_last_name": manager[0].user.last_name,
-                    "start_date": manager[0].start_date.strftime("%d %b, %Y")
-                }
-                departments.append(obj)
-            else:
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_first_name": empty,
-                    "manager_last_name": empty,
-                    "start_date": empty
-                }
-                departments.append(obj)
+        manager = Manager.objects.filter(department=dep)
+        if len(manager):
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_first_name": manager[0].user.first_name,
+                "manager_last_name": manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departments.append(obj)
+        else:
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_first_name": empty,
+                "manager_last_name": empty,
+                "start_date": empty
+            }
+            departments.append(obj)
 
     context = {"departments":departments}
 
@@ -157,29 +209,31 @@ def generate_departments_excel(request):
     name = data['name']
     company_id = data['company_id']
 
-    departList = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+    company_uuid = uuid.UUID(company_id)
+    company_departments = Department.objects.filter(company=company_uuid)
+
+    departList = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departList:
-        if (str(dep.company.company_id) == company_id):
-            manager = Manager.objects.filter(department=dep)
-            if len(manager):
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
-                    "start_date": manager[0].start_date.strftime("%d %b, %Y")
-                }
-                departments.append(obj)
-            else:
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_name": empty,
-                    "start_date": empty
-                }
-                departments.append(obj)
+        manager = Manager.objects.filter(department=dep)
+        if len(manager):
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departments.append(obj)
+        else:
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_name": empty,
+                "start_date": empty
+            }
+            departments.append(obj)
 
 
     response = HttpResponse(content_type='application/ms-excel')
@@ -211,31 +265,33 @@ def generate_departments_csv(request):
     data = json.loads(request.body)
     code = data['code']
     name = data['name']
-    hospital_id = data['hospital_id']
+    company_id = data['company_id']
 
-    departList = Department.objects.filter(Q(code__icontains=code) & Q(name__icontains=name) )
+    company_uuid = uuid.UUID(company_id)
+    company_departments = Department.objects.filter(company=company_uuid)
+
+    departList = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departList:
-        if (str(dep.company.company_id) == hospital_id):
-            manager = Manager.objects.filter(department=dep)
-            if len(manager):
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
-                    "start_date": manager[0].start_date.strftime("%d %b, %Y")
-                }
-                departments.append(obj)
-            else:
-                obj = {
-                    "department_id": dep.department_id,
-                    "code": dep.code,
-                    "name": dep.name,
-                    "manager_name": empty,
-                    "start_date": empty
-                }
-                departments.append(obj)
+        manager = Manager.objects.filter(department=dep)
+        if len(manager):
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_name": manager[0].user.first_name + ' '+ manager[0].user.last_name,
+                "start_date": manager[0].start_date.strftime("%d %b, %Y")
+            }
+            departments.append(obj)
+        else:
+            obj = {
+                "department_id": dep.department_id,
+                "code": dep.code,
+                "name": dep.name,
+                "manager_name": empty,
+                "start_date": empty
+            }
+            departments.append(obj)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=Departments.csv'

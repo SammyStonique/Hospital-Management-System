@@ -24,9 +24,12 @@ def staffSearch(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    company_id = data['company_id']
 
-    users = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+    company_uuid = uuid.UUID(company_id)
+    company_users = User.objects.filter(allowed_company=company_uuid)
+
+    users = company_users.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
     
     if status:
@@ -37,9 +40,9 @@ def staffSearch(request):
     
 
     for staff in users:
-        if (staff.profile != "Super Admin") and (staff.profile != "Patient") and (str(staff.allowed_company.company_id) == hospital_id):
+        if (staff.profile != "Super Admin") and (staff.profile != "Patient"):
             obj = {
-                "id": staff.id,
+                "user_id": staff.user_id,
                 "email": staff.email,
                 "first_name": staff.first_name,
                 "last_name": staff.last_name,
@@ -55,5 +58,57 @@ def staffSearch(request):
     paginator = pagination_class()
 
     page = paginator.paginate_queryset(staffList, request)
+
+    return  paginator.get_paginated_response(page)
+
+
+@api_view(['POST'])
+@csrf_exempt
+def managersSearch(request):
+    managerList = []
+    data = json.loads(request.body)
+    department = data['department']
+    manager_name = data['manager_name']
+    status = data['status']
+    phone_number = data['phone_number']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_managers = Manager.objects.filter(company=company_uuid)
+
+    managers = company_managers.filter(Q(manager_name__icontains=manager_name) & Q(department__name__icontains=department)
+                                 & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        managers = managers.filter(status = status)
+
+    for manager in managers:
+            if manager.end_date:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date.strftime("%d %b, %Y"),
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+            else:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date,
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+
+    pagination_class = BasePagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(managerList, request)
 
     return  paginator.get_paginated_response(page)

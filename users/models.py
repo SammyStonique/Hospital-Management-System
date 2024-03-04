@@ -52,6 +52,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     profile = models.CharField(max_length=250,choices=PROFILES,default='',blank=True)
     image = models.ImageField(default='default.png', upload_to='profile_pics')
     user_department = models.ForeignKey(Department, related_name='user_departments', on_delete=models.DO_NOTHING)
+    user_department_name = models.CharField(max_length=250, null=True, blank=True)
     is_staff = models.BooleanField(default= False)
     is_active = models.BooleanField(default= False)
     start_date = models.DateTimeField(auto_now_add=True)
@@ -60,7 +61,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','image','is_staff','is_active','user_department','allowed_company']
+    REQUIRED_FIELDS = ['phone_number','first_name','last_name','identification_no','birth_date','gender','profile','image','is_staff','is_active','user_department','user_department_name','allowed_company']
 
     def __str__(self):
         return f'{self.email}'
@@ -77,13 +78,18 @@ class User(AbstractBaseUser,PermissionsMixin):
             output_size = (200, 200)
             img.thumbnail(output_size)
             img.save(self.image.path)
+
+    def getDepartmentName(self):
+        return self.user_department.name
         
 class Manager(models.Model):
     STATUS = (('','Select Status'),('Active','Active'),('Inactive','Inactive'))
 
     manager_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     department = models.ForeignKey(Department, related_name='dep_manager', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, related_name='manager_company', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name="user_manager", on_delete=models.CASCADE)
+    manager_name = models.CharField(max_length=250, null=True, blank=True)
     start_date = models.DateField()
     phone_number = models.CharField(max_length=250)
     end_date = models.DateField(blank=True, null=True)

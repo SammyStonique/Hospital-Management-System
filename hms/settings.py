@@ -182,7 +182,6 @@ CORS_ALLOW_METHODS = list(default_methods) + []
 
 CORS_ALLOW_HEADERS = list(default_headers) + ["cache-control"]
 
-print(CORS_ALLOW_HEADERS )
 
         #CSRF SETTINGS
 

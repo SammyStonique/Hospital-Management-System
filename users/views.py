@@ -72,38 +72,40 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
 @csrf_exempt
 @api_view(['POST'])
-def createStaff(request):
-    allowed_hospital = request.data.get("allowed_hospital")
-    hospital_uuid = uuid.UUID(allowed_hospital)
-    hospital_id = get_object_or_404(Company, hospital_id=hospital_uuid)
-    serializer = UserSerializer(data=request.data)
+def getDepartmentStaff(request):
+    department_id = request.data.get("department")
+    company = request.data.get("company")
+    staff_id = request.data.get("staff")
 
-    if serializer.is_valid():
-        serializer.save(hospital=hospital_id)
+    if staff_id is not None:
+        staff_uuid = uuid.UUID(staff_id)
+        department_uuid = uuid.UUID(department_id)
+        company_uuid = uuid.UUID(company)
+        allowed_company = get_object_or_404(Company, company_id=company_uuid)
+        staff = User.objects.get(allowed_company=allowed_company, user_department=department_uuid,user_id=staff_uuid)
 
+        serializer = UserSerializer(staff)
+
+        return Response(serializer.data)
     else:
-        print(serializer.errors) 
+        department_uuid = uuid.UUID(department_id)
+        company_uuid = uuid.UUID(company)
+        allowed_company = get_object_or_404(Company, company_id=company_uuid)
+        staff = User.objects.filter(allowed_company=allowed_company, user_department=department_uuid)
 
-    return Response(serializer.data)
-    
-@csrf_exempt
-@api_view(['GET'])
-def getStaff(request, hospital_id):
-    hospital_uuid = uuid.UUID(hospital_id)
-    allowed_hospital = get_object_or_404(Company, hospital_id=hospital_uuid)
-    staff = User.objects.filter(allowed_hospital=allowed_hospital)
+        serializer = UserSerializer(staff, many=True)
 
-    serializer = UserSerializer(staff, many=True)
+        return Response(serializer.data)
 
-    return Response(serializer.data)
 
 @csrf_exempt
 def send_user_credentials(request, user_id): 
     data = json.loads(request.body)
     temporary_password = data['temporary_password']
-    created_user = get_object_or_404(User, id=user_id)
+    created_user = get_object_or_404(User, user_id=user_id)
     phone_number = created_user.phone_number
     first_name = created_user.first_name
     email = created_user.email
@@ -132,11 +134,6 @@ def reset_password(request,user_id):
 
     return HttpResponse("Password Changed Succesfully")
 
-def get_user_image(request, user_id):
-    selected_user = get_object_or_404(User, id=user_id)
-    user_image = selected_user.image
-    return HttpResponse(str(user_image))
-
 @csrf_exempt 
 def generate_staff_pdf(request):
     staff = []
@@ -147,9 +144,12 @@ def generate_staff_pdf(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    company_id = data['company_id']
 
-    staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+    company_uuid = uuid.UUID(company_id)
+    company_users = User.objects.filter(allowed_company=company_uuid)
+
+    staffList = company_users.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
     
     if status:
@@ -160,9 +160,9 @@ def generate_staff_pdf(request):
     
 
     for stf in staffList:
-        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == hospital_id):
+        if stf.profile != "Super Admin" and stf.profile != "Patient":
             obj = {
-                "id": stf.id,
+                "user_id": stf.user_id,
                 "email": stf.email,
                 "first_name": stf.first_name,
                 "last_name": stf.last_name,
@@ -209,9 +209,12 @@ def generate_staff_excel(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    company_id = data['company_id']
 
-    staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+    company_uuid = uuid.UUID(company_id)
+    company_users = User.objects.filter(allowed_company=company_uuid)
+
+    staffList = company_users.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
     
     if status:
@@ -222,9 +225,9 @@ def generate_staff_excel(request):
     
 
     for stf in staffList:
-        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == hospital_id):
+        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == company_id):
             obj = {
-                "id": stf.id,
+                "user_id": stf.user_id,
                 "email": stf.email,
                 "first_name": stf.first_name,
                 "last_name": stf.last_name,
@@ -268,9 +271,12 @@ def generate_staff_csv(request):
     identification_no = data['identification_no']
     profile = data['profile']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    company_id = data['company_id']
 
-    staffList = User.objects.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
+    company_uuid = uuid.UUID(company_id)
+    company_users = User.objects.filter(allowed_company=company_uuid)
+
+    staffList = company_users.filter((Q(first_name__icontains=name) | Q(last_name__icontains=name)) & Q(user_department__name__icontains=user_department)
                                 & Q(identification_no__icontains=identification_no) & Q(phone_number__icontains=phone_number) )
     
     if status:
@@ -281,9 +287,9 @@ def generate_staff_csv(request):
     
 
     for stf in staffList:
-        if stf.profile != "Super Admin" and stf.profile != "Patient" and (str(stf.allowed_company.company_id) == hospital_id):
+        if stf.profile != "Super Admin" and stf.profile != "Patient":
             obj = {
-                "id": stf.id,
+                "user_id": stf.user_id,
                 "email": stf.email,
                 "first_name": stf.first_name,
                 "last_name": stf.last_name,
@@ -315,9 +321,92 @@ class ManagerDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Manager.objects.all()
     serializer_class = ManagerSerializer
 
+
+@csrf_exempt
+@api_view(['POST'])
+def createManager(request):
+    company_id = request.data.get("company")
+    department_id = request.data.get("department")
+    company_uuid = uuid.UUID(company_id)
+    department_uuid = uuid.UUID(department_id)
+    company = get_object_or_404(Company, company_id=company_uuid)
+    department = Department.objects.get(department_id=department_uuid)
+    serializer = ManagerSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(department=department,company=company)
+
+    else:
+        print(serializer.errors) 
+
+    
+    return Response(serializer.data)
+
+@csrf_exempt
+@api_view(['POST'])
+def getDepartmentManagers(request):
+    manager_id = request.data.get("manager")
+    company_id = request.data.get("company")
+    department_id = request.data.get("department")
+
+    if manager_id is not None and department_id is not None:
+        department_uuid = uuid.UUID(department_id)
+        company_uuid = uuid.UUID(company_id)
+        manager_uuid = uuid.UUID(manager_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        department = Department.objects.filter(company=company_uuid, department_id=department_uuid)
+        manager = Manager.objects.get(company=company, department=department, manager_id=manager_uuid)
+
+        serializer = ManagerSerializer(manager)
+        return Response(serializer.data)
+
+    elif department_id is not None:
+        department_uuid = uuid.UUID(department_id)
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        manager = Manager.objects.filter(company=company, department=department_uuid)
+
+        serializer = ManagerSerializer(manager, many=True)
+        return Response(serializer.data)
+
+    else:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        manager = Manager.objects.filter(company=company)
+
+        serializer = ManagerSerializer(manager, many=True)
+        return Response(serializer.data)
+
+csrf_exempt
 @api_view(['PUT'])
-def replaceManager(request,manager_id):
-    manager = get_object_or_404(Manager, id=manager_id)
+def updateDepartmentManager(request):
+    manager_id = request.data.get("manager")
+    department_id = request.data.get("department")
+    company = request.data.get("company")
+    manager_uuid = uuid.UUID(manager_id)
+    department_uuid = uuid.UUID(department_id)
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    manager = Manager.objects.get(company=company_id,department_id=department_uuid,manager_id=manager_uuid)
+    
+    serializer = ManagerSerializer(manager, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    else:
+        print(serializer.errors)
+
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+def replaceManager(request):
+    company_id = request.data.get("company")
+    manager_id = request.data.get("manager")
+    manager_uuid = uuid.UUID(manager_id)
+    company_uuid = uuid.UUID(company_id)
+    company = get_object_or_404(Company, company_id=company_uuid)
+    manager = Manager.objects.get(manager_id=manager_uuid,company=company)
     end_date = request.data.get('end_date')
     serializer = ManagerSerializer(manager, data=request.data, partial=True)
     new_end_date= (datetime.strptime(end_date, "%Y-%m-%d")- timedelta(days=1)).strftime("%Y-%m-%d")
@@ -331,25 +420,6 @@ def replaceManager(request,manager_id):
     return Response(serializer.data)
 
 
-@csrf_exempt
-def getManager(request,dep_id):
-    managersList = []
-    department = get_object_or_404(Department, id=dep_id)
-    manager = Manager.objects.filter(status="Active",department=department)
 
-    if len(manager):
-        obj = {
-            "id":department.id,
-            "code": department.code,
-            "name": department.name,
-            "manager_first_name": manager[0].user.first_name,
-            "manager_last_name": manager[0].user.last_name,
-            "start_date": manager[0].start_date.strftime("%d %b, %Y")
-        }
-        managersList.append(obj)
-
-        return JsonResponse({'managers': managersList})
-    else:
-        return HttpResponse("The manager's status is inactive")
 
     

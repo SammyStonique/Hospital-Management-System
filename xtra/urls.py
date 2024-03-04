@@ -10,7 +10,9 @@ router.register("departments",views.DepartmentViewSet, basename="departments")
 urlpatterns = [
     path("", include(router.urls)),
     path("create-department/", views.createDepartment, name="create-department"),
-    path("fetch-department/", views.getDepartment, name="fetch-department"),
+    path("update-department/", views.updateDepartment, name="update-department"),
+    path("fetch-departments/", views.getDepartments, name="fetch-department"),
+    path("delete-department/", views.deleteDepartment, name="delete-department"),
     path("department-list/", views.DepartmentList.as_view()),
     path("department-details/<str:pk>/", views.DepartmentDetails.as_view()),
     path("department-search/", departmentSearch, name="department_search"),

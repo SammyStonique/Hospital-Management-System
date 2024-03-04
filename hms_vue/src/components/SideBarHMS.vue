@@ -24,13 +24,31 @@
           </button>
         </router-link>
       </div>
-      <div class="web-links py-3 px-3 pl-4 hover:bg-slate-500 hover:rounded hover:w-full">
-        <router-link to="/hms/departments">
-          <button class="flex">
-            <i class="fa fa-building pt-2 mr-2" aria-hidden="true"></i>
-            <p class="text-lg">Departments</p>
+      <div class="web-links dropdown">
+        <div class="py-3 px-3 pl-4 hover:bg-slate-500 hover:rounded hover:w-full">
+          <button class="flex" @click="showDepartmentDropdown">
+              <i class="fa fa-building pt-2 mr-2" aria-hidden="true"></i>
+              <p class="text-lg">Departments</p>
           </button>
-        </router-link>
+        </div>
+        <div class="dropdown-content pl-4" v-if="department_dropdown">
+          <div class="py-3 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
+            <router-link to="/hms/departments">
+              <button class="flex text-sm">
+                <i class="fa fa-building pt-2 mr-2" aria-hidden="true"></i>
+                <p class="">Departments List</p>
+              </button>
+              </router-link>
+          </div>
+          <div class="py-3 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
+            <router-link to="/hms/managers">
+              <button class="flex text-sm">
+                <i class="fa fa-address-card pt-2 mr-2" aria-hidden="true"></i>
+                <p class="">Department Managers</p>
+              </button>
+            </router-link>
+          </div>
+        </div>
       </div>
       <div class="web-links py-3 px-3 pl-4 hover:bg-slate-500 hover:rounded hover:w-full">
         <router-link to="/hms/doctors">
@@ -70,7 +88,18 @@
 </template>
 
 <script>
+
 export default{
+  data(){
+    return{
+      department_dropdown: false
+    }
+  },
+  methods:{
+    showDepartmentDropdown(){
+      this.department_dropdown = !this.department_dropdown;
+    }
+  }
 
 }
 </script>
