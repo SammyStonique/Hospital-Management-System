@@ -100,6 +100,7 @@ def getDepartmentStaff(request):
 
         return Response(serializer.data)
 
+    #SENDING USER CREDENTIALS
 
 @csrf_exempt
 def send_user_credentials(request, user_id): 
@@ -123,6 +124,8 @@ def send_user_credentials(request, user_id):
 
     return HttpResponse("Credentials successfully sent")
 
+        #RESETTING USER PASSWORD
+
 api_view(['POST'])
 @csrf_exempt
 def reset_password(request,user_id):
@@ -133,6 +136,8 @@ def reset_password(request,user_id):
     user.save()
 
     return HttpResponse("Password Changed Succesfully")
+
+        #STAFF REPORTS
 
 @csrf_exempt 
 def generate_staff_pdf(request):
@@ -420,6 +425,245 @@ def replaceManager(request):
     return Response(serializer.data)
 
 
+        #MANAGER REPORTS
+
+@csrf_exempt 
+@api_view(['POST'])
+def generate_managers_pdf(request):
+    managerList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    department = data['department']
+    manager_name = data['manager_name']
+    start_date_from = data['start_date_from']
+    start_date_to = data['start_date_to']
+    status = data['status']
+    phone_number = data['phone_number']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_managers = Manager.objects.filter(company=company_uuid)
+
+    managers = company_managers.filter(Q(manager_name__icontains=manager_name) & Q(department__name__icontains=department)
+                                 & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        if status == "True":
+            managers = managers.filter(status = "Active")
+        else:
+            managers = managers.filter(status = "Inactive")
+
+    if start_date_from:
+        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
+        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__gte=final_start_date_from) 
+    
+    if start_date_to:
+        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
+        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__lte=final_start_date_to) 
+
+    for manager in managers:
+            if manager.end_date:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date.strftime("%d %b, %Y"),
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+            else:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+
+    context = {"managers":managerList}
+
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/users/templates/users')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('managerPDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Managers.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/users/static/users/staffPDF.css")
+
+    path = 'Managers.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Managers.pdf'
+    pdf.close()
+    os.remove("Managers.pdf")  # remove the locally created pdf file.
+    return response
+
+@api_view(['POST'])
+@csrf_exempt
+def generate_managers_excel(request):
+    managerList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    department = data['department']
+    manager_name = data['manager_name']
+    start_date_from = data['start_date_from']
+    start_date_to = data['start_date_to']
+    status = data['status']
+    phone_number = data['phone_number']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_managers = Manager.objects.filter(company=company_uuid)
+
+    managers = company_managers.filter(Q(manager_name__icontains=manager_name) & Q(department__name__icontains=department)
+                                 & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        if status == "True":
+            managers = managers.filter(status = "Active")
+        else:
+            managers = managers.filter(status = "Inactive")
+
+    if start_date_from:
+        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
+        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__gte=final_start_date_from) 
+    
+    if start_date_to:
+        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
+        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__lte=final_start_date_to)
+
+    for manager in managers:
+            if manager.end_date:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date.strftime("%d %b, %Y"),
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+            else:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date,
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+
+    context = {"managers":managerList}
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=Managers.xls'
+
+    workbook = xlwt.Workbook()
+
+    worksheet = workbook.add_sheet("Managers")
+
+    row_num = 0
+    columns = ['Name','Department', 'Start Date', 'End Date', 'Phone Number', 'Status']
+    style1 = xlwt.easyxf('font:bold 1')
+    for col_num in range(len(columns)):
+        worksheet.write(row_num, col_num, columns[col_num],style = style1)
+
+    for mgr in managerList:
+        row_num += 1
+        row = [mgr['manager_name'],mgr['department'], mgr['start_date'], mgr['end_date'], mgr['phone_number'],mgr['status']]
+        for col_num in range(len(row)):
+            worksheet.write(row_num, col_num, row[col_num])
+       
+    workbook.save(response)
+    return response
+
+@api_view(['POST'])
+@csrf_exempt
+def generate_managers_csv(request):
+    managerList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    department = data['department']
+    manager_name = data['manager_name']
+    start_date_from = data['start_date_from']
+    start_date_to = data['start_date_to']
+    status = data['status']
+    phone_number = data['phone_number']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_managers = Manager.objects.filter(company=company_uuid)
+
+    managers = company_managers.filter(Q(manager_name__icontains=manager_name) & Q(department__name__icontains=department)
+                                 & Q(phone_number__icontains=phone_number) )
+    
+    if status:
+        if status == "True":
+            managers = managers.filter(status = "Active")
+        else:
+            managers = managers.filter(status = "Inactive")
+
+    if start_date_from:
+        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
+        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__gte=final_start_date_from) 
+    
+    if start_date_to:
+        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
+        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__lte=final_start_date_to)
+
+    for manager in managers:
+            if manager.end_date:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date.strftime("%d %b, %Y"),
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+            else:
+                obj = {
+                    "manager_id": manager.manager_id,
+                    "manager_name": manager.manager_name,
+                    "status": manager.status,
+                    "start_date": manager.start_date.strftime("%d %b, %Y"),
+                    "end_date": manager.end_date,
+                    "phone_number": manager.phone_number,
+                    "department": manager.department.name,
+                }
+                managerList.append(obj)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=Staff.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['Name','Department', 'Start Date', 'End Date', 'Phone Number', 'Status'])
+
+    for mgr in managerList:
+        writer.writerow([mgr['manager_name'],mgr['department'], mgr['start_date'], mgr['end_date'], mgr['phone_number'],mgr['status']])
+    return response
 
 
     

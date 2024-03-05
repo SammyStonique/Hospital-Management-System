@@ -38,10 +38,12 @@
                                     </select>
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="date" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="Start Date" id="" placeholder="Start Date...." v-model="start_date" >
+                                    <datepicker  placeholder="Start Date From...." v-model="start_date_from" clearable :clear-button="clearButton">
+                                    </datepicker>
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="date" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="End Date" id="" placeholder="End Date...." v-model="end_date" >
+                                    <datepicker  placeholder="Start Date To...." v-model="start_date_to" clearable :clear-button="clearButton">
+                                    </datepicker>
                                 </div>
                             </div>
                         </div>
@@ -176,6 +178,8 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import Datepicker from 'vuejs3-datepicker';
+
 
 export default{
     name: 'ManagerView',
@@ -186,6 +190,8 @@ export default{
             companyID: "",
             department: "",
             start_date: "",
+            start_date_from: null,
+            start_date_to: null,
             end_date: "",
             status: "",
             phone_number: "",
@@ -202,7 +208,8 @@ export default{
             managerList: [],
             managerResults: [],
             managerArrLen: [],
-            managerCount: 0
+            managerCount: 0,
+            clearButton: true
         }
     },
     components:{
@@ -210,22 +217,35 @@ export default{
         SideBarHMS,
         Modal,
         Loader,
-        MyPagination
+        MyPagination,
+        Datepicker
     },
     methods:{
         searchManager(){
             this.isSearching = true;
             this.showNextBtn = false;
             this.showPreviousBtn = false;
-            let formData = {
-                department: this.department,
-                start_date: this.start_date,
-                end_date: this.end_date,
-                status: this.status,
-                phone_number: this.phone_number,
-                manager_name: this.manager_name,
-                company_id: this.companyID
-            }
+            let formData = new FormData();
+            formData.append('department', this.department);
+            formData.append('start_date', this.start_date);
+            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
+                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            }else{
+                this.start_date_from = "";
+                formData.append('start_date_from', this.start_date_from);
+            }   
+            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
+                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            }else{
+                this.start_date_to = "";
+                formData.append('start_date_to', this.start_date_to);
+            } 
+            formData.append('end_date', this.end_date);
+            formData.append('status', this.status);
+            formData.append('phone_number', this.phone_number);
+            formData.append('manager_name', this.manager_name);
+            formData.append('company_id', this.companyID);                 
+
             this.axios
             .post(`api/v1/managers-search/?page=${this.currentPage}`,formData)
             .then((response)=>{
@@ -245,6 +265,7 @@ export default{
             .catch((error)=>{
                 console.log(error);
             })
+            
         },
         showManagerModal(){
             this.scrollToTop();
@@ -294,6 +315,130 @@ export default{
         showDropdown(){
             this.showOptions = !this.showOptions;
         },
+        exportManagersPDF(){
+            this.showLoader();
+            let formData = new FormData();
+            formData.append('department', this.department);
+            formData.append('start_date', this.start_date);
+            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
+                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            }else{
+                this.start_date_from = "";
+                formData.append('start_date_from', this.start_date_from);
+            }   
+            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
+                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            }else{
+                this.start_date_to = "";
+                formData.append('start_date_to', this.start_date_to);
+            } 
+            formData.append('end_date', this.end_date);
+            formData.append('status', this.status);
+            formData.append('phone_number', this.phone_number);
+            formData.append('manager_name', this.manager_name);
+            formData.append('company_id', this.companyID); 
+
+            this.axios
+            .post("api/v1/export-managers-pdf/", formData, { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Managers.pdf');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
+        exportManagersExcel(){
+            this.showLoader();
+            let formData = new FormData();
+            formData.append('department', this.department);
+            formData.append('start_date', this.start_date);
+            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
+                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            }else{
+                this.start_date_from = "";
+                formData.append('start_date_from', this.start_date_from);
+            }   
+            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
+                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            }else{
+                this.start_date_to = "";
+                formData.append('start_date_to', this.start_date_to);
+            } 
+            formData.append('end_date', this.end_date);
+            formData.append('status', this.status);
+            formData.append('phone_number', this.phone_number);
+            formData.append('manager_name', this.manager_name);
+            formData.append('company_id', this.companyID); 
+            this.axios
+            .post("api/v1/export-managers-excel/", formData, { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Managers.xls');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
+        exportManagersCSV(){
+            this.showLoader();
+            let formData = new FormData();
+            formData.append('department', this.department);
+            formData.append('start_date', this.start_date);
+            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
+                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            }else{
+                this.start_date_from = "";
+                formData.append('start_date_from', this.start_date_from);
+            }   
+            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
+                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            }else{
+                this.start_date_to = "";
+                formData.append('start_date_to', this.start_date_to);
+            } 
+            formData.append('end_date', this.end_date);
+            formData.append('status', this.status);
+            formData.append('phone_number', this.phone_number);
+            formData.append('manager_name', this.manager_name);
+            formData.append('company_id', this.companyID); 
+            this.axios
+            .post("api/v1/export-managers-csv/", formData, { responseType: 'blob' })
+            .then((response)=>{
+                if(response.status == 200){
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'Managers.csv');
+                  document.body.appendChild(link);
+                  link.click();
+                }
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            .finally(()=>{
+                this.hideLoader();
+            })
+        },
 
     },
     mounted(){
@@ -315,5 +460,34 @@ export default{
 }
 em{
   color: red;
+}
+.vuejs3-datepicker__value{
+    padding: 4px 4px !important;
+    min-width: 210px;
+    border-color: gray;
+}
+
+.vuejs3-datepicker__calendar header .up:not(.disabled){
+    background-color: #1f2937;
+    color: white;
+}
+.vuejs3-datepicker__calendar header .up:not(.disabled):hover{
+    background-color: #1f2937;
+    color: white;
+    opacity: 75%;
+}
+.vuejs3-datepicker__calendar-topbar{
+    background-color: #1f2937;
+}
+.vuejs3-datepicker__calendar .cell.selected{
+    background-color: #1f2937;
+}
+.vuejs3-datepicker__calendar .cell:hover{
+    border-color: #1f2937;
+}
+.vuejs3-datepicker__clear-button{
+    padding-bottom: 10px;
+    font-size: 28px;
+    top: -8px;
 }
 </style>

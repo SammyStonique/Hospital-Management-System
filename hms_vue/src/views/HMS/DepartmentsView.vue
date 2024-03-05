@@ -11,21 +11,25 @@
     <div class="main-content grid grid-rows-12 bg-gray-100 px-4 py-4">
         <div class="subsection row-span-2 rounded-lg bg-white w-full p-3">
             <h2 class="text-center font-bold">Departments</h2>
-            <div class="md:px-8 py-8 w-full">
-                <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
-                    <div class="basis-1/5 pl-3">
-                        <button class="rounded bg-green-400 text-white px-3 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Deptmnt</button>
+            <div class="md:px-4 pt-4 pb-1 w-full border-b-2 border-gray-300 mb-6">
+                <div class="mb-4 flex items-end h-24">
+                    <div class="basis-1/4 pl-3">
+                        <button class="rounded bg-green-400 text-white px-3 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Department</button>
                     </div>
-                    <div class="basis-1/5 pl-3 items-center">
-                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code..." v-model="code" @keyup.enter="searchDepartment">
+                    <div class="basis-3/4">
+                        <div class="flex items-end">
+                            <div class="basis-1/2 pl-3 items-center">
+                                <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="code" id="" placeholder="Code..." v-model="code" @keyup.enter="searchDepartment">
+                            </div>
+                            <div class="basis-1/2 pl-3 items-center">
+                                <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name..." v-model="name"  @keyup.enter="searchDepartment">
+                            </div>
+                        </div>
                     </div>
-                    <div class="basis-1/5 pl-3 items-center">
-                       <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg" name="name" id="" placeholder="Name..." v-model="name"  @keyup.enter="searchDepartment">
-                    </div>
-                    <div class="basis-1/5 pl-3">
+                    <div class="basis-1/8 pl-3 w-36">
                         <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchDepartment"><i class="fa fa-binoculars" aria-hidden="true"></i> Search</button>
                     </div>
-                    <div class="basis-1/5 pl-3">
+                    <div class="basis-1/8 pl-3 w-36">
                         <div class="print-dropdown">
                             <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="showDropdown">Options<i class="fa fa-caret-down pl-2" aria-hidden="true"></i></button>
                             <button class="fixed inset-button inset-0 bg-gray-50 opacity-25 cursor-default w-full" v-if="showOptions" @click="showOptions = !showOptions"></button>

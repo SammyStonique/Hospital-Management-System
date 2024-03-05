@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
-
+from datetime import datetime
 
 from .models import *
 
@@ -61,14 +61,18 @@ def staffSearch(request):
 
     return  paginator.get_paginated_response(page)
 
-
 @api_view(['POST'])
 @csrf_exempt
 def managersSearch(request):
     managerList = []
-    data = json.loads(request.body)
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
     department = data['department']
     manager_name = data['manager_name']
+    start_date = data['start_date']
+    start_date_from = data['start_date_from']
+    start_date_to = data['start_date_to']
+    end_date = data['end_date']
     status = data['status']
     phone_number = data['phone_number']
     company_id = data['company_id']
@@ -77,10 +81,24 @@ def managersSearch(request):
     company_managers = Manager.objects.filter(company=company_uuid)
 
     managers = company_managers.filter(Q(manager_name__icontains=manager_name) & Q(department__name__icontains=department)
-                                 & Q(phone_number__icontains=phone_number) )
+                                 & Q(phone_number__icontains=phone_number))
     
     if status:
-        managers = managers.filter(status = status)
+        if status == "True":
+            managers = managers.filter(status = "Active")
+        else:
+            managers = managers.filter(status = "Inactive")
+ 
+
+    if start_date_from:
+        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
+        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__gte=final_start_date_from) 
+    
+    if start_date_to:
+        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
+        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
+        managers = managers.filter(start_date__lte=final_start_date_to) 
 
     for manager in managers:
             if manager.end_date:
@@ -100,7 +118,6 @@ def managersSearch(request):
                     "manager_name": manager.manager_name,
                     "status": manager.status,
                     "start_date": manager.start_date.strftime("%d %b, %Y"),
-                    "end_date": manager.end_date,
                     "phone_number": manager.phone_number,
                     "department": manager.department.name,
                 }
@@ -112,3 +129,6 @@ def managersSearch(request):
     page = paginator.paginate_queryset(managerList, request)
 
     return  paginator.get_paginated_response(page)
+
+
+

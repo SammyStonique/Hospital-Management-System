@@ -28,5 +28,8 @@ urlpatterns = [
     path("update-department-manager/", views.updateDepartmentManager, name="update-department-manager"),
     path("replace-manager/", views.replaceManager, name="replace-manager"),
     path("managers-search/", managersSearch, name="managers_search"),
+    path("export-managers-pdf/", views.generate_managers_pdf, name="export-managers-pdf"),
+    path("export-managers-excel/", views.generate_managers_excel, name="export-managers-excel"),
+    path("export-managers-csv/", views.generate_managers_csv, name="export-managers-csv"),
 
 ]

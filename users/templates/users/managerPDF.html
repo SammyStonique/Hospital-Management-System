@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Managers List</h3>
+	<table class="staff-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Name</th>
+				<th>Department</th>
+				<th>Start Date</th>
+				<th>End Date</th>
+				<th>Phone Number</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for mgr in managers %}
+			<tr>
+				<td></td>
+				<td>{{ mgr.manager_name  }}</td>
+				<td>{{ mgr.department }}</td>
+				<td>{{ mgr.start_date  }}</td>
+				<td>{{ mgr.end_date }}</td>
+				<td>{{ mgr.phone_number }}</td>
+				<td>{{ mgr.status }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+
+</body>
+</html>
