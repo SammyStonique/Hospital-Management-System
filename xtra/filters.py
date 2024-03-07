@@ -28,7 +28,7 @@ def departmentSearch(request):
     departments = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departments:
-        manager = Manager.objects.filter(department=dep)
+        manager = Manager.objects.filter(department=dep,status="Active")
         if len(manager):
             obj = {
                 "department_id": dep.department_id,

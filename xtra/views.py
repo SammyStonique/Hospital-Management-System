@@ -153,7 +153,7 @@ def generate_departments_pdf(request):
     departList = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departList:
-        manager = Manager.objects.filter(department=dep)
+        manager = Manager.objects.filter(department=dep, status="Active")
         if len(manager):
             obj = {
                 "department_id": dep.department_id,
@@ -215,7 +215,7 @@ def generate_departments_excel(request):
     departList = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departList:
-        manager = Manager.objects.filter(department=dep)
+        manager = Manager.objects.filter(department=dep,status="Active")
         if len(manager):
             obj = {
                 "department_id": dep.department_id,
@@ -273,7 +273,7 @@ def generate_departments_csv(request):
     departList = company_departments.filter(Q(code__icontains=code) & Q(name__icontains=name) )
 
     for dep in departList:
-        manager = Manager.objects.filter(department=dep)
+        manager = Manager.objects.filter(department=dep, status="Active")
         if len(manager):
             obj = {
                 "department_id": dep.department_id,

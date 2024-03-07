@@ -22,7 +22,7 @@ urlpatterns = [
     path("export-staff-excel/", views.generate_staff_excel, name="export-staff-excel"),
     path("export-staff-csv/", views.generate_staff_csv, name="export-staff-csv"),
     path("manager-list/", views.ManagerList.as_view()),
-    path("manager-details/<int:pk>/", views.ManagerDetails.as_view()),
+    path("manager-details/", views.ManagerDetails.as_view()),
     path("create-department-manager/", views.createManager, name="create-department-manager"),
     path("get-department-managers/", views.getDepartmentManagers, name="get-department-managers"),
     path("update-department-manager/", views.updateDepartmentManager, name="update-department-manager"),
@@ -31,5 +31,6 @@ urlpatterns = [
     path("export-managers-pdf/", views.generate_managers_pdf, name="export-managers-pdf"),
     path("export-managers-excel/", views.generate_managers_excel, name="export-managers-excel"),
     path("export-managers-csv/", views.generate_managers_csv, name="export-managers-csv"),
+    path("delete-manager/", views.deleteManager, name="delete-manager")
 
 ]

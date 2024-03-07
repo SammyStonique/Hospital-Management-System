@@ -11,8 +11,8 @@
     <div class="main-content grid grid-rows-12 bg-gray-100 px-4 py-4">
         <div class="subsection row-span-2 rounded-lg bg-white w-full p-3">
             <h2 class="text-center font-bold">Departments</h2>
-            <div class="md:px-4 pt-4 pb-1 w-full border-b-2 border-gray-300 mb-6">
-                <div class="mb-4 flex items-end h-24">
+            <div class="md:px-4 pt-4 pb-1 w-full">
+                <div class="mb-4 flex items-end h-24 border-b-2 border-gray-300 mb-6 pb-6">
                     <div class="basis-1/4 pl-3">
                         <button class="rounded bg-green-400 text-white px-3 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Department</button>
                     </div>
@@ -98,11 +98,13 @@
                         <div class="flex mb-6">
                             <div class="basis-1/2 mr-4">
                                 <label for="">Start Date<em>*</em></label><br />
-                                <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="start_date">
+                                <datepicker  placeholder="Start Date...." v-model="start_date" clearable :clear-button="clearButton">
+                                </datepicker>
                             </div>
                             <div class="basis-1/2">
-                                <label for="">End Date<em></em></label><br />
-                                <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="end_date">
+                                <label for="">End Date</label><br />
+                                <datepicker  placeholder="End Date...." v-model="end_date" clearable :clear-button="clearButton">
+                                </datepicker>
                             </div>
                         </div>
                         <div class="flex mb-6">
@@ -252,6 +254,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import Datepicker from 'vuejs3-datepicker';
 import DropZone from 'dropzone-vue';
 
 
@@ -267,8 +270,8 @@ export default{
             dep_code: "",
             dep_name: "",
             department: "",
-            start_date: "",
-            end_date: "",
+            start_date: null,
+            end_date: null,
             manager: "",
             hasManager: false,
             phone_number: "",
@@ -315,9 +318,33 @@ export default{
         Modal,
         MyPagination,
         Loader,
+        Datepicker,
         DropZone
     },
+
     methods:{
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear().toString()
+            const month = ('0' + (date.getMonth() + 1)).slice(-2);
+            const day = ('0' + date.getDate()).slice(-2);
+            return `${year}-${month}-${day}`;
+        },
+        subtractDayFromDate(dateString) {
+            // Convert the date string to a Date object
+            const date = new Date(dateString);
+            
+            // Subtract one day from the date
+            date.setDate(date.getDate() - 1);
+            
+            // Format the date as "YYYY-MM-DD"
+            const year = date.getFullYear();
+            const month = ('0' + (date.getMonth() + 1)).slice(-2);
+            const day = ('0' + date.getDate()).slice(-2);
+            
+            // Return the formatted date string
+            return `${year}-${month}-${day}`;
+        },
         onFileChange(e){
             this.excel_file = e.target.files[0];
             console.log("The target is ",e.target);
@@ -767,11 +794,11 @@ export default{
                     company: this.companyID,
                     department: this.managerDepID,
                     user: this.userID,
-                    start_date: this.start_date,
+                    start_date: this.formatDate(this.start_date),
+                    end_date: this.formatDate(this.end_date),
                     phone_number: this.phone_number,
                     status: this.status,
                 }
-                console.log(formData);
                 this.axios
                 .post("api/v1/create-department-manager/", formData)
                 .then((response)=>{
@@ -852,7 +879,7 @@ export default{
                     company: this.companyID,
                     department: this.managerDepID,
                     user: this.userID,
-                    start_date: this.start_date,
+                    start_date: this.formatDate(this.start_date),
                     phone_number: this.phone_number,
                     status: this.status,
                 }
@@ -928,7 +955,7 @@ export default{
                                     user: this.manager_user,
                                     start_date: this.manager_start_date,
                                     phone_number: this.manager_phone_number,
-                                    end_date: this.start_date,
+                                    end_date: this.subtractDayFromDate(this.start_date),
                                     status: this.manager_status,
                                     manager: this.manager_id
                                 }
@@ -1009,5 +1036,37 @@ em{
 }
 .import-form{
     min-width: 50vw;
+}
+.vuejs3-datepicker__value{
+    padding: 4px 4px !important;
+    min-width: 250px;
+    border-color: gray;
+}
+.vuejs3-datepicker__calendar{
+    width: 230px;
+}
+
+.vuejs3-datepicker__calendar header .up:not(.disabled){
+    background-color: #1f2937;
+    color: white;
+}
+.vuejs3-datepicker__calendar header .up:not(.disabled):hover{
+    background-color: #1f2937;
+    color: white;
+    opacity: 75%;
+}
+.vuejs3-datepicker__calendar-topbar{
+    background-color: #1f2937;
+}
+.vuejs3-datepicker__calendar .cell.selected{
+    background-color: #1f2937;
+}
+.vuejs3-datepicker__calendar .cell:hover{
+    border-color: #1f2937;
+}
+.vuejs3-datepicker__clear-button{
+    padding-bottom: 10px;
+    font-size: 28px;
+    top: -8px;
 }
 </style>

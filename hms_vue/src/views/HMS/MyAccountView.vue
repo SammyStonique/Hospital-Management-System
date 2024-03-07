@@ -148,7 +148,8 @@
                                 </div>
                                 <div class="basis-1/2">
                                     <label for="">Date of Birth<em>*</em></label><br />
-                                    <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="dob">
+                                    <datepicker  placeholder="Date of Birth...." v-model="dob" clearable :clear-button="clearButton">
+                                    </datepicker>
                                 </div>
                             </div>
                             <div class="flex mb-6">
@@ -243,6 +244,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import Datepicker from 'vuejs3-datepicker';
 
 export default{
     name: 'MyAccountView',
@@ -260,7 +262,7 @@ export default{
             department: "",
             gender: "",
             id_number: "",
-            dob: "",
+            dob: null,
             imgName: "",
             image: "",
             userID: 0,
@@ -289,7 +291,8 @@ export default{
         SideBarHMS,
         Modal,
         Loader,
-        MyPagination
+        MyPagination,
+        Datepicker
     },
     watch:{
         new_password(value){
@@ -302,6 +305,13 @@ export default{
         }
     },
     methods:{
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear().toString()
+            const month = ('0' + (date.getMonth() + 1)).slice(-2);
+            const day = ('0' + date.getDate()).slice(-2);
+            return `${year}-${month}-${day}`;
+        },
         fetchUserAccount(){
             this.axios
             .get("api/v1/users/me/")
@@ -424,7 +434,7 @@ export default{
                 formData.append('email', this.email);
                 formData.append('last_name', new_last_name);
                 formData.append('identification_no', this.id_number);
-                formData.append('birth_date', this.dob);
+                formData.append('birth_date', this.formatDate(this.dob));
                 formData.append('gender', this.gender);
                 formData.append('phone_number', this.phone_number);
                 formData.append('profile', this.profile);
@@ -465,7 +475,7 @@ export default{
                 formData.append('email', this.email);
                 formData.append('last_name', this.last_name);
                 formData.append('identification_no', this.id_number);
-                formData.append('birth_date', this.dob);
+                formData.append('birth_date', this.formatDate(this.dob));
                 formData.append('gender', this.gender);
                 formData.append('phone_number', this.phone_number);
                 formData.append('profile', this.profile);

@@ -109,7 +109,8 @@
                   </div>
                   <div class="basis-1/2">
                     <label for="">Date of Birth<em>*</em></label><br />
-                    <input type="date" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="dob" required>
+                    <datepicker  placeholder="Date of Birth...." v-model="dob" clearable :clear-button="clearButton">
+                    </datepicker>
                   </div>
               </div>
               <div class="flex mb-6">
@@ -230,6 +231,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import Datepicker from 'vuejs3-datepicker';
 
 export default{
     name: 'StaffView',
@@ -249,7 +251,7 @@ export default{
       search_phone_number: '',
       profile: '',
       search_profile: '',
-      dob: '',
+      dob: null,
       gender: '',
       id_number: '',
       search_id_number: '',
@@ -293,7 +295,8 @@ export default{
         SideBarHMS,
         Modal,
         Loader,
-        MyPagination
+        MyPagination,
+        Datepicker
     },
     watch:{
       email(value){
@@ -307,6 +310,13 @@ export default{
         },
     },
     methods:{
+      formatDate(dateString) {
+          const date = new Date(dateString);
+          const year = date.getFullYear().toString()
+          const month = ('0' + (date.getMonth() + 1)).slice(-2);
+          const day = ('0' + date.getDate()).slice(-2);
+          return `${year}-${month}-${day}`;
+      },
       validateEmail(value){  
           if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)){ 
               this.watcherMsg['email'] = '';
@@ -424,7 +434,7 @@ export default{
             formData.append('email', new_email);
             formData.append('last_name', new_last_name);
             formData.append('identification_no', this.id_number);
-            formData.append('birth_date', this.dob);
+            formData.append('birth_date', this.formatDate(this.dob));
             formData.append('gender', this.gender);
             formData.append('phone_number', this.phone_number);
             formData.append('profile', this.profile);
@@ -433,7 +443,6 @@ export default{
             formData.append('is_active', this.is_staff);
             formData.append('user_department', this.depID);
             formData.append('allowed_company', this.companyID);
-            // formData.append('image', this.image);
               
             this.axios
             .post("api/v1/users/", formData)
@@ -544,7 +553,6 @@ export default{
         this.axios
         .get(`api/v1/systemusers/${this.staffID}/`)
         .then((response)=>{
-          console.log("The response data is ",response.data);
             this.first_name = response.data.first_name;
             this.last_name = response.data.last_name;
             this.email = response.data.email;
@@ -584,7 +592,7 @@ export default{
               formData.append('email', this.email);
               formData.append('last_name', new_last_name);
               formData.append('identification_no', this.id_number);
-              formData.append('birth_date', this.dob);
+              formData.append('birth_date', this.formatDate(this.dob));
               formData.append('gender', this.gender);
               formData.append('phone_number', this.phone_number);
               formData.append('profile', this.profile);

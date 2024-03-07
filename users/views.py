@@ -7,12 +7,12 @@ import re
 import json
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from .models import *
 from company.models import Company
 from .serializers import *
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from datetime import datetime,timedelta
@@ -338,12 +338,12 @@ def createManager(request):
     department = Department.objects.get(department_id=department_uuid)
     serializer = ManagerSerializer(data=request.data)
 
+
     if serializer.is_valid():
         serializer.save(department=department,company=company)
 
     else:
         print(serializer.errors) 
-
     
     return Response(serializer.data)
 
@@ -359,8 +359,7 @@ def getDepartmentManagers(request):
         company_uuid = uuid.UUID(company_id)
         manager_uuid = uuid.UUID(manager_id)
         company = get_object_or_404(Company, company_id=company_uuid)
-        department = Department.objects.filter(company=company_uuid, department_id=department_uuid)
-        manager = Manager.objects.get(company=company, department=department, manager_id=manager_uuid)
+        manager = Manager.objects.get(company=company, department=department_uuid, manager_id=manager_uuid)
 
         serializer = ManagerSerializer(manager)
         return Response(serializer.data)
@@ -412,18 +411,31 @@ def replaceManager(request):
     company_uuid = uuid.UUID(company_id)
     company = get_object_or_404(Company, company_id=company_uuid)
     manager = Manager.objects.get(manager_id=manager_uuid,company=company)
-    end_date = request.data.get('end_date')
     serializer = ManagerSerializer(manager, data=request.data, partial=True)
-    new_end_date= (datetime.strptime(end_date, "%Y-%m-%d")- timedelta(days=1)).strftime("%Y-%m-%d")
-
     if serializer.is_valid():
-        serializer.save(end_date=new_end_date)
+        serializer.save()
 
     else:
         print(serializer.errors)    
         
     return Response(serializer.data)
 
+
+@csrf_exempt
+@api_view(['POST'])
+def deleteManager(request):
+    manager_id = request.data.get("manager")
+    department_id = request.data.get("department")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    department_uuid = uuid.UUID(department_id)
+    manager_uuid = uuid.UUID(manager_id)
+    department = get_object_or_404(Department, company=company_uuid, department_id=department_uuid)
+    manager = Manager.objects.get(company=company_uuid,department=department, manager_id=manager_uuid)
+
+    manager.delete() 
+    message = {'msg':"The manager has been succesfully deleted"} 
+    return Response(message)
 
         #MANAGER REPORTS
 
@@ -454,14 +466,10 @@ def generate_managers_pdf(request):
             managers = managers.filter(status = "Inactive")
 
     if start_date_from:
-        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
-        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
-        managers = managers.filter(start_date__gte=final_start_date_from) 
+        managers = managers.filter(start_date__gte=start_date_from) 
     
     if start_date_to:
-        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
-        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
-        managers = managers.filter(start_date__lte=final_start_date_to) 
+        managers = managers.filter(start_date__lte=start_date_to)  
 
     for manager in managers:
             if manager.end_date:
@@ -538,14 +546,10 @@ def generate_managers_excel(request):
             managers = managers.filter(status = "Inactive")
 
     if start_date_from:
-        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
-        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
-        managers = managers.filter(start_date__gte=final_start_date_from) 
+        managers = managers.filter(start_date__gte=start_date_from) 
     
     if start_date_to:
-        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
-        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
-        managers = managers.filter(start_date__lte=final_start_date_to)
+        managers = managers.filter(start_date__lte=start_date_to) 
 
     for manager in managers:
             if manager.end_date:
@@ -622,14 +626,10 @@ def generate_managers_csv(request):
             managers = managers.filter(status = "Inactive")
 
     if start_date_from:
-        new_start_date_from = datetime.strptime(start_date_from, "%b %d %Y")
-        final_start_date_from = new_start_date_from.strftime("%Y-%m-%d")
-        managers = managers.filter(start_date__gte=final_start_date_from) 
+        managers = managers.filter(start_date__gte=start_date_from) 
     
     if start_date_to:
-        new_start_date_to = datetime.strptime(start_date_to, "%b %d %Y")
-        final_start_date_to = new_start_date_to.strftime("%Y-%m-%d")
-        managers = managers.filter(start_date__lte=final_start_date_to)
+        managers = managers.filter(start_date__lte=start_date_to) 
 
     for manager in managers:
             if manager.end_date:
