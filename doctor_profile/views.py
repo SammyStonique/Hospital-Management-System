@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from .models import *
 from .serializers import *
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.response import Response
 #Pagination
@@ -52,6 +53,101 @@ class DoctorDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
 
+
+
+@csrf_exempt
+@api_view(['POST'])
+def createDoctor(request):
+    hospital_id = request.data.get("hospital")
+    department_id = request.data.get("department")
+    hospital_uuid = uuid.UUID(hospital_id)
+    department_uuid = uuid.UUID(department_id)
+    hospital = get_object_or_404(Company, company_id=hospital_uuid)
+    department = Department.objects.get(department_id=department_uuid)
+    serializer = DoctorSerializer(data=request.data)
+
+
+    if serializer.is_valid():
+        serializer.save(department=department,hospital=hospital)
+
+    else:
+        print(serializer.errors) 
+    
+    return Response(serializer.data)
+
+@csrf_exempt
+@api_view(['POST'])
+def getDepartmentDoctors(request):
+    doctor_id = request.data.get("doctor")
+    hospital_id = request.data.get("hospital")
+    department_id = request.data.get("department")
+
+    if doctor_id is not None and department_id is not None:
+        department_uuid = uuid.UUID(department_id)
+        hospital_uuid = uuid.UUID(hospital_id)
+        doctor_uuid = uuid.UUID(doctor_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        doctor = Doctor.objects.get(hospital=hospital, department=department_uuid, doctor_id=doctor_uuid)
+
+        serializer = DoctorSerializer(doctor)
+        return Response(serializer.data)
+
+    elif department_id is not None:
+        department_uuid = uuid.UUID(department_id)
+        hospital_uuid = uuid.UUID(hospital_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        doctor = Doctor.objects.filter(hospital=hospital, department=department_uuid)
+
+        serializer = DoctorSerializer(doctor, many=True)
+        return Response(serializer.data)
+
+    else:
+        hospital_uuid = uuid.UUID(hospital_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        doctor = Doctor.objects.filter(hospital=hospital)
+
+        serializer = DoctorSerializer(doctor, many=True)
+        return Response(serializer.data)
+
+csrf_exempt
+@api_view(['PUT'])
+def updateDepartmentDoctor(request):
+    doctor_id = request.data.get("doctor")
+    hospital = request.data.get("hospital")
+    doctor_uuid = uuid.UUID(doctor_id)
+    hospital_uuid = uuid.UUID(hospital)
+    hospital_id = get_object_or_404(Company, company_id=hospital_uuid)
+    doctor = Doctor.objects.get(hospital=hospital_id, doctor_id=doctor_uuid)
+    
+    serializer = DoctorSerializer(doctor, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    else:
+        print(serializer.errors)
+
+    return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def deleteDoctor(request):
+    doctor_id = request.data.get("doctor")
+    department_id = request.data.get("department")
+    hospital = request.data.get("hospital")
+    hospital_uuid = uuid.UUID(hospital)
+    department_uuid = uuid.UUID(department_id)
+    doctor_uuid = uuid.UUID(doctor_id)
+    department = get_object_or_404(Department, company=hospital_uuid, department_id=department_uuid)
+    doctor = Doctor.objects.get(hospital=hospital_uuid,department=department, doctor_id=doctor_uuid)
+
+    doctor.delete() 
+    message = {'msg':"The doctor has been succesfully deleted"} 
+    return Response(message)
+
+
+
 @csrf_exempt   
 def generate_doctors_pdf(request):
     doctors = []
@@ -62,7 +158,7 @@ def generate_doctors_pdf(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    hospital_id = data['hospital']
 
     doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -72,14 +168,14 @@ def generate_doctors_pdf(request):
     for doct in doctorsList:
         if (str(doct.hospital.company_id) == hospital_id):
             obj = {
-                "id": doct.id,
+                "doctor_id": doct.doctor_id,
                 "email": doct.email,
                 "first_name": doct.first_name,
                 "last_name": doct.last_name,
                 "specialization": doct.specialization,
                 "payroll_number": doct.payroll_number,
                 "phone_number": doct.phone_number,
-                "department": doct.department.name,
+                "department": doct.department,
             }
             doctors.append(obj)
 
@@ -118,7 +214,7 @@ def generate_doctors_excel(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    hospital_id = data['hospital']
 
     doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -128,7 +224,7 @@ def generate_doctors_excel(request):
     for doct in doctorsList:
         if (str(doct.hospital.company_id) == hospital_id):
             obj = {
-                "id": doct.id,
+                "doctor_id": doct.doctor_id,
                 "email": doct.email,
                 "first_name": doct.first_name,
                 "last_name": doct.last_name,
@@ -171,7 +267,7 @@ def generate_doctors_csv(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    hospital_id = data['hospital']
 
     doctorsList = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -181,7 +277,7 @@ def generate_doctors_csv(request):
     for doct in doctorsList:
         if (str(doct.hospital.company_id) == hospital_id):
             obj = {
-                "id": doct.id,
+                "doctor_id": doct.doctor_id,
                 "email": doct.email,
                 "first_name": doct.first_name,
                 "last_name": doct.last_name,

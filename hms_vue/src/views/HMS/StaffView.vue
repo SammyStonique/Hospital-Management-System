@@ -149,6 +149,11 @@
                       <option v-for="dep in departmentsArray" >({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
                 </div>
+                <!-- <div class="basis-1/2 relative">
+                  <label for="">Department Search<em>*</em></label><br />
+                  <SearchableDropdown
+                  />
+                </div> -->
               </div>
               <div class="text-center" v-if="isEditing">
                   <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="updateStaff(index)">Update</button>
@@ -232,6 +237,7 @@ import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
 import Datepicker from 'vuejs3-datepicker';
+import SearchableDropdown from '@/components/SearchableDropdown.vue';
 
 export default{
     name: 'StaffView',
@@ -296,7 +302,8 @@ export default{
         Modal,
         Loader,
         MyPagination,
-        Datepicker
+        Datepicker,
+        SearchableDropdown
     },
     watch:{
       email(value){

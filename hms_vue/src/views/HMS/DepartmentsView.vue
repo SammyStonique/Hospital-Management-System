@@ -437,10 +437,10 @@ export default{
       createDepartment(){
             this.showLoader();
             if(this.dep_code === '' || this.dep_name === ''){
-            this.$toast.error("Please Enter Department Details",{
-                duration: 5000,
-                dismissible: true
-            })
+                this.$toast.error("Please Enter Department Details",{
+                    duration: 5000,
+                    dismissible: true
+                })
             }
             else{
                 let new_dep_name = "";
@@ -454,22 +454,22 @@ export default{
                     name: new_dep_name,
                     company: this.companyID
                 }
-            this.axios
-            .post("api/v1/create-department/", formData)
-            .then((response)=>{
-                this.$toast.success("Department Successfully Added",{
-                    duration: 5000,
-                    dismissible: true
+                this.axios
+                .post("api/v1/create-department/", formData)
+                .then((response)=>{
+                    this.$toast.success("Department Successfully Added",{
+                        duration: 5000,
+                        dismissible: true
+                    })
                 })
-            })
-            .catch((error)=>{
-                console.log(error.message);
-            })
-            .finally(()=>{
-                this.hideLoader();
-                this.dep_code = "";
-                this.dep_name = "";
-            })
+                .catch((error)=>{
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    this.hideLoader();
+                    this.dep_code = "";
+                    this.dep_name = "";
+                })
             }
         },
         editDepartment(){

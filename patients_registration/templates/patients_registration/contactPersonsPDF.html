@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Emergency Contact Persons List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for cont in contact_persons %}
+			<tr>
+				<td></td>
+				<td class="text-left py-3 px-4">{{ cont.first_name }}</td>
+                <td class="text-left py-3 px-4">{{ cont.last_name }}</td>
+                <td class="text-left py-3 px-4">{{ cont.email }}</td>
+                <td class="text-left py-3 px-4">{{ cont.phone_number }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>

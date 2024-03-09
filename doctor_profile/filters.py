@@ -23,7 +23,7 @@ def doctorSearch(request):
     department = data['department']
     payroll_number = data['payroll_number']
     phone_number = data['phone_number']
-    hospital_id = data['hospital_id']
+    hospital_id = data['hospital']
 
     doctors = Doctor.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(department__name__icontains=department)
                                 & Q(specialization__icontains=specialization) & Q(phone_number__icontains=phone_number) & Q(payroll_number__icontains=payroll_number) )
@@ -33,7 +33,7 @@ def doctorSearch(request):
     for doct in doctors:
         if (str(doct.hospital.company_id) == hospital_id):
             obj = {
-                "id": doct.id,
+                "doctor_id": doct.doctor_id,
                 "email": doct.email,
                 "first_name": doct.first_name,
                 "last_name": doct.last_name,
@@ -41,6 +41,7 @@ def doctorSearch(request):
                 "payroll_number": doct.payroll_number,
                 "phone_number": doct.phone_number,
                 "department": doct.department.name,
+                "department_id": doct.department.department_id
             }
             doctorsList.append(obj)
 

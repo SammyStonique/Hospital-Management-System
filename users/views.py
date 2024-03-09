@@ -80,7 +80,7 @@ def getDepartmentStaff(request):
     company = request.data.get("company")
     staff_id = request.data.get("staff")
 
-    if staff_id is not None:
+    if staff_id is not None and department_id is not None:
         staff_uuid = uuid.UUID(staff_id)
         department_uuid = uuid.UUID(department_id)
         company_uuid = uuid.UUID(company)
@@ -90,11 +90,19 @@ def getDepartmentStaff(request):
         serializer = UserSerializer(staff)
 
         return Response(serializer.data)
-    else:
+    
+    elif department_id is not None:
         department_uuid = uuid.UUID(department_id)
         company_uuid = uuid.UUID(company)
         allowed_company = get_object_or_404(Company, company_id=company_uuid)
-        staff = User.objects.filter(allowed_company=allowed_company, user_department=department_uuid)
+        staff = User.objects.filter(allowed_company=company, user_department=department_uuid)
+
+        serializer = UserSerializer(staff, many=True)
+        return Response(serializer.data)
+    else:
+        company_uuid = uuid.UUID(company)
+        allowed_company = get_object_or_404(Company, company_id=company_uuid)
+        staff = User.objects.filter(allowed_company=allowed_company)
 
         serializer = UserSerializer(staff, many=True)
 

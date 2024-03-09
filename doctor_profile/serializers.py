@@ -20,6 +20,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.email = validated_data.get('email', instance.email)
+        instance.specialization = validated_data.get('specialization', instance.specialization)
+        instance.payroll_number = validated_data.get('payroll_number', instance.payroll_number)
         instance.department = validated_data.get('department', instance.department)
 
         instance.save()

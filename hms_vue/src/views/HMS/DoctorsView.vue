@@ -109,6 +109,13 @@
                       <option v-for="dep in departmentsArray" >({{dep.code}}) - {{ dep.name }}</option> 
                   </select>
                 </div>
+                <div class="basis-1/2" v-if="!isEditing">
+                  <label for="">User<em>*</em></label><br />
+                  <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="user" required>
+                      <option value="" disabled selected>--Select User--</option>
+                      <option v-for="doc in doctorsArray" >({{doc.first_name}}) {{ doc.last_name }} - #{{ doc.identification_no }}</option> 
+                  </select>
+                </div>
               </div>
               <div class="text-center" v-if="isEditing">
                   <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="updateDoctor(index)">Update</button>
@@ -140,14 +147,14 @@
             <tbody>
         
               <tr v-for="(doct,index) in doctorsList" :key="doct.id" class="even:bg-gray-100">
-                <td class="text-left py-3 px-4">{{ index + 1 }}</td>
-                <td class="text-left py-3 px-4">{{ doct.first_name }}</td>
-                <td class="text-left py-3 px-4">{{ doct.last_name }}</td>
-                <td class="text-left py-3 px-4">{{ doct.email }}</td>
-                <td class="text-left py-3 px-4">{{ doct.phone_number }}</td>
-                <td class="text-left py-3 px-4">{{ doct.payroll_number}}</td>
-                <td class="text-left py-3 px-4">{{ doct.department}}</td>
-                <td class="text-left py-3 px-4">{{ doct.specialization }}</td>
+                <td class="text-left py-3 px-2">{{ index + 1 }}</td>
+                <td class="text-left py-3 px-2">{{ doct.first_name }}</td>
+                <td class="text-left py-3 px-2">{{ doct.last_name }}</td>
+                <td class="text-left py-3 px-2">{{ doct.email }}</td>
+                <td class="text-left py-3 px-2">{{ doct.phone_number }}</td>
+                <td class="text-left py-3 px-2">{{ doct.payroll_number}}</td>
+                <td class="text-left py-3 px-2">{{ doct.department}}</td>
+                <td class="text-left py-3 px-2">{{ doct.specialization }}</td>
                 <td>
                     <div class="flex">
                         <div class="basis-1/2 text-center">
@@ -193,6 +200,7 @@ export default{
     data(){
     return{
       title: 'Hospital Management/ Doctors',
+      user: "",
       isModalVisible: false,
       first_name: '',
       search_first_name: '',
@@ -208,13 +216,15 @@ export default{
       newDoctorsList: [],
       departmentList: [],
       department: '',
+      department_id: "",
       departmentEditing: '',
       payroll_number: '',
       search_payroll_number: '',
       specialization: '',
       search_specialization: '',
       isEditing: false,
-      doctID: 0,
+      doctID: "",
+      userID: "",
       doctName: '',
       currentPage: 1,
       doctCount: 0,
@@ -225,10 +235,12 @@ export default{
       showPreviousBtn: false,
       showOptions: false,
       departmentsArray: [],
+      doctorsArray: [],
       selectedDep: 0,
+      selectedUser: 0,
       selectedUpdateDep: 0,
-      depID: 0,
-      depUpdateID: 0,
+      depID: "",
+      depUpdateID: "",
       isSearching: false,
       watcherMsg: [],
       eStyle: null, nStyle:null, bWidth: null,
@@ -291,10 +303,13 @@ export default{
           }
       },
       fetchDepartments(){
+        let formData = {
+          company: this.hospID
+        }
         this.axios
-        .get("api/v1/department-list/")
+        .post("api/v1/fetch-departments/", formData)
         .then((response)=>{
-          this.departmentsArray = response.data.results;
+          this.departmentsArray = response.data;
         })
         .catch((error)=>{
           console.log(error.message)
@@ -304,24 +319,46 @@ export default{
         })
       },
       setDepartmentID(){
-        this.depID = 0;
+        this.depID = "";
         if(this.$refs.departmentSelect.selectedIndex > 0){
             this.selectedDep = this.$refs.departmentSelect.selectedIndex - 1;
-            this.depID = this.departmentsArray[this.selectedDep].id;
+            this.depID = this.departmentsArray[this.selectedDep].department_id;
             let depName = this.departmentsArray[this.selectedDep].name;
-            console.log("SElected depID is ",this.depID);
-            console.log("SElected depName is ",depName);
         }
+        this.fetchDoctorUsers();
       },
       setUpdateDepartmentID(){
-        this.depUpdateID = 0;
+        this.depUpdateID = "";
         if(this.$refs.departmentUpdateSelect.selectedIndex >= 0){
             this.selectedUpdateDep = this.$refs.departmentUpdateSelect.selectedIndex;
-            this.depUpdateID = this.departmentsArray[this.selectedUpdateDep].id;
+            this.depUpdateID = this.departmentsArray[this.selectedUpdateDep].department_id;
             let depName = this.departmentsArray[this.selectedUpdateDep].name;
-            console.log("SElected depID is ",this.depUpdateID);
-            console.log("SElected depName is ",depName);
         }
+      },
+      setUserID(){
+        this.userID = "";
+        if(this.$refs.userSelect.selectedIndex > 0){
+            this.selectedUser = this.$refs.userSelect.selectedIndex - 1;
+            this.userID = this.doctorsArray[this.selectedUser].user_id;
+            let doctName = this.doctorsArray[this.selectedUser].first_name;
+        }
+      },
+      fetchDoctorUsers(){
+        let formData = {
+          company: this.hospID,
+          department: this.depID
+        }
+        this.axios
+        .post("api/v1/department-staff-list/", formData)
+        .then((response)=>{
+          this.doctorsArray = response.data;
+        })
+        .catch((error)=>{
+          console.log(error.message)
+        })
+        .finally(()=>{
+          
+        })
       },
       showModal(){
         if(this.isEditing == false){
@@ -332,6 +369,7 @@ export default{
           this.specialization = "";
           this.phone_number = "";
           this.department = "";
+          this.user = "";
         }
         this.isModalVisible = !this.isModalVisible;
         this.fetchDepartments();
@@ -343,119 +381,68 @@ export default{
       createDoctor(){
         this.showLoader();
         if(this.first_name === '' || this.last_name === '' || this.email === '' || this.payroll_number === '' ||
-         this.phone_number === '' || this.department === '' || this.specialization === '' ){
+         this.phone_number === '' || this.department === '' || this.specialization === '' || this.user === '' ){
           this.$toast.error("Please Enter Doctor Details",{
             duration: 5000,
             dismissible: true
           })
-        }
-        else{
+          this.hideLoader();
+        }else{
+          let new_first_name = this.first_name[0].toUpperCase() + this.first_name.slice(1).toLowerCase();
+          let new_last_name = this.last_name[0].toUpperCase() + this.last_name.slice(1).toLowerCase();
+          let new_email = this.email.toLowerCase();
+          let new_specialization = "";
+          let x = this.specialization.split(" ");
+          for(let i=0; i<x.length; i++){
+              new_specialization += x[i][0].toUpperCase()+ x[i].slice(1).toLowerCase() + " ";
+          }
+          let formData = {
+            user: this.userID,
+            payroll_number: this.payroll_number,
+            first_name: new_first_name,
+            last_name: new_last_name,
+            email: new_email,
+            department: this.depID,
+            specialization: new_specialization,
+            phone_number: this.phone_number,
+            hospital: this.hospID
+          }
           this.axios
-          .get("api/v1/pass-gen/")
+          .post("api/v1/create-department-doctor/", formData)
           .then((response)=>{
-            this.temporary_password = response.data;
+            this.$toast.success("Doctor Created Succesfully",{
+              duration: 3000,
+              dismissible: true
+            })
           })
           .catch((error)=>{
-            console.log(error.message)
+            console.log(error.message);
           })
           .finally(()=>{
-            let formData = new FormData();
-            formData.append('first_name', this.first_name);
-            formData.append('email', this.email);
-            formData.append('last_name', this.last_name);
-            formData.append('payroll_number', this.payroll_number);
-            formData.append('phone_number', this.phone_number);
-            formData.append('profile', this.profile);
-            formData.append('is_active', this.is_staff);
-            formData.append('user_department', this.depUpdateID);
-            formData.append('hospital', this.hospID);
-              
-            this.axios
-            .post("api/v1/users/", formData)
-            .then((response)=>{
-                this.userDetails = response.data;
-                console.log("The temporary password is ", this.temporary_password);
-                this.$toast.success("User Created Succesfully",{
-                  duration: 5000,
-                  dismissible: true
-                })
-            })
-            .catch((error)=>{
-              console.log(error.message);
-            })
-            .finally(()=>{
-              let formData ={
-                temporary_password: this.temporary_password,
-              }
-              this.axios
-              .post(`api/v1/user-credentials/${this.userDetails.id}/`, formData)
-              .then((response)=>{
-              })
-              .catch((error)=>{
-                console.log(error);
-              })
-              .finally(()=>{
-                this.first_name = "";
-                this.last_name = "";
-                this.email = "";
-                this.id_number = "";
-                this.dob = "";
-                this.gender = "";
-                this.phone_number = "";
-                this.department = "";
-                this.profile = "";
-                this.image = null,
-                this.hideLoader();
-                this.$router.push("/staff")
-              })
-            })
-
+            this.first_name = "";
+            this.last_name = "";
+            this.email = "";
+            this.user = "";
+            this.specialization = "";
+            this.payroll_number = "";
+            this.phone_number = "";
+            this.department = "";
+            this.hideLoader();
           })
         }
-      },
-      fetchDoctor(){
-        this.showNextBtn = false;
-        this.showPreviousBtn = false;
-        this.axios
-        .get(`api/v1/doctors/?page=${this.currentPage}`)
-        .then((response)=>{
-          this.newDoctorsList = response.data.results;
-          this.doctResults = response.data;
-          this.doctArrLen = this.newDoctorsList.length;
-          this.doctCount = this.doctResults.count;
-          this.pageCount = Math.ceil(this.doctCount / 10);
-
-          if(response.data.next){
-              this.showNextBtn = true;
-          }
-          if(response.data.previous){
-              this.showPreviousBtn = true;
-          }
-          
-        })
-        .catch((error)=>{
-          console.log(error);
-        })
-        .finally(()=>{
-          for(let i=0; i<this.newDoctorsList.length; i++){
-            this.axios
-            .get(`api/v1/department-details/${this.newDoctorsList[i].department}/`)
-            .then((response)=>{
-              this.newDoctorsList[i].department = response.data.name;
-            })
-            .catch((error)=>{
-              console.log(error.message);
-            })
-            this.doctorsList.push(this.newDoctorsList[i]);
-          }
-        })
       }, 
       editDoctor(){
         this.isEditing = true;
         let selectedDoctor = arguments[0];
-        this.doctID = this.doctorsList[selectedDoctor].id;
+        this.doctID = this.doctorsList[selectedDoctor].doctor_id;
+        this.depID = this.doctorsList[selectedDoctor].department_id;
+        let formData = {
+          hospital: this.hospID,
+          doctor: this.doctID,
+          department: this.depID
+        }
         this.axios
-        .get(`api/v1/doctors/${this.doctID}/`)
+        .post("api/v1/get-department-doctors/", formData)
         .then((response)=>{
             this.first_name = response.data.first_name;
             this.last_name = response.data.last_name;
@@ -463,14 +450,20 @@ export default{
             this.payroll_number = response.data.payroll_number;
             this.phone_number = response.data.phone_number;
             this.departmentEditing = response.data.department;
+            this.department_id = response.data.department;
             this.specialization = response.data.specialization;
+            this.user = response.data.user;
         })
         .catch((error)=>{
             console.log(error.message);
         })
         .finally(()=>{
+          let formData = {
+            department: this.departmentEditing,
+            company: this.hospID
+          }
           this.axios
-          .get(`api/v1/department-details/${this.departmentEditing}/`)
+          .post("api/v1/fetch-departments/", formData)
           .then((response)=>{
             this.departmentEditing = response.data.name;
           })
@@ -496,21 +489,32 @@ export default{
                 this.hideLoader();
             }
             else{
-
+              let new_first_name = this.first_name[0].toUpperCase() + this.first_name.slice(1).toLowerCase();
+              let new_last_name = this.last_name[0].toUpperCase() + this.last_name.slice(1).toLowerCase();
+              let new_email = this.email.toLowerCase();
+              let new_specialization = "";
+              let x = this.specialization.split(" ");
+              for(let i=0; i<x.length; i++){
+                  new_specialization += x[i][0].toUpperCase()+ x[i].slice(1).toLowerCase() + " ";
+              }
               let formData = new FormData();
-              formData.append('first_name', this.first_name);
-              formData.append('email', this.email);
-              formData.append('last_name', this.last_name);
+              formData.append('doctor', this.doctID);
+              formData.append('first_name', new_first_name);
+              formData.append('email', new_email);
+              formData.append('last_name', new_last_name);
               formData.append('payroll_number', this.payroll_number);
               formData.append('phone_number', this.phone_number);
-              formData.append('specialization', this.specialization);
-              formData.append('department', this.depUpdateID);
+              formData.append('specialization', new_specialization);
+              if(this.depUpdateID != 0){
+                formData.append('department', this.depUpdateID);
+              }else{
+                formData.append('department', this.department_id);
+              }
               formData.append('hospital', this.hospID);
 
               this.axios
-              .put("api/v1/doctor-details/"+this.doctID+"/", formData)
+              .put("api/v1/update-department-doctor/", formData)
               .then((response)=>{
-                console.log("The updated info is ",response.data);
                   this.$toast.success("Doctor Succesfully Updated",{
                       duration:5000,
                       dismissible: true
@@ -527,6 +531,7 @@ export default{
                 this.specialization = "";
                 this.departmentEditing = "";
                 this.phone_number = "";
+                this.user = "";
                 this.hideLoader();
                 this.closeModal();
                 this.$store.commit('reloadingPage');
@@ -535,7 +540,8 @@ export default{
         },
         removeDoctor() {
             let selectedItem = arguments[0];
-            this.doctID = this.doctorsList[selectedItem].id;
+            this.doctID = this.doctorsList[selectedItem].doctor_id;
+            this.depID = this.doctorsList[selectedItem].department_id;
             this.doctName = this.doctorsList[selectedItem].first_name;
             this.$swal({
                 title: "Are you sure?",
@@ -548,19 +554,24 @@ export default{
                 showLoaderOnConfirm: true,
             }).then((result) => {
                 if (result.value) {
-                this.axios
-                .delete("api/v1/doctor-details/"+this.doctID+"/")
-                .then((response)=>{
-                    this.$swal("Poof! Doctor removed succesfully!", {
-                        icon: "success",
-                    });
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                })
-                .finally(()=>{
-                    this.$store.commit("reloadingPage");
-                })
+                  let formData = {
+                    hospital: this.hospID,
+                    doctor: this.doctID,
+                    department: this.depID
+                  }
+                  this.axios
+                  .post("api/v1/delete-doctor/", formData)
+                  .then((response)=>{
+                      this.$swal("Poof! Doctor removed succesfully!", {
+                          icon: "success",
+                      });
+                  })
+                  .catch((error)=>{
+                      console.log(error.message);
+                  })
+                  .finally(()=>{
+                      this.$store.commit("reloadingPage");
+                  })
                 
                 } else {
                     this.$swal(`Dr. ${this.doctName} has not been deleted!`);
@@ -607,7 +618,7 @@ export default{
               department: this.search_doctor_department,
               payroll_number: this.search_payroll_number,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              hospital: this.hospID,
             }
             this.axios
             .post(`api/v1/doctor-search/?page=${this.currentPage}`,formData)
@@ -617,8 +628,6 @@ export default{
                 this.doctArrLen = this.doctorsList.length;
                 this.doctCount = this.doctResults.count;
                 this.pageCount = Math.ceil(this.doctCount / 10);
-                console.log("The arrLen is ",this.doctArrLen);
-                console.log("The count is ",this.doctCount);
 
                 if(response.data.next){
                     this.showNextBtn = true;
@@ -643,7 +652,7 @@ export default{
               department: this.search_doctor_department,
               payroll_number: this.search_payroll_number,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              hospital: this.hospID,
             }
             this.axios
             .post("api/v1/export-doctors-pdf/", formData, { responseType: 'blob' })
@@ -673,7 +682,7 @@ export default{
               department: this.search_doctor_department,
               payroll_number: this.search_payroll_number,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              hospital: this.hospID,
             }
             this.axios
             .post("api/v1/export-doctors-excel/", formData, { responseType: 'blob' })
@@ -703,7 +712,7 @@ export default{
               department: this.search_doctor_department,
               payroll_number: this.search_payroll_number,
               phone_number: this.search_phone_number,
-              hospital_id: this.hospID,
+              hospital: this.hospID,
             }
             this.axios
             .post("api/v1/export-doctors-csv/", formData, { responseType: 'blob' })
@@ -727,7 +736,7 @@ export default{
         
     },
     mounted(){
-      this.hospID = localStorage.getItem("hospital_id")
+      this.hospID = localStorage.getItem("company_id")
       this.searchDoctor();
     }
 }

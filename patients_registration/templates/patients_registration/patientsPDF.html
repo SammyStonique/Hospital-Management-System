@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Patients List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>ID Number</th>
+                <th>Phone Number</th>
+                <th>Birth Date</th>
+                <th>City</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for pat in patients %}
+			<tr>
+				<td></td>
+				<td class="text-left py-3 px-4">{{ pat.first_name }}</td>
+                <td class="text-left py-3 px-4">{{ pat.last_name }}</td>
+                <td class="text-left py-3 px-4">{{ pat.email }}</td>
+                <td class="text-left py-3 px-4">{{ pat.id_number }}</td>
+                <td class="text-left py-3 px-4">{{ pat.phone_number }}</td>
+                <td class="text-left py-3 px-4">{{ pat.birth_date }}</td>
+                <td class="text-left py-3 px-4">{{ pat.city }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>
