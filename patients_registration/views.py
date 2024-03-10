@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework import generics,status
 from rest_framework.response import Response
+from datetime import datetime
 #Pagination
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -304,22 +305,23 @@ def generate_patients_csv(request):
 
 @csrf_exempt
 @api_view(['POST'])
-def display_import_excel(request):
+def display_patients_import_excel(request):
     patientList = []
     excel_file = request.FILES['patients_excel']
     wb = load_workbook(excel_file)
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        first_name,last_name,email,id_number,phone_number,city,address,country = row
+        first_name,last_name,email,id_number,phone_number,address,birth_date,city,country = row
         obj = {
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
             "id_number": id_number,
             "phone_number": phone_number,
-            "city": city,
             "address": address,
+            "birth_date": datetime.strptime(str(birth_date), "%Y-%m-%d %H:%M:%S").strftime("%d %b, %Y"),
+            "city": city,
             "country": country,
         }
         patientList.append(obj)
@@ -340,8 +342,8 @@ def import_patients_excel(request):
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        first_name,last_name,email,id_number,phone_number,city,address,country = row
-        Patient.objects.create(first_name=first_name, last_name=last_name, email=email, id_number=id_number,
+        first_name,last_name,email,id_number,phone_number,address,birth_date,city,country = row
+        Patient.objects.create(first_name=first_name, last_name=last_name, email=email, id_number=id_number, birth_date=birth_date,
                                phone_number=phone_number,city=city,address=address, country=country, hospital=hospital) 
         
 

@@ -56,6 +56,7 @@
                                 <button @click="exportPatientsPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
                                 <button @click="exportPatientsExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
                                 <button @click="exportPatientsCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
+                                <button @click="showImportModal" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Import Excel</button>
                             </div>
                         </div>
                     </div>
@@ -136,14 +137,84 @@
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_phone_number" required>
                             </div>
                         </div>
-                        <div class="text-center" v-if="isEditing">
-                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="updatePatient">Update</button>
+                        <div class="text-center" v-if="isEditing && !isAddingContactPerson">
+                            <button class="rounded border bg-green-400 w-42 py-2 px-4 text-white text-lg" @click="updatePatient">Update Patient</button>
+                        </div>
+                        <div class="text-center" v-else-if="isAddingContactPerson && isEditing">
+                            <button class="rounded border bg-green-400 w-48 py-2 px-4 text-white text-lg" @click="updatePatient">Add Kin & Update</button>
                         </div>
                         <div class="text-center" v-else>
-                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createPatient">Save</button>
+                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createPatient">Save Patient</button>
                         </div>
 
                     </form>
+                    </template>
+                    <template v-slot:footer>We Value Your Partnership </template>
+                </Modal>
+                <!-- MODAL component for importing patients -->
+                <Modal v-show="importModalVisible" @close="closeImportModal" :index="index">
+                    <template v-slot:header> Import Patients </template>
+                    <template v-slot:body>
+                    
+                    <form action="" @submit.prevent="importPatientsExcel" enctype="multipart/form-data" class="import-form">
+                        <div class="border-2 rounded-lg py-4 px-3 mb-6">
+                            <div class="relative border h-18 w-76 mb-6">
+                                <DropZone 
+                                    :maxFiles="Number(10000000000)"
+                                    url=""
+                                    :uploadOnDrop="false"
+                                    :multipleUpload="true"
+                                    :parallelUpload="3"
+                                    method="POST"
+                                    @addedFile="onFileAdd"
+                                    :headers="{'Cache-Control': '' ,'X-Requested-With': ''}"
+                                    
+                                />
+                            </div>
+                            <div>
+                                <label for="" class="mb-2 mr-3">Select Excel To Import:<em>*</em></label>
+                                <input type="text" name="" class="rounded border-2 border-gray-600 text-gray-500 text-sm pl-2 mr-2 mb-4 w-72 h-8" placeholder="" v-model="filePath" >
+                                <input type="file" name="file-input" @change="onFileChange" id="file-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                                <label class="rounded-lg border bg-gray-200 p-2 cursor-pointer" for="file-input">Browse...</label>
+                            </div>
+                            <div class="text-center">
+                                <button type="button" class="rounded border bg-green-400 w-24 py-2 px-2 text-white text-lg" @click="displayExcelData">Import</button>
+                            </div>
+                        </div>
+                        <div class="import-table">
+                            <table class="min-w-full bg-white mb-6"> 
+                                <thead class="bg-gray-800 text-white">
+                                    <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
+                                        <th>#</th>
+                                        <th class="text-left py-3 px-2">F. Name</th>
+                                        <th class="text-left py-3 px-2">L. Name</th>
+                                        <th class="text-left py-3 px-2">Email</th>
+                                        <th class="text-left py-3 px-2">ID No.</th>
+                                        <th class="text-left py-3 px-2">Phone No</th>
+                                        <th class="text-left py-3 px-2">DOB</th>
+                                        <th class="text-left py-3 px-2">City</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(pat,index) in excelPatList" :key="pat.patient_id" class="even:bg-gray-100">
+                                        <td>{{ index + 1 }}.</td>
+                                        <td class="text-left">{{ pat.first_name }}</td>
+                                        <td class="text-left">{{ pat.last_name }}</td>
+                                        <td class="text-left">{{ pat.email }}</td>
+                                        <td class="text-left">{{ pat.id_number }}</td>
+                                        <td class="text-left">{{ pat.phone_number }}</td>
+                                        <td class="text-left">{{ pat.birth_date }}</td>
+                                        <td class="text-left">{{ pat.city }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="rounded border bg-green-400 w-24 py-2 px-2 text-white text-lg">Save</button>
+                        </div>
+                    </form>
+                    
+                    
                     </template>
                     <template v-slot:footer>We Value Your Partnership </template>
                 </Modal>
@@ -152,11 +223,11 @@
                         <thead class="bg-gray-800 text-white">
                             <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
                                 <th>#</th>
-                                <th class="text-left py-3 px-4">First Name</th>
-                                <th class="text-left py-3 px-4">Last Name</th>
+                                <th class="text-left py-3 px-4">F. Name</th>
+                                <th class="text-left py-3 px-4">L. Name</th>
                                 <th class="text-left py-3 px-4">Email</th>
-                                <th class="text-left py-3 px-4">ID Number</th>
-                                <th class="text-left py-3 px-4">Phone Number</th>
+                                <th class="text-left py-3 px-4">ID No</th>
+                                <th class="text-left py-3 px-4">Phone No</th>
                                 <th class="text-left py-3 px-4">Birth Date</th>
                                 <th class="text-left py-3 px-4">City</th>
                                 <th class="text-left py-3 px-4">Actions</th>
@@ -166,13 +237,13 @@
                         
                         <tr v-for="(pat,index) in patientList" :key="pat.patient_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3 px-4">{{ pat.first_name }}</td>
-                            <td class="text-left py-3 px-4">{{ pat.last_name }}</td>
-                            <td class="text-left py-3 px-4">{{ pat.email }}</td>
-                            <td class="text-left py-3 px-4">{{ pat.id_number }}</td>
-                            <td class="text-left py-3 px-4">{{ pat.phone_number }}</td>
-                            <td class="text-left py-3 px-4">{{ pat.birth_date }}</td>
-                            <td class="text-left py-3 px-4">{{ pat.city }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.first_name }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.last_name }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.email }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.id_number }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.phone_number }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.birth_date }}</td>
+                            <td class="text-left py-3 px-2">{{ pat.city }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">
@@ -237,8 +308,10 @@ export default{
         city_search: "",
         birth_date_search: null,
         patientModalVisible: false,
+        importModalVisible: false,
         isEditing: false,
         isSearching: false,
+        isAddingContactPerson: false,
         pageCount: 0,
         showNextBtn: false,
         showPreviousBtn: false,
@@ -257,12 +330,16 @@ export default{
         patientCount: 0,
         patientEditing: "",
         clearButton: true,
+        contact_personID: "",
         contact_person_first_name: "",
         contact_person_last_name: "",
         contact_person_email: "",
         contact_person_phone_number: "",
         watcherMsg: [],
         eStyle: null, nStyle:null, bWidth: null,
+        excelPatList: [],
+        excel_file: "",
+        filePath: "",
     }
   },
     components: {
@@ -328,6 +405,19 @@ export default{
             const month = ('0' + (date.getMonth() + 1)).slice(-2);
             const day = ('0' + date.getDate()).slice(-2);
             return `${year}-${month}-${day}`;
+        },
+        onFileChange(e){
+            this.excel_file = e.target.files[0];
+            console.log("The target is ",e.target);
+            console.log(this.excel_file)
+            this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
+        },
+        onFileAdd(item){
+            this.excel_file = item.file;
+            console.log("The excel file is ",this.excel_file);
+            console.log("The excel file name is ",this.excel_file.name);
+            this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
+            this.displayExcelData();
         },
         createPatient(){
             this.showLoader();
@@ -445,11 +535,12 @@ export default{
             
         },
         editPatient(){
+            this.contact_personID = "";
             this.isEditing = true;
             let selectedPatient = arguments[0];
             this.patientID = this.patientList[selectedPatient].patient_id;
             let formData = {
-                company: this.companyID,
+                hospital: this.hospitalID,
                 patient: this.patientID
             }
             this.axios
@@ -465,11 +556,37 @@ export default{
                 this.phone_number = this.patientDetails.phone_number;
                 this.address = this.patientDetails.address;
                 this.country = this.patientDetails.country;
+                this.contact_personID = this.patientDetails.emergency_contact_person;
             })
             .catch((error)=>{
                 console.log(error.mesage);
             })
             .finally(()=>{
+                if(this.contact_personID){
+                    this.isAddingContactPerson = false;
+                    let formData = {
+                        contact_person: this.contact_personID,
+                        hospital: this.hospitalID
+                    }
+                    this.axios
+                    .post("api/v1/get-emergency-contact-persons/", formData)
+                    .then((response)=>{
+                        this.contact_person_first_name = response.data.first_name;
+                        this.contact_person_last_name = response.data.last_name;
+                        this.contact_person_email = response.data.email;
+                        this.contact_person_phone_number = response.data.phone_number;
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                }else{
+                    this.isAddingContactPerson = true;
+                    this.contact_person_first_name = "";
+                    this.contact_person_last_name = "";
+                    this.contact_person_email = "";
+                    this.contact_person_phone_number = "";
+                }
+                
                 this.scrollToTop();
                 this.showModal();
             })
@@ -477,27 +594,29 @@ export default{
         },
         updatePatient(){
             this.showLoader();
+            console.log("The contact ID at this point is ",this.contact_personID);
             if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === ''
-                 || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === ''){
+                 || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
+                 || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
                     this.$toast.error("Please Enter Patient Details",{
                         duration:5000,
                         dismissible: true
                     })
                     this.hideLoader();
             }
-            else{
+            else if(this.contact_personID){
                 let formData = new FormData();
                 formData.append('patient',this.patientDetails.patient_id);
-                formData.append('first_name',this.managerDetails.first_name);
-                formData.append('last_name',this.managerDetails.last_name);
+                formData.append('first_name',this.first_name);
+                formData.append('last_name',this.last_name);
                 formData.append('birth_date',this.formatDate(this.birth_date));
                 formData.append('phone_number',this.phone_number);
                 formData.append('email',this.email);
                 formData.append('hospital',this.hospitalID);
-                formData.append('city',this.managerDetails.city);
-                formData.append('address',this.managerDetails.address);
-                formData.append('id_number',this.managerDetails.id_number);
-                formData.append('country',this.managerDetails.country);
+                formData.append('city',this.city);
+                formData.append('address',this.address);
+                formData.append('id_number',this.id_number);
+                formData.append('country',this.country);
 
                 this.axios
                 .put("api/v1/update-patient/", formData)
@@ -511,18 +630,105 @@ export default{
                     console.log(error.message);
                 })
                 .finally(()=>{
-                    this.first_name = "";
-                    this.last_name = "";
-                    this.email = "";
-                    this.birth_date = "";
-                    this.id_number = "";
-                    this.phone_number = "";
-                    this.city = "";
-                    this.address = "";
-                    this.country = "";
-                    this.hideLoader();
-                    this.closeModal();
-                    this.$store.commit('reloadingPage');
+                    let formData = {
+                        contact_person: this.contact_personID,
+                        hospital: this.hospitalID,
+                        first_name: this.contact_person_first_name,
+                        last_name: this.contact_person_last_name,
+                        email: this.contact_person_email,
+                        phone_number: this.contact_person_phone_number,
+                    }
+                    this.axios
+                    .put("api/v1/update-emergency-contact-person/", formData)
+                    .then((response)=>{
+
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                    .finally(()=>{
+                        this.first_name = "";
+                        this.last_name = "";
+                        this.email = "";
+                        this.birth_date = "";
+                        this.id_number = "";
+                        this.phone_number = "";
+                        this.city = "";
+                        this.address = "";
+                        this.country = "";
+                        this.contact_person_first_name = "";
+                        this.contact_person_last_name = "";
+                        this.contact_person_email = "";
+                        this.contact_person_phone_number = "";
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
+                    })
+                    
+                })
+            }else if(typeof(this.contact_personID) == "null"){
+                let formData = {
+                    hospital: this.hospitalID,
+                    first_name: this.contact_person_first_name,
+                    last_name: this.contact_person_last_name,
+                    email: this.contact_person_email,
+                    phone_number: this.contact_person_phone_number,
+                }
+                this.axios
+                .post("api/v1/create-emergency-contact-person/", formData)
+                .then((response)=>{
+                    this.emergencyContactDetails = response.data;
+                    this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    let formData = new FormData();
+                    formData.append('patient',this.patientDetails.patient_id);
+                    formData.append('first_name',this.first_name);
+                    formData.append('last_name',this.last_name);
+                    formData.append('birth_date',this.formatDate(this.birth_date));
+                    formData.append('phone_number',this.phone_number);
+                    formData.append('email',this.email);
+                    formData.append('hospital',this.hospitalID);
+                    formData.append('city',this.city);
+                    formData.append('address',this.address);
+                    formData.append('id_number',this.id_number);
+                    formData.append('country',this.country);
+                    formData.append('emergency_contact_person', this.emergencyContactID);
+
+                    this.axios
+                    .put("api/v1/update-patient/", formData)
+                    .then((response)=>{
+                        this.$toast.success("Patient Succesfully Updated",{
+                            duration:5000,
+                            dismissible: true
+                        })
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                    })
+                    .finally(()=>{
+                        this.first_name = "";
+                        this.last_name = "";
+                        this.email = "";
+                        this.birth_date = "";
+                        this.id_number = "";
+                        this.phone_number = "";
+                        this.city = "";
+                        this.address = "";
+                        this.country = "";
+                        this.contact_person_first_name = "";
+                        this.contact_person_last_name = "";
+                        this.contact_person_email = "";
+                        this.contact_person_phone_number = "";
+                        this.isAddingContactPerson = false;
+                        this.isEditing = false;
+                        this.hideLoader();
+                        // this.closeModal();
+                        // this.$store.commit('reloadingPage');
+                    })
                 })
             }
         },
@@ -532,7 +738,7 @@ export default{
             this.patientName = this.patientList[selectedItem].first_name + " " +this.patientList[selectedItem].last_name ;
             this.$swal({
                 title: "Are you sure?",
-                text: `Do you wish to delete ${this.managerName}?`,
+                text: `Do you wish to delete ${this.patientName}?`,
                 type: 'warning',
                 showCloseButton: true,
                 showCancelButton: true,
@@ -579,9 +785,17 @@ export default{
             }
             this.patientModalVisible = !this.patientModalVisible;
         },
+        showImportModal(){
+            this.showOptions = false;
+            this.importModalVisible = ! this.importModalVisible;
+            this.scrollToTop();
+        },
         closeModal(){
             this.patientModalVisible = false;
             this.isEditing = false;
+        },
+        closeImportModal(){
+            this.importModalVisible = false;
         },
         loadNext(){
             if(this.currentPage >= this.pageCount){
@@ -590,7 +804,7 @@ export default{
                 this.currentPage += 1;
             }
             
-            this.searchPatient();
+            this.searchPatients();
             this.scrollToTop();           
         },
         loadPrev(){
@@ -721,6 +935,72 @@ export default{
                 this.hideLoader();
             })
         },
+        displayExcelData(){
+            this.showLoader();
+            if(this.excel_file == ""){
+                this.$toast.error("No File Selected",{
+                    duration: 3000,
+                    dismissible: true
+                })
+                this.hideLoader();
+            }else{
+                let formData = new FormData()
+                formData.append("patients_excel", this.excel_file) 
+
+                this.axios
+                .post("api/v1/display-patients-import-excel/", formData)
+                .then((response)=>{
+                    this.excelPatList = response.data.patients;
+                    console.log(this.excelPatList);
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    this.hideLoader();
+                })
+            }
+            
+        },
+        importPatientsExcel(){
+            this.showLoader();
+            if(!this.excelPatList.length){
+                this.$toast.error("Please Import Excel Template",{
+                    duration: 3000,
+                    dismissible: true
+                })
+                this.hideLoader();
+            }
+            else{
+                let formData = new FormData()
+                formData.append("patients_excel", this.excel_file)
+                formData.append("hospital_id", this.hospitalID)
+
+                this.axios
+                .post("api/v1/import-patients-excel/", formData)
+                .then((response)=>{
+                   this.$toast.success("Patients Imported Succesfully",{
+                        duration: 3000,
+                        dismissible: true
+                   })
+                })
+                .catch((error)=>{
+                    this.$toast.error("Import Error",{
+                        duration: 3000,
+                        dismissible: true
+                   })
+                    console.log(error.message);
+                })
+                .finally(()=>{
+                    this.hideLoader();
+                    this.excelPatList = [];
+                    this.excel_file = "";
+                    this.$router.push("/hms/patients")
+                    this.$store.commit('reloadingPage')
+                })
+            }
+                
+        },
 
     },
     mounted(){
@@ -739,5 +1019,33 @@ export default{
 }
 .subsection{
     min-height: 100vh;
+}
+.import-table{
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+.pagination{
+    bottom: 20px;
+}
+em{
+  color: red;
+}
+.options-container {
+  width: 150px;
+
+}
+.dropdown-button{
+    z-index: 1;
+}
+.inset-button{
+    min-height: 100vh;
+}
+#file-input{
+    display: none;
+}
+.import-form{
+    min-width: 50vw;
 }
 </style>

@@ -3,7 +3,8 @@ from .models import *
 
 class PatientSerializer(serializers.ModelSerializer):
     hospital = serializers.ReadOnlyField(source='hospital.company_id')
-    emergency_contact_person = serializers.ReadOnlyField(source='emergency_contact_person.email')
+    # emergency_contact_person = serializers.ReadOnlyField(source='emergency_contact_person.contact_person_id')
+    emergency_contact_person = serializers.PrimaryKeyRelatedField(queryset=EmergencyContactPerson.objects.all(),many=False)
     class Meta:
         model = Patient
         fields = ['patient_id','first_name','last_name','email','id_number','phone_number','address','birth_date','city','country','hospital','emergency_contact_person']

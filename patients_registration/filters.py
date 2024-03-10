@@ -28,7 +28,6 @@ def patientsSearch(request):
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_patients = Patient.objects.filter(hospital=hospital_uuid)
-    print("The hospital patients are ",hospital_patients)
 
     patients = hospital_patients.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(birth_date__icontains=birth_date)
                                         & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))

@@ -29,7 +29,7 @@ class Patient(models.Model):
     city = models.CharField(max_length=250)
     address = models.CharField(max_length=250)
     country = models.CharField(max_length=250)
-    emergency_contact_person = models.ForeignKey(EmergencyContactPerson, related_name="patient_contact_person", on_delete=models.DO_NOTHING)
+    emergency_contact_person = models.ForeignKey(EmergencyContactPerson, related_name="patient_contact_person", on_delete=models.DO_NOTHING,blank=True, null=True)
 
     def __str__(self):
         return f'{self.first_name + " " + self.last_name + " Patient"}'

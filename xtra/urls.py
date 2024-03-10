@@ -19,6 +19,6 @@ urlpatterns = [
     path("export-departments-pdf/", views.generate_departments_pdf, name="export-departments-pdf"),
     path("export-departments-excel/", views.generate_departments_excel, name="export-departments-excel"),
     path("export-departments-csv/", views.generate_departments_csv, name="export-departments-csv"),
-    path("display-import-excel/", views.display_import_excel, name="display-import-excel"),
+    path("display-departments-import-excel/", views.display_departments_import_excel, name="display-departments-import-excel"),
     path("import-departments-excel/", views.import_departments_excel, name="import-departments-excel"),
 ]

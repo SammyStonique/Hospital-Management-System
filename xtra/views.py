@@ -305,7 +305,7 @@ def generate_departments_csv(request):
 
 @csrf_exempt
 @api_view(['POST'])
-def display_import_excel(request):
+def display_departments_import_excel(request):
     departList = []
     excel_file = request.FILES['departments_excel']
     wb = load_workbook(excel_file)

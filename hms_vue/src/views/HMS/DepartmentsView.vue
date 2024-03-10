@@ -728,7 +728,7 @@ export default{
                 formData.append("departments_excel", this.excel_file) 
 
                 this.axios
-                .post("api/v1/display-import-excel/", formData)
+                .post("api/v1/display-departments-import-excel/", formData)
                 .then((response)=>{
                     this.excelDepList = response.data.departments;
                     console.log(this.excelDepList);
