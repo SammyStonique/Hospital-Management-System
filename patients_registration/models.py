@@ -12,6 +12,7 @@ class EmergencyContactPerson(models.Model):
     last_name = models.CharField(max_length=250)
     email = models.CharField(max_length=250)
     phone_number = models.CharField(max_length=250)
+    patient = models.CharField(max_length=250)
     hospital = models.ForeignKey(Company, related_name="emmergency_contact_hospital", on_delete=models.CASCADE)
 
     def __str__(self):
@@ -29,7 +30,7 @@ class Patient(models.Model):
     city = models.CharField(max_length=250)
     address = models.CharField(max_length=250)
     country = models.CharField(max_length=250)
-    emergency_contact_person = models.ForeignKey(EmergencyContactPerson, related_name="patient_contact_person", on_delete=models.DO_NOTHING,blank=True, null=True)
+    emergency_contact_person = models.ForeignKey(EmergencyContactPerson, related_name="patient_contact_person", on_delete=models.SET_NULL,blank=True, null=True)
 
     def __str__(self):
         return f'{self.first_name + " " + self.last_name + " Patient"}'

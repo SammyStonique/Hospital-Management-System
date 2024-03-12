@@ -223,27 +223,29 @@
                         <thead class="bg-gray-800 text-white">
                             <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
                                 <th>#</th>
-                                <th class="text-left py-3 px-4">F. Name</th>
-                                <th class="text-left py-3 px-4">L. Name</th>
-                                <th class="text-left py-3 px-4">Email</th>
-                                <th class="text-left py-3 px-4">ID No</th>
-                                <th class="text-left py-3 px-4">Phone No</th>
-                                <th class="text-left py-3 px-4">Birth Date</th>
-                                <th class="text-left py-3 px-4">City</th>
-                                <th class="text-left py-3 px-4">Actions</th>
+                                <th class="text-left py-3 px-2">F. Name</th>
+                                <th class="text-left py-3 px-2">L. Name</th>
+                                <th class="text-left py-3 px-2">Email</th>
+                                <th class="text-left py-3 px-2">ID No</th>
+                                <th class="text-left py-3 px-2">Phone No</th>
+                                <th class="text-left py-3 px-2">Birth Date</th>
+                                <th class="text-left py-3 px-2">City</th>
+                                <th class="text-left py-3 px-2">Contact Person</th>
+                                <th class="text-left py-3 px-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                         
                         <tr v-for="(pat,index) in patientList" :key="pat.patient_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3 px-2">{{ pat.first_name }}</td>
-                            <td class="text-left py-3 px-2">{{ pat.last_name }}</td>
-                            <td class="text-left py-3 px-2">{{ pat.email }}</td>
-                            <td class="text-left py-3 px-2">{{ pat.id_number }}</td>
-                            <td class="text-left py-3 px-2">{{ pat.phone_number }}</td>
-                            <td class="text-left py-3 px-2">{{ pat.birth_date }}</td>
-                            <td class="text-left py-3 px-2">{{ pat.city }}</td>
+                            <td class="text-left py-3">{{ pat.first_name }}</td>
+                            <td class="text-left py-3">{{ pat.last_name }}</td>
+                            <td class="text-left py-3">{{ pat.email }}</td>
+                            <td class="text-left py-3">{{ pat.id_number }}</td>
+                            <td class="text-left py-3">{{ pat.phone_number }}</td>
+                            <td class="text-left py-3">{{ pat.birth_date }}</td>
+                            <td class="text-left py-3">{{ pat.city }}</td>
+                            <td class="text-left py-3">{{ pat.emergency_contact_person_name }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">
@@ -594,12 +596,11 @@ export default{
         },
         updatePatient(){
             this.showLoader();
-            console.log("The contact ID at this point is ",this.contact_personID);
             if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === ''
                  || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
                  || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
                     this.$toast.error("Please Enter Patient Details",{
-                        duration:5000,
+                        duration:3000,
                         dismissible: true
                     })
                     this.hideLoader();
@@ -617,6 +618,7 @@ export default{
                 formData.append('address',this.address);
                 formData.append('id_number',this.id_number);
                 formData.append('country',this.country);
+                formData.append('emergency_contact_person',this.contact_personID);
 
                 this.axios
                 .put("api/v1/update-patient/", formData)
@@ -660,13 +662,14 @@ export default{
                         this.contact_person_last_name = "";
                         this.contact_person_email = "";
                         this.contact_person_phone_number = "";
+                        this.contact_personID = "";
                         this.hideLoader();
                         this.closeModal();
                         this.$store.commit('reloadingPage');
                     })
                     
                 })
-            }else if(typeof(this.contact_personID) == "null"){
+            }else if(this.contact_personID == null){
                 let formData = {
                     hospital: this.hospitalID,
                     first_name: this.contact_person_first_name,
@@ -723,18 +726,27 @@ export default{
                         this.contact_person_last_name = "";
                         this.contact_person_email = "";
                         this.contact_person_phone_number = "";
+                        this.contact_personID = "";
                         this.isAddingContactPerson = false;
                         this.isEditing = false;
                         this.hideLoader();
-                        // this.closeModal();
-                        // this.$store.commit('reloadingPage');
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
                     })
+                })
+            }
+            else{
+                this.hideLoader();
+                this.$toast.error("Error Updating Patient",{
+                    duration:3000,
+                    dismissible: true
                 })
             }
         },
         removePatient() {
             let selectedItem = arguments[0];
             this.patientID = this.patientList[selectedItem].patient_id;
+            this.contact_personID = this.patientList[selectedItem].emergency_contact_person_id;
             this.patientName = this.patientList[selectedItem].first_name + " " +this.patientList[selectedItem].last_name ;
             this.$swal({
                 title: "Are you sure?",
@@ -762,7 +774,22 @@ export default{
                         console.log(error.message);
                     })
                     .finally(()=>{
-                        this.$store.commit('reloadingPage');
+                        let formData = {
+                            contact_person: this.contact_personID,
+                            hospital: this.hospitalID
+                        }
+                        this.axios
+                        .post("api/v1/delete-emergency-contact-person/", formData)
+                        .then((response)=>{
+
+                        })
+                        .catch((error)=>{
+                            console.log(error.message);
+                        })
+                        .finally(()=>{
+                            this.$store.commit('reloadingPage');
+                        })
+                        
                     })
                 
                 } else {
@@ -782,6 +809,10 @@ export default{
                 this.city = "";
                 this.address = "";
                 this.country = "";
+                this.contact_person_email = "";
+                this.contact_person_first_name = "";
+                this.contact_person_last_name = "";
+                this.contact_person_phone_number = "";
             }
             this.patientModalVisible = !this.patientModalVisible;
         },

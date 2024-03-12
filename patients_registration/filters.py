@@ -33,19 +33,40 @@ def patientsSearch(request):
                                         & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
 
     for pat in patients:
-        obj = {
-            "patient_id": pat.patient_id,
-            "first_name": pat.first_name,
-            "last_name": pat.last_name,
-            "email": pat.email,
-            "id_number": pat.id_number,
-            "phone_number": pat.phone_number,
-            "city": pat.city,
-            "address": pat.address,
-            "country": pat.country,
-            "birth_date": pat.birth_date.strftime("%d %b, %Y")
-        }
-        patientList.append(obj)
+        if(pat.emergency_contact_person):
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "emergency_contact_person_id": pat.emergency_contact_person.contact_person_id,
+                "emergency_contact_person_name": pat.emergency_contact_person.first_name + " "+pat.emergency_contact_person.last_name,
+                "emergency_contact_person_email": pat.emergency_contact_person.email,
+                "emergency_contact_person_phone_number": pat.emergency_contact_person.phone_number,
+            }
+            patientList.append(obj)
+        else:
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+            }
+            patientList.append(obj)
+
+        
 
     pagination_class = BasePagination
     paginator = pagination_class()
@@ -64,7 +85,6 @@ def contactPersonSearch(request):
     last_name = data['last_name']
     email = data['email']
     phone_number = data['phone_number']
-    city = data['city']
     hospital_id = data['hospital_id']
 
     hospital_uuid = uuid.UUID(hospital_id)
@@ -81,6 +101,7 @@ def contactPersonSearch(request):
             "last_name": cont.last_name,
             "email": cont.email,
             "phone_number": cont.phone_number,
+            "patient": cont.patient
         }
         contactPersonList.append(obj)
 

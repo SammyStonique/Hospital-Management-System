@@ -3,7 +3,6 @@ from .models import *
 
 class PatientSerializer(serializers.ModelSerializer):
     hospital = serializers.ReadOnlyField(source='hospital.company_id')
-    # emergency_contact_person = serializers.ReadOnlyField(source='emergency_contact_person.contact_person_id')
     emergency_contact_person = serializers.PrimaryKeyRelatedField(queryset=EmergencyContactPerson.objects.all(),many=False)
     class Meta:
         model = Patient
@@ -24,6 +23,7 @@ class PatientSerializer(serializers.ModelSerializer):
         instance.city = validated_data.get('city', instance.city)
         instance.country = validated_data.get('country', instance.country)
         instance.address = validated_data.get('address', instance.address)
+        instance.emergency_contact_person = validated_data.get('emergency_contact_person', instance.emergency_contact_person)
 
         instance.save()
         return instance
@@ -33,7 +33,7 @@ class EmergencyContactPersonSerializer(serializers.ModelSerializer):
     hospital = serializers.ReadOnlyField(source='hospital.company_id')
     class Meta:
         model = EmergencyContactPerson
-        fields = ['contact_person_id','first_name','last_name','email','phone_number','hospital']
+        fields = ['contact_person_id','first_name','last_name','email','phone_number','patient','hospital']
 
     def create(self, validated_data):
         contact_person = EmergencyContactPerson.objects.create(**validated_data)
@@ -45,6 +45,7 @@ class EmergencyContactPersonSerializer(serializers.ModelSerializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.patient = validated_data.get('patient', instance.patient)
 
         instance.save()
         return instance

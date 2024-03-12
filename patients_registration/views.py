@@ -109,15 +109,18 @@ def getPatients(request):
 def updatePatient(request):
     patient_id = request.data.get("patient")
     hospital = request.data.get("hospital")
+    emergency_contact_id = request.data.get("emergency_contact_person")
     hospital_uuid = uuid.UUID(hospital)
+    emergency_contact_uuid = uuid.UUID(emergency_contact_id)
     hospital_id = get_object_or_404(Company, company_id=hospital_uuid)
+    emergency_contact = EmergencyContactPerson.objects.get(contact_person_id=emergency_contact_uuid)
     patient_uuid = uuid.UUID(patient_id)
     patient = Patient.objects.get(hospital=hospital_id,patient_id=patient_uuid)
     
     serializer = PatientSerializer(patient, data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(emergency_contact_person=emergency_contact)
 
     else:
         print(serializer.errors) 
@@ -469,6 +472,7 @@ def generate_contact_persons_pdf(request):
             "last_name": cont.last_name,
             "email": cont.email,
             "phone_number": cont.phone_number,
+            "patient": cont.patient
         }
         contact_persons.append(obj)
 
@@ -521,6 +525,7 @@ def generate_contact_persons_excel(request):
             "last_name": cont.last_name,
             "email": cont.email,
             "phone_number": cont.phone_number,
+            "patient": cont.patient
         }
         contact_persons.append(obj)
 
@@ -533,14 +538,14 @@ def generate_contact_persons_excel(request):
     worksheet = workbook.add_sheet("Contact People")
 
     row_num = 0
-    columns = ['First Name','Last Name','Email','Phone Number']
+    columns = ['First Name','Last Name','Email','Phone Number','Patient']
     style1 = xlwt.easyxf('font:bold 1')
     for col_num in range(len(columns)):
         worksheet.write(row_num, col_num, columns[col_num],style=style1)
 
     for cont in contact_persons:
         row_num += 1
-        row = [cont['first_name'],cont['last_name'],cont['email'],cont['phone_number']]
+        row = [cont['first_name'],cont['last_name'],cont['email'],cont['phone_number'],cont['patient']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -571,6 +576,7 @@ def generate_contact_persons_csv(request):
             "last_name": cont.last_name,
             "email": cont.email,
             "phone_number": cont.phone_number,
+            "patient": cont.patient
         }
         contact_persons.append(obj)
 
@@ -578,9 +584,9 @@ def generate_contact_persons_csv(request):
     response['Content-Disposition'] = 'attachment; filename=Conatact People.csv'
 
     writer = csv.writer(response)
-    writer.writerow(['First Name','Last Name','Email','Phone Number'])
+    writer.writerow(['First Name','Last Name','Email','Phone Number','Patient'])
 
     for cont in contact_persons:
-        writer.writerow([cont['first_name'],cont['last_name'],cont['email'],cont['phone_number']])
+        writer.writerow([cont['first_name'],cont['last_name'],cont['email'],cont['phone_number'],cont['patient']])
     return response
 

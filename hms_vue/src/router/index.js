@@ -8,6 +8,7 @@ import DoctorsView from '../views/HMS/DoctorsView.vue'
 import LoginView from '../views/LoginView.vue'
 import LogoutView from '../views/LogoutView.vue'
 import PatientsView from '../views/HMS/PatientsView.vue'
+import EmergencyContactsView from '../views/HMS/EmergencyContactsView.vue'
 import StaffView from '../views/HMS/StaffView.vue'
 import PayrollView from '../views/HR/PayrollView.vue'
 import AccountsView from '../views/FA/AccountsView.vue'
@@ -79,6 +80,14 @@ const routes = [
     path: '/hms/patients',
     name: 'hms-patients',
     component: PatientsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/emergency-contacts',
+    name: 'hms-emergency-contacts',
+    component: EmergencyContactsView,
     meta:{
       requireLogin: true
     }
