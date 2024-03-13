@@ -414,7 +414,7 @@ export default{
             this.isEditing = true;
             let selectedContact = arguments[0];
             this.contactPersonID = this.contactPersonList[selectedContact].contact_person_id;
-            console.log("The contact person id is ",this.contactPersonID);
+
             let formData = {
                 hospital: this.hospitalID,
                 contact_person: this.contactPersonID
@@ -462,7 +462,7 @@ export default{
                 .put("api/v1/update-emergency-contact-person/", formData)
                 .then((response)=>{
                     this.$toast.success("Emergency Contact Succesfully Updated",{
-                        duration:5000,
+                        duration:3000,
                         dismissible: true
                     })
                 })

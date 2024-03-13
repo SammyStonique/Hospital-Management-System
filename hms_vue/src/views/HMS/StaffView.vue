@@ -606,7 +606,6 @@ export default{
               formData.append('password', this.temporary_password);
               formData.append('is_staff', this.is_staff);
               formData.append('is_active', this.is_staff);
-              console.log("The depUpdateID is ",this.depUpdateID);
               if(this.depUpdateID != 0){
                 formData.append('user_department', this.depUpdateID);
                 formData.append('user_department_name', this.depUpdateName);

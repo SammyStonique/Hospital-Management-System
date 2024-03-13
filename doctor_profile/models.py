@@ -25,4 +25,3 @@ class Doctor(models.Model):
     
     class Meta:
         ordering = [('first_name')]
-    

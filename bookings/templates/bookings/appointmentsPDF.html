@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Appointments List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Patient Name</th>
+				<th>Doctor Name</th>
+				<th>Date</th>
+				<th>Time</th>
+                <th>Notes</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for apt in appointments %}
+			<tr>
+				<td></td>
+				<td>{{ apt.patient_name }}</td>
+				<td>Dr. {{ apt.doctor_name }}</td>
+				<td>{{ apt.date }}</td>
+				<td>{{ apt.time }}</td>
+                <td>{{ apt.notes }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>

@@ -164,19 +164,38 @@ def generate_patients_pdf(request):
                                         & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
 
     for pat in patientList:
-        obj = {
-            "patient_id": pat.patient_id,
-            "first_name": pat.first_name,
-            "last_name": pat.last_name,
-            "email": pat.email,
-            "id_number": pat.id_number,
-            "phone_number": pat.phone_number,
-            "city": pat.city,
-            "address": pat.address,
-            "country": pat.country,
-            "birth_date": pat.birth_date.strftime("%d %b, %Y")
-        }
-        patients.append(obj)
+        if(pat.emergency_contact_person):
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "emergency_contact_person_id": pat.emergency_contact_person.contact_person_id,
+                "emergency_contact_person_name": pat.emergency_contact_person.first_name + " "+pat.emergency_contact_person.last_name,
+                "emergency_contact_person_email": pat.emergency_contact_person.email,
+                "emergency_contact_person_phone_number": pat.emergency_contact_person.phone_number,
+            }
+            patients.append(obj)
+        else:
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+            }
+            patients.append(obj)
 
     context = {"patients":patients}
 
@@ -224,19 +243,38 @@ def generate_patients_excel(request):
                                         & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
 
     for pat in patientList:
-        obj = {
-            "patient_id": pat.patient_id,
-            "first_name": pat.first_name,
-            "last_name": pat.last_name,
-            "email": pat.email,
-            "id_number": pat.id_number,
-            "phone_number": pat.phone_number,
-            "city": pat.city,
-            "address": pat.address,
-            "country": pat.country,
-            "birth_date": pat.birth_date.strftime("%d %b, %Y")
-        }
-        patients.append(obj)
+        if(pat.emergency_contact_person):
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "emergency_contact_person_id": pat.emergency_contact_person.contact_person_id,
+                "emergency_contact_person_name": pat.emergency_contact_person.first_name + " "+pat.emergency_contact_person.last_name,
+                "emergency_contact_person_email": pat.emergency_contact_person.email,
+                "emergency_contact_person_phone_number": pat.emergency_contact_person.phone_number,
+            }
+            patients.append(obj)
+        else:
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+            }
+            patients.append(obj)
 
 
     response = HttpResponse(content_type='application/ms-excel')
@@ -247,14 +285,14 @@ def generate_patients_excel(request):
     worksheet = workbook.add_sheet("Patients")
 
     row_num = 0
-    columns = ['First Name','Last Name','Email','ID Number','Phone Number','Address','Birth Date','City','Country']
+    columns = ['First Name','Last Name','Email','ID Number','Phone Number','Address','Birth Date','City','Country','Contact Person','Phone Number','Email']
     style1 = xlwt.easyxf('font:bold 1')
     for col_num in range(len(columns)):
         worksheet.write(row_num, col_num, columns[col_num],style=style1)
 
     for pat in patients:
         row_num += 1
-        row = [pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['address'],pat['birth_date'],pat['city'],pat['country']]
+        row = [pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['address'],pat['birth_date'],pat['city'],pat['country'],pat['emergency_contact_person_name'],pat['emergency_contact_person_phone_number'],pat['emergency_contact_person_email']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -282,28 +320,47 @@ def generate_patients_csv(request):
                                         & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
 
     for pat in patientList:
-        obj = {
-            "patient_id": pat.patient_id,
-            "first_name": pat.first_name,
-            "last_name": pat.last_name,
-            "email": pat.email,
-            "id_number": pat.id_number,
-            "phone_number": pat.phone_number,
-            "city": pat.city,
-            "address": pat.address,
-            "country": pat.country,
-            "birth_date": pat.birth_date.strftime("%d %b, %Y")
-        }
-        patients.append(obj)
+        if(pat.emergency_contact_person):
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "emergency_contact_person_id": pat.emergency_contact_person.contact_person_id,
+                "emergency_contact_person_name": pat.emergency_contact_person.first_name + " "+pat.emergency_contact_person.last_name,
+                "emergency_contact_person_email": pat.emergency_contact_person.email,
+                "emergency_contact_person_phone_number": pat.emergency_contact_person.phone_number,
+            }
+            patients.append(obj)
+        else:
+            obj = {
+                "patient_id": pat.patient_id,
+                "first_name": pat.first_name,
+                "last_name": pat.last_name,
+                "email": pat.email,
+                "id_number": pat.id_number,
+                "phone_number": pat.phone_number,
+                "city": pat.city,
+                "address": pat.address,
+                "country": pat.country,
+                "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+            }
+            patients.append(obj)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename=Patients.csv'
 
     writer = csv.writer(response)
-    writer.writerow(['First Name','Last Name','Email','ID Number','Phone Number','Address','Birth Date','City','Country'])
+    writer.writerow(['First Name','Last Name','Email','ID Number','Phone Number','Address','Birth Date','City','Country','Contact Person','Phone Number','Email'])
 
     for pat in patients:
-        writer.writerow([pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['address'],pat['birth_date'],pat['city'],pat['country']])
+        writer.writerow([pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['address'],pat['birth_date'],pat['city'],pat['country'],pat['emergency_contact_person_name'],pat['emergency_contact_person_phone_number'],pat['emergency_contact_person_email']])
     return response
 
 @csrf_exempt
