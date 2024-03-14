@@ -494,7 +494,7 @@ export default{
                     })
                 
                 } else {
-                    this.$swal(`${this.patientName} has not been deleted!`);
+                    this.$swal(`${this.patientName}'s Appointment has not been deleted!`);
                 }
             });
         },
@@ -691,7 +691,7 @@ export default{
     
     },
     mounted(){
-        this.hospitalID = localStorage.getItem("company_id")
+        this.hospitalID = localStorage.getItem("company_id");
         this.searchAppointments();
     }
 }

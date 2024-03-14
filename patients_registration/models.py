@@ -30,10 +30,14 @@ class Patient(models.Model):
     city = models.CharField(max_length=250)
     address = models.CharField(max_length=250)
     country = models.CharField(max_length=250)
+    start_date = models.DateTimeField(auto_now_add=True)
     emergency_contact_person = models.ForeignKey(EmergencyContactPerson, related_name="patient_contact_person", on_delete=models.SET_NULL,blank=True, null=True)
 
     def __str__(self):
         return f'{self.first_name + " " + self.last_name + " Patient"}'
+    
+    class Meta:
+        ordering = [('-start_date')]
 
 class PatientHistory(models.Model):
     patient_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)

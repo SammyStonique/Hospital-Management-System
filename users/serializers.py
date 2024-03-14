@@ -28,6 +28,7 @@ class ManagerSerializer(serializers.ModelSerializer):
         instance.status = validated_data.get('status', instance.status)
         instance.end_date = validated_data.get('end_date', instance.end_date)
         instance.manager_name = validated_data.get('manager_name', instance.manager_name)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
 
         instance.save()
         return instance

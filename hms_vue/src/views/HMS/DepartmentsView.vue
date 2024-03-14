@@ -790,14 +790,19 @@ export default{
                 this.hideLoader();
             }
             else{
-                let formData = {
-                    company: this.companyID,
-                    department: this.managerDepID,
-                    user: this.userID,
-                    start_date: this.formatDate(this.start_date),
-                    end_date: this.formatDate(this.end_date),
-                    phone_number: this.phone_number,
-                    status: this.status,
+                let formData = new FormData();
+                formData.append('company',this.companyID);
+                formData.append('department',this.managerDepID);
+                formData.append('user',this.userID);
+                formData.append('start_date',this.formatDate(this.start_date));
+                formData.append('phone_number',this.phone_number);
+                formData.append('status',this.status);
+                if((this.end_date !=null) && (typeof(this.end_date) == "object")){
+                    formData.append('end_date',this.end_date);
+                }
+                else{
+                    this.end_date = "";
+                    formData.append('end_date', this.end_date);
                 }
                 this.axios
                 .post("api/v1/create-department-manager/", formData)

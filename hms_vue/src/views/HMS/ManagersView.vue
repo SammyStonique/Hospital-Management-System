@@ -579,51 +579,56 @@ export default{
                             .post("api/v1/get-department-managers/", formData)
                             .then((response)=>{
                                 this.managerArr = response.data;
-                                console.log("The managerArr is ",this.managerArr);
+
                             })
                             .catch((error)=>{
                                 console.log(error.message);
                             })
                             .finally(()=>{
-                                this.manager_status= "Active";
-                                this.manager_department = this.managerArr[0].department;
-                                this.manager_user = this.managerArr[0].user;
-                                this.manager_name = this.managerArr[0].manager_name;
-                                this.manager_phone_number = this.managerArr[0].phone_number;
-                                this.manager_start_date = this.managerArr[0].start_date;
-                                this.manager_end_date = null;
-                                this.manager_id = this.managerArr[0].manager_id;
+                                if(this.managerArr.length){
+                                    this.manager_status= "Active";
+                                    this.manager_department = this.managerArr[0].department;
+                                    this.manager_user = this.managerArr[0].user;
+                                    this.manager_name = this.managerArr[0].manager_name;
+                                    this.manager_phone_number = this.managerArr[0].phone_number;
+                                    this.manager_start_date = this.managerArr[0].start_date;
+                                    this.manager_end_date = null;
+                                    this.manager_id = this.managerArr[0].manager_id;
 
-                                let formData = {
-                                    manager: this.manager_id,
-                                    user: this.manager_user,
-                                    start_date: this.manager_start_date,
-                                    end_date: this.manager_end_date,
-                                    phone_number: this.manager_phone_number,
-                                    department: this.manager_department,
-                                    status: this.manager_status,
-                                    company: this.companyID,
-                                    manager_name: this.manager_name
-                                }
-                                this.axios
-                                .put("api/v1/update-department-manager/", formData)
-                                .then((response)=>{
-                                    console.log("The update response is ",response.data);
-                                })
-                                .catch((error)=>{
-                                    console.log(error.message);
-                                })
-                                .finally(()=>{
-                                    this.manager_status= "";
-                                    this.manager_department = "";
-                                    this.manager_user = "";
-                                    this.manager_name = "";
-                                    this.manager_phone_number = "";
-                                    this.manager_start_date = "";
-                                    this.manager_end_date = "";
-                                    this.manager_id = "";
+                                    let formData = {
+                                        manager: this.manager_id,
+                                        user: this.manager_user,
+                                        start_date: this.manager_start_date,
+                                        end_date: this.manager_end_date,
+                                        phone_number: this.manager_phone_number,
+                                        department: this.manager_department,
+                                        status: this.manager_status,
+                                        company: this.companyID,
+                                        manager_name: this.manager_name
+                                    }
+                                    this.axios
+                                    .put("api/v1/update-department-manager/", formData)
+                                    .then((response)=>{
+
+                                    })
+                                    .catch((error)=>{
+                                        console.log(error.message);
+                                    })
+                                    .finally(()=>{
+                                        this.manager_status= "";
+                                        this.manager_department = "";
+                                        this.manager_user = "";
+                                        this.manager_name = "";
+                                        this.manager_phone_number = "";
+                                        this.manager_start_date = "";
+                                        this.manager_end_date = "";
+                                        this.manager_id = "";
+                                        this.$store.commit("reloadingPage");
+                                    })
+                                }else{
                                     this.$store.commit("reloadingPage");
-                                })
+                                }
+                                
                             })
                             
                     })

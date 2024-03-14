@@ -16,7 +16,7 @@
                       <i class="fa fa-calendar" aria-hidden="true"></i>
                     </div>
                     <div class="w-3/4 px-2">
-                      <p class="font-bold">500</p>
+                      <p class="font-bold">{{appointmentCount}}</p>
                       <p class="font-light text-sm">Appointments</p>
                     </div>
                   </div>
@@ -27,7 +27,7 @@
                       <i class="fa fa-scissors" aria-hidden="true"></i>
                     </div>
                     <div class="w-3/4 px-2">
-                      <p class="font-bold">400</p>
+                      <p class="font-bold">{{operationsCount}}</p>
                       <p class="font-light text-sm">Operations</p>
                     </div>
                   </div>
@@ -40,7 +40,7 @@
                       <i class="fa fa-bed" aria-hidden="true"></i>
                     </div>
                     <div class="w-3/4 px-2">
-                      <p class="font-bold">150</p>
+                      <p class="font-bold">{{patientCount}}</p>
                       <p class="font-light text-sm">New Patients</p>
                     </div>
                   </div>
@@ -51,7 +51,7 @@
                       <i class="fa fa-user-md" aria-hidden="true"></i>
                     </div>
                     <div class="w-3/4 px-2">
-                      <p class="font-bold">60</p>
+                      <p class="font-bold">{{ doctorCount }}</p>
                       <p class="font-light text-sm">Doctors</p>
                     </div>
                   </div>
@@ -73,37 +73,22 @@
             <table class="table-auto border-collapse w-full">
               <thead class="border-b border-slate-500 font-thin text-sm bg-gray-100">
               <th>Name</th>
-              <th>Email</th>
+              <th>ID Number</th>
               <th>Date</th>
               <th>Visit Time</th>
               <th>Doctor</th>
               <th>Condition(s)</th>
             </thead>
             <tbody class="text-sm py-2">
-              <tr class="py-8">
-                <td>Glenn R. Green</td>
-                <td>glenngreen@armyspy.com</td>
-                <td>12-09-2023</td>
-                <td>11:52 AM</td>
-                <td>Dr. Otieno</td>
-                <td>Malaria</td>
+              <tr class="py-8" v-for="apts in appointmentsArray" :key="apts.appointment_id">
+                <td>{{ apts.patient_name }}</td>
+                <td>{{ apts.patient_id_number }}</td>
+                <td>{{ apts.date }}</td>
+                <td>{{ apts.time }}</td>
+                <td>Dr. {{ apts.doctor_name }}</td>
+                <td>{{ apts.notes }}</td>
               </tr>
-              <tr class="py-4">
-                <td>Marguerite W. Miller</td>
-                <td>margueritemiller@rhyta.com</td>
-                <td>31-08-2023</td>
-                <td>02:17 PM</td>
-                <td>Dr. Omondi</td>
-                <td>Epilepsy</td>
-              </tr>
-              <tr class="py-4">
-                <td>Marguerite W. Miller</td>
-                <td>margueritemiller@rhyta.com</td>
-                <td>31-08-2023</td>
-                <td>02:17 PM</td>
-                <td>Dr. Omondi</td>
-                <td>Epilepsy</td>
-              </tr>
+              
             </tbody>
             </table>
           </div>
@@ -188,11 +173,76 @@
     name: 'HomeView',
     data(){
       return{
-        title: 'Hospital Management/ Dashboard'
+        title: 'Hospital Management/ Dashboard',
+        hospitalID: "",
+        patientCount: 0,
+        appointmentCount: 0,
+        doctorCount: 0,
+        operationsCount: 0,
+        appointmentsArray: [],
+        today_date: new Date(),
       }
+    },
+    methods:{
+      formatDate(dateString) {
+          const date = new Date(dateString);
+          const year = date.getFullYear().toString()
+          const month = ('0' + (date.getMonth() + 1)).slice(-2);
+          const day = ('0' + date.getDate()).slice(-2);
+          return `${year}-${month}-${day}`;
+      },
+      getPatients(){
+        let formData ={
+          hospital: this.hospitalID
+        }
+        this.axios
+        .post("api/v1/get-patients/", formData)
+        .then((response)=>{
+          this.patientCount = response.data.length;
+        })
+        .catch((error)=>{
+          console.log(error.message);
+        })
+      },
+      getAppointments(){
+        let formData ={
+          hospital: this.hospitalID,
+          patient_name: "",
+          doctor_name: "",
+          from_date: this.formatDate(this.today_date),
+          to_date: ""
+        }
+        this.axios
+        .post("api/v1/appointments-search/", formData)
+        .then((response)=>{
+          this.appointmentCount = response.data.count;
+          this.appointmentsArray = response.data.results;
+          console.log(this.appointmentsArray);
+        })
+        .catch((error)=>{
+          console.log(error.message);
+        })
+      },
+      getDoctors(){
+        let formData ={
+          hospital: this.hospitalID
+        }
+        this.axios
+        .post("api/v1/get-department-doctors/", formData)
+        .then((response)=>{
+          this.doctorCount = response.data.length;
+        })
+        .catch((error)=>{
+          console.log(error.message);
+        })
+      },
     },
   
     mounted(){
+      this.hospitalID = localStorage.getItem("company_id");
+      this.getPatients();
+      this.getAppointments();
+      this.getDoctors();
     },
     components: {
       PieChart,

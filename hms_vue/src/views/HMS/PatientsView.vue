@@ -439,11 +439,14 @@ export default{
                     last_name: this.contact_person_last_name,
                     email: this.contact_person_email,
                     phone_number: this.contact_person_phone_number,
+                    patient: this.first_name + " "+ this.last_name,
                 }
+                console.log(formData);
                 this.axios
                 .post("api/v1/create-emergency-contact-person/", formData)
                 .then((response)=>{
                     this.emergencyContactDetails = response.data;
+                    console.log(this.emergencyContactDetails);
                     this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
                 })
                 .catch((error)=>{
