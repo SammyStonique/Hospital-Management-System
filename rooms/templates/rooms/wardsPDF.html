@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Wards List</h3>
+	<table class="staff-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Code</th>
+				<th>Name</th>
+				<th>Category</th>
+				<th>Wing</th>
+
+			</tr>
+		</thead>
+		<tbody>
+			{% for wrd in wards %}
+			<tr>
+				<td></td>
+				<td>{{ wrd.ward_code  }}</td>
+				<td>{{ wrd.ward_name }}</td>
+				<td>{{ wrd.category  }}</td>
+				<td>{{ wrd.wing }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+
+</body>
+</html>

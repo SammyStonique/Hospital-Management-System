@@ -46,3 +46,100 @@ def roomSearch(request):
     page = paginator.paginate_queryset(roomsList, request)
 
     return  paginator.get_paginated_response(page)
+
+
+@api_view(['POST'])
+@csrf_exempt
+def wardSearch(request):
+    wardsList = []
+    data = json.loads(request.body)
+    ward_code = data['ward_code']
+    ward_name = data['ward_name']
+    wing = data['wing']
+    category = data['category']
+    hospital_id = data['hospital']
+
+    hospital_uuid = uuid.UUID(hospital_id)
+    hospital_wards = Ward.objects.filter(hospital=hospital_uuid)
+
+    wards = hospital_wards.filter(Q(ward_code__icontains=ward_code) & Q(ward_name__icontains=ward_name) & Q(wing__icontains=wing))
+
+    if category:
+        wards = wards.filter(category = category)
+
+    for wrd in wards:
+        obj = {
+            "ward_id": wrd.ward_id,
+            "ward_code": wrd.ward_code,
+            "ward_name": wrd.ward_name,
+            "wing": wrd.wing,
+            "category": wrd.category,
+        }
+        wardsList.append(obj)
+            
+
+
+    pagination_class = BasePagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(wardsList, request)
+
+    return  paginator.get_paginated_response(page)
+
+
+@api_view(['POST'])
+@csrf_exempt
+def bedSearch(request):
+    bedsList = []
+    empty = ""
+    data = json.loads(request.body)
+    bed_number = data['bed_number']
+    ward = data['ward']
+    status = data['status']
+    patient = data['patient']
+    price = data['price']
+    hospital_id = data['hospital']
+
+    hospital_uuid = uuid.UUID(hospital_id)
+    hospital_beds = Bed.objects.filter(hospital=hospital_uuid)
+
+    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & (Q(patient__first_name__icontains=patient)|Q(patient__last_name__icontains=patient))
+                                & Q(ward__ward_name__icontains=ward))
+
+    if status:
+        beds = beds.filter(status = status)
+
+    for bed in beds:
+        if(patient):
+            obj = {
+                "bed_id": bed.bed_id,
+                "bed_number": bed.bed_number,
+                "status": bed.status,
+                "ward_id": bed.ward.ward_id,
+                "ward_name": bed.ward.ward_name,
+                "price": bed.price,
+                "patient_id": bed.patient.patient_id,
+                "patient_name": bed.patient.first_name + " "+bed.patient.last_name,
+            }
+            bedsList.append(obj)
+        else:
+            obj = {
+                "bed_id": bed.bed_id,
+                "bed_number": bed.bed_number,
+                "status": bed.status,
+                "ward_id": bed.ward.ward_id,
+                "ward_name": bed.ward.ward_name,
+                "price": bed.price,
+                "patient_id": empty,
+                "patient_name": empty,
+            }
+            bedsList.append(obj)
+            
+
+
+    pagination_class = BasePagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(bedsList, request)
+
+    return  paginator.get_paginated_response(page)

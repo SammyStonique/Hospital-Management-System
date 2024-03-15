@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .filters import roomSearch
+from .filters import roomSearch, wardSearch, bedSearch
 
 from . import views
 
@@ -16,4 +16,28 @@ urlpatterns = [
     path("display-rooms-import-excel/", views.display_rooms_import_excel, name="display-rooms-import-excel"),
     path("import-rooms-excel/", views.import_rooms_excel, name="import-rooms-excel"),
     path("delete-room/", views.deleteRoom, name="delete-room"),
+    path("ward-list/", views.WardList.as_view()),
+    path("ward-details/", views.WardDetails.as_view()),
+    path("create-ward/", views.createWard, name="create-ward"),
+    path("get-wards/", views.getWards, name="get-wards"),
+    path("update-ward/", views.updateWard, name="update-ward"),
+    path("wards-search/", wardSearch, name="rooms_search"),
+    path("export-wards-pdf/", views.generate_wards_pdf, name="export-wards-pdf"),
+    path("export-wards-excel/", views.generate_wards_excel, name="export-wards-excel"),
+    path("export-wards-csv/", views.generate_wards_csv, name="export-wards-csv"),
+    path("display-wards-import-excel/", views.display_wards_import_excel, name="display-wards-import-excel"),
+    path("import-wards-excel/", views.import_wards_excel, name="import-wards-excel"),
+    path("delete-ward/", views.deleteWard, name="delete-ward"),
+    path("bed-list/", views.BedList.as_view()),
+    path("bed-details/", views.BedDetails.as_view()),
+    path("create-ward-bed/", views.createBed, name="create-ward-bed"),
+    path("get-ward-beds/", views.getWardBeds, name="get-ward-beds"),
+    path("update-ward-bed/", views.updateWardBed, name="update-ward-bed"),
+    path("beds-search/", bedSearch, name="beds_search"),
+    path("export-beds-pdf/", views.generate_beds_pdf, name="export-beds-pdf"),
+    path("export-beds-excel/", views.generate_beds_excel, name="export-beds-excel"),
+    path("export-beds-csv/", views.generate_beds_csv, name="export-beds-csv"),
+    path("display-beds-import-excel/", views.display_beds_import_excel, name="display-beds-import-excel"),
+    path("import-beds-excel/", views.import_beds_excel, name="import-beds-excel"),
+    path("delete-ward-bed/", views.deleteWardBed, name="delete-ward-bed"),
 ]
