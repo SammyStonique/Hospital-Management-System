@@ -43,10 +43,26 @@
           <div class="py-3 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
             <router-link to="/hms/managers">
               <button class="flex text-sm">
-                <i class="fa fa-address-card pt-2 mr-2" aria-hidden="true"></i>
+                <i class="fa fa-id-badge pt-2 mr-2" aria-hidden="true"></i>
                 <p class="">Department Managers</p>
               </button>
             </router-link>
+          </div>
+          <div class="py-3 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
+            <router-link to="/hms/staff-rooms">
+              <button class="flex text-sm">
+                <i class="fa fa-cubes pt-2 mr-2" aria-hidden="true"></i>
+                <p class="">Staff Rooms</p>
+              </button>
+              </router-link>
+          </div>
+          <div class="py-3 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
+            <router-link to="/hms/wards">
+              <button class="flex text-sm">
+                <i class="fa fa-bed pt-2 mr-2" aria-hidden="true"></i>
+                <p class="">Wards</p>
+              </button>
+              </router-link>
           </div>
         </div>
       </div>
@@ -79,6 +95,14 @@
               <button class="flex text-sm">
                 <i class="fa fa-address-card pt-2 mr-2" aria-hidden="true"></i>
                 <p class="">Emergency Contacts</p>
+              </button>
+            </router-link>
+          </div>
+          <div class="py-3 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
+            <router-link to="/hms/patients-visits">
+              <button class="flex text-sm">
+                <i class="fa fa-address-book-o pt-2 mr-2" aria-hidden="true"></i>
+                <p class="">Patient Visits</p>
               </button>
             </router-link>
           </div>

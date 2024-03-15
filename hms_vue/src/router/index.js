@@ -4,11 +4,14 @@ import HomeView from '../views/HomeView.vue'
 import DashboardView from '../views/HMS/DashboardView.vue'
 import AppointmentsView from '../views/HMS/AppointmentsView.vue'
 import DepartmentsView from '../views/HMS/DepartmentsView.vue'
+import StaffRoomsView from '../views/HMS/StaffRoomsView.vue'
+import WardsView from '../views/HMS/WardsView.vue'
 import DoctorsView from '../views/HMS/DoctorsView.vue'
 import LoginView from '../views/LoginView.vue'
 import LogoutView from '../views/LogoutView.vue'
 import PatientsView from '../views/HMS/PatientsView.vue'
 import EmergencyContactsView from '../views/HMS/EmergencyContactsView.vue'
+import PatientsVisitsView from '../views/HMS/PatientsVisitsView.vue'
 import StaffView from '../views/HMS/StaffView.vue'
 import PayrollView from '../views/HR/PayrollView.vue'
 import AccountsView from '../views/FA/AccountsView.vue'
@@ -56,6 +59,22 @@ const routes = [
     }
   },
   {
+    path: '/hms/staff-rooms',
+    name: 'hms-staff-rooms',
+    component: StaffRoomsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/wards',
+    name: 'hms-wards',
+    component: WardsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
     path: '/hms/managers',
     name: 'hms-managers',
     component: ManagersView,
@@ -88,6 +107,14 @@ const routes = [
     path: '/hms/emergency-contacts',
     name: 'hms-emergency-contacts',
     component: EmergencyContactsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/patients-visits',
+    name: 'hms-patients-visits',
+    component: PatientsVisitsView,
     meta:{
       requireLogin: true
     }

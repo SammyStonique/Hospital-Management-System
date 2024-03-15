@@ -438,7 +438,7 @@ export default{
             this.showLoader();
             if(this.dep_code === '' || this.dep_name === ''){
                 this.$toast.error("Please Enter Department Details",{
-                    duration: 5000,
+                    duration: 3000,
                     dismissible: true
                 })
             }
@@ -458,7 +458,7 @@ export default{
                 .post("api/v1/create-department/", formData)
                 .then((response)=>{
                     this.$toast.success("Department Successfully Added",{
-                        duration: 5000,
+                        duration: 3000,
                         dismissible: true
                     })
                 })

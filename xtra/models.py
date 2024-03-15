@@ -1,5 +1,6 @@
 from django.db import models
 from company.models import Company
+
 import uuid
 
 
@@ -16,3 +17,4 @@ class Department(models.Model):
     
     class Meta:
         ordering = [('name')]
+

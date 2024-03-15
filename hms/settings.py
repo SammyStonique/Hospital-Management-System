@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'lab_management',
     'patients_registration',
     'payroll',
+    'rooms',
     'xtra.apps.XtraConfig',
     'statistical_data',
     'users.apps.UsersConfig',

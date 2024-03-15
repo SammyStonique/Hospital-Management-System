@@ -81,12 +81,12 @@
             </thead>
             <tbody class="text-sm py-2">
               <tr class="py-8" v-for="apts in appointmentsArray" :key="apts.appointment_id">
-                <td>{{ apts.patient_name }}</td>
-                <td>{{ apts.patient_id_number }}</td>
-                <td>{{ apts.date }}</td>
-                <td>{{ apts.time }}</td>
-                <td>Dr. {{ apts.doctor_name }}</td>
-                <td>{{ apts.notes }}</td>
+                <td class="py-2">{{ apts.patient_name }}</td>
+                <td class="py-2">{{ apts.patient_id_number }}</td>
+                <td class="py-2">{{ apts.date }}</td>
+                <td class="py-2">{{ apts.time }}</td>
+                <td class="py-2">Dr. {{ apts.doctor_name }}</td>
+                <td class="py-2">{{ apts.notes }}</td>
               </tr>
               
             </tbody>

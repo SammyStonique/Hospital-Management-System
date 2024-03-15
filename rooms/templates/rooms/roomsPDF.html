@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Staff Rooms List</h3>
+	<table class="staff-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Code</th>
+				<th>Name</th>
+				<th>Department</th>
+				<th>Staff</th>
+
+			</tr>
+		</thead>
+		<tbody>
+			{% for rom in rooms %}
+			<tr>
+				<td></td>
+				<td>{{ rom.room_code  }}</td>
+				<td>{{ rom.room_name }}</td>
+				<td>{{ rom.department_name  }}</td>
+				<td>{{ rom.staff_name }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+
+</body>
+</html>
