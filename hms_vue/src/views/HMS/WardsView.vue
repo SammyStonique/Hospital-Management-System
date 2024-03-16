@@ -637,7 +637,7 @@ export default{
             }
             
         },
-        importStaffRoomsExcel(){
+        importWardsExcel(){
             this.showLoader();
             if(!this.excelWardList.length){
                 this.$toast.error("Please Import Excel Template",{

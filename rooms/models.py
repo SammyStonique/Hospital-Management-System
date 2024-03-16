@@ -34,6 +34,9 @@ class Ward(models.Model):
     def __str__(self):
         return f'{self.ward_code}-{self.ward_name}'
     
+    class Meta:
+        ordering = [('ward_code')]
+    
 class Bed(models.Model):
     STATUS = (('','Select Status'),('Available','Available'),('Occupied','Occupied'),('Reserved','Reserved'))
 
