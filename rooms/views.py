@@ -726,27 +726,26 @@ def generate_beds_pdf(request):
     bed_number = data['bed_number']
     ward = data['ward']
     status = data['status']
-    patient = data['patient']
-    price = data['price']
+    category = data['category']
     hospital_id = data['hospital']
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_beds = Bed.objects.filter(hospital=hospital_uuid)
 
-    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & (Q(patient__first_name__icontains=patient)|Q(patient__last_name__icontains=patient))
-                                & Q(ward__ward_name__icontains=ward))
+    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & Q(ward__ward_name__icontains=ward) & Q(ward__category__icontains=category))
 
     if status:
         beds = beds.filter(status = status)
 
     for bed in beds:
-        if(patient):
+        if(bed.patient is not None):
             obj = {
                 "bed_id": bed.bed_id,
                 "bed_number": bed.bed_number,
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": bed.patient.patient_id,
                 "patient_name": bed.patient.first_name + " "+bed.patient.last_name,
@@ -759,6 +758,7 @@ def generate_beds_pdf(request):
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": empty,
                 "patient_name": empty,
@@ -799,27 +799,26 @@ def generate_beds_excel(request):
     bed_number = data['bed_number']
     ward = data['ward']
     status = data['status']
-    patient = data['patient']
-    price = data['price']
+    category = data['category']
     hospital_id = data['hospital']
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_beds = Bed.objects.filter(hospital=hospital_uuid)
 
-    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & (Q(patient__first_name__icontains=patient)|Q(patient__last_name__icontains=patient))
-                                & Q(ward__ward_name__icontains=ward))
+    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & Q(ward__ward_name__icontains=ward) & Q(ward__category__icontains=category))
 
     if status:
         beds = beds.filter(status = status)
 
     for bed in beds:
-        if(patient):
+        if(bed.patient is not None):
             obj = {
                 "bed_id": bed.bed_id,
                 "bed_number": bed.bed_number,
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": bed.patient.patient_id,
                 "patient_name": bed.patient.first_name + " "+bed.patient.last_name,
@@ -832,6 +831,7 @@ def generate_beds_excel(request):
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": empty,
                 "patient_name": empty,
@@ -847,14 +847,14 @@ def generate_beds_excel(request):
     worksheet = workbook.add_sheet("Beds")
 
     row_num = 0
-    columns = ['Bed Number','Ward Name','Price','Status','Patient']
+    columns = ['Bed Number','Ward Name','Category','Price','Status','Patient']
     style1 = xlwt.easyxf('font:bold 1')
     for col_num in range(len(columns)):
         worksheet.write(row_num, col_num, columns[col_num],style = style1)
 
     for bed in bedsList:
         row_num += 1
-        row = [bed['bed_number'],bed['ward_name'], bed['price'], bed['status'], bed['patient_name']]
+        row = [bed['bed_number'],bed['ward_name'],bed['ward_category'], bed['price'], bed['status'], bed['patient_name']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -870,27 +870,26 @@ def generate_beds_csv(request):
     bed_number = data['bed_number']
     ward = data['ward']
     status = data['status']
-    patient = data['patient']
-    price = data['price']
+    category = data['category']
     hospital_id = data['hospital']
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_beds = Bed.objects.filter(hospital=hospital_uuid)
 
-    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & (Q(patient__first_name__icontains=patient)|Q(patient__last_name__icontains=patient))
-                                & Q(ward__ward_name__icontains=ward))
+    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & Q(ward__ward_name__icontains=ward) & Q(ward__category__icontains=category))
 
     if status:
         beds = beds.filter(status = status)
 
     for bed in beds:
-        if(patient):
+        if(bed.patient is not None):
             obj = {
                 "bed_id": bed.bed_id,
                 "bed_number": bed.bed_number,
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": bed.patient.patient_id,
                 "patient_name": bed.patient.first_name + " "+bed.patient.last_name,
@@ -903,6 +902,7 @@ def generate_beds_csv(request):
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": empty,
                 "patient_name": empty,
@@ -914,10 +914,10 @@ def generate_beds_csv(request):
     response['Content-Disposition'] = 'attachment; filename=Beds.csv'
 
     writer = csv.writer(response)
-    writer.writerow(['Bed Number','Ward Name','Price','Status','Patient'])
+    writer.writerow(['Bed Number','Ward Name','Category','Price','Status','Patient'])
 
     for bed in bedsList:
-        writer.writerow([bed['bed_number'],bed['ward_name'], bed['price'], bed['status'], bed['patient_name']])
+        writer.writerow([bed['bed_number'],bed['ward_name'],bed['ward_category'], bed['price'], bed['status'], bed['patient_name']])
     return response
 
 @csrf_exempt
@@ -929,13 +929,13 @@ def display_beds_import_excel(request):
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        bed_number,ward_name, price,status, patient = row
+        bed_number,ward_name,ward_category,price,status = row
         obj = {
             "bed_number": bed_number,
             "ward_name": ward_name,
             "price": price,
             "status": status,
-            "patient_name": patient,
+            "ward_category": ward_category,
         }
         bedsList.append(obj)
 
@@ -955,8 +955,8 @@ def import_beds_excel(request):
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        bed_number,ward_name, price,status, patient = row
-        ward_id = Ward.objects.get(name=ward_name,hospital=hospital)
+        bed_number,ward_name,ward_category,price,status = row
+        ward_id = Ward.objects.get(ward_name=ward_name, category=ward_category, hospital=hospital)
         Bed.objects.create(bed_number=bed_number, ward=ward_id, price=price, status=status, hospital=hospital) 
         
 

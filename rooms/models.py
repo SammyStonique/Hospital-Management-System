@@ -42,7 +42,7 @@ class Bed(models.Model):
 
     bed_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     bed_number = models.CharField(max_length=100)
-    status = models.CharField(max_length=250, choices=STATUS, default='')
+    status = models.CharField(max_length=250, choices=STATUS, default='Available')
     ward = models.ForeignKey(Ward, related_name="ward_beds", on_delete=models.CASCADE, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     patient = models.ForeignKey(Patient, related_name="patient_bed", on_delete=models.SET_NULL, null=True, blank=True)
@@ -50,3 +50,6 @@ class Bed(models.Model):
 
     def __str__(self):
         return f'Bed {self.bed_number}-{self.ward.ward_name}'
+    
+    class Meta:
+        ordering = ['ward','bed_number']

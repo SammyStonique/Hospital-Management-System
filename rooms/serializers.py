@@ -42,10 +42,10 @@ class WardSerializer(serializers.ModelSerializer):
         return instance
     
 class BedSerializer(serializers.ModelSerializer):
-    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all(),many=False)
+    patient = serializers.ReadOnlyField(source='patient.first_name')
     ward = serializers.PrimaryKeyRelatedField(queryset=Ward.objects.all(),many=False)
     class Meta:
-        model = Room
+        model = Bed
         fields = ['bed_id','bed_number','status','ward','price','patient','hospital']
 
     def create(self, validated_data):
@@ -58,7 +58,6 @@ class BedSerializer(serializers.ModelSerializer):
         instance.status = validated_data.get('status', instance.status)
         instance.ward = validated_data.get('ward', instance.ward)
         instance.price = validated_data.get('price', instance.price)
-        instance.patient = validated_data.get('patient', instance.patient)
 
         instance.save()
         return instance

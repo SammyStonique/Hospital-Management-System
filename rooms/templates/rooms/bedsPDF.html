@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Beds List</h3>
+	<table class="staff-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Number</th>
+				<th>Ward</th>
+				<th>Category</th>
+				<th>Patient</th>
+				<th>Price</th>
+                <th>Status</th>
+
+			</tr>
+		</thead>
+		<tbody>
+			{% for bed in beds %}
+			<tr>
+				<td></td>
+				<td>{{ bed.bed_number  }}</td>
+				<td>{{ bed.ward_name }}</td>
+				<td>{{ bed.ward_category }}</td>
+				<td>{{ bed.patient_name  }}</td>
+				<td>{{ bed.price }}</td>
+                <td>{{ bed.status }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+
+</body>
+</html>

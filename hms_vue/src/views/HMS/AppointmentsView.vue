@@ -537,8 +537,6 @@ export default{
             let selectedUpdateDoct = this.$refs.doctorUpdateSelect.selectedIndex;
             this.doctUpdateID = this.doctorsArray[selectedUpdateDoct].doctor_id;
             this.doctUpdateName = this.doctorsArray[selectedUpdateDoct].first_name + " " +this.doctorsArray[selectedUpdateDoct].last_name;
-            console.log("The selected Doctor ID is ",this.doctUpdateID);
-            console.log("The selected Doctor Name is ",this.doctUpdateName);
         }
       },
         loadNext(){

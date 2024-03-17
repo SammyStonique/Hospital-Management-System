@@ -66,7 +66,7 @@ def wardSearch(request):
 
     if category:
         wards = wards.filter(category = category)
-
+    
     for wrd in wards:
         obj = {
             "ward_id": wrd.ward_id,
@@ -96,27 +96,27 @@ def bedSearch(request):
     bed_number = data['bed_number']
     ward = data['ward']
     status = data['status']
-    patient = data['patient']
-    price = data['price']
+    category = data['category']
     hospital_id = data['hospital']
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_beds = Bed.objects.filter(hospital=hospital_uuid)
 
-    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & (Q(patient__first_name__icontains=patient)|Q(patient__last_name__icontains=patient))
-                                & Q(ward__ward_name__icontains=ward))
+    beds = hospital_beds.filter(Q(bed_number__icontains=bed_number) & Q(ward__ward_name__icontains=ward) & Q(ward__category__icontains=category))
 
     if status:
         beds = beds.filter(status = status)
 
     for bed in beds:
-        if(patient):
+        if(bed.patient is not None):
             obj = {
                 "bed_id": bed.bed_id,
                 "bed_number": bed.bed_number,
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
+                "ward_code": bed.ward.ward_code,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": bed.patient.patient_id,
                 "patient_name": bed.patient.first_name + " "+bed.patient.last_name,
@@ -128,7 +128,9 @@ def bedSearch(request):
                 "bed_number": bed.bed_number,
                 "status": bed.status,
                 "ward_id": bed.ward.ward_id,
+                "ward_code": bed.ward.ward_code,
                 "ward_name": bed.ward.ward_name,
+                "ward_category": bed.ward.category, 
                 "price": bed.price,
                 "patient_id": empty,
                 "patient_name": empty,

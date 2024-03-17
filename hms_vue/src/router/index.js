@@ -6,6 +6,7 @@ import AppointmentsView from '../views/HMS/AppointmentsView.vue'
 import DepartmentsView from '../views/HMS/DepartmentsView.vue'
 import StaffRoomsView from '../views/HMS/StaffRoomsView.vue'
 import WardsView from '../views/HMS/WardsView.vue'
+import BedsView from '../views/HMS/BedsView.vue'
 import DoctorsView from '../views/HMS/DoctorsView.vue'
 import LoginView from '../views/LoginView.vue'
 import LogoutView from '../views/LogoutView.vue'
@@ -70,6 +71,14 @@ const routes = [
     path: '/hms/wards',
     name: 'hms-wards',
     component: WardsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/beds',
+    name: 'hms-beds',
+    component: BedsView,
     meta:{
       requireLogin: true
     }
