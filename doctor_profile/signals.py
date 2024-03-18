@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save,pre_save
+from django.db.models.signals import post_save,post_delete
 # from users.models import User
 from django.contrib.auth import get_user_model
 from django.dispatch import receiver
@@ -15,18 +15,9 @@ def create_doctor(sender, instance, created, **kwargs):
     else:
         print("MISSION NOT SUCCESFUL")
 
-@receiver(post_save, sender = UserModel)
-def save_doctor(sender, instance,**kwargs):
-    if instance.profile == "Doctor":
-        instance.doctor.save()
-    else:
-        print("NOT A DOCTOR")
-
-# @receiver(post_save, sender = UserModel)
-# def update_doctor(sender, updated, instance, **kwargs):
-#     if updated and  instance.profile == "Doctor":
-#         Doctor.objects.update(user=instance, first_name=instance.first_name, last_name=instance.last_name,
-#                                   phone_number=instance.phone_number, email=instance.email, department=instance.user_department)
-#         print("DOCTOR UPDATED SUCCESSFULLY")
-#     else:
-#         print("UPDATING NOT SUCCESFUL")
+@receiver(post_delete, sender = UserModel)
+def delete_doctor(sender, instance, **kwargs):
+        if instance.profile == "Doctor":
+            doctor = Doctor.objects.get(user=instance, hospital=instance.allowed_company)
+            doctor.delete()
+        print("DOCTOR DELETED SUCCESSFULLY")

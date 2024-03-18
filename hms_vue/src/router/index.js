@@ -21,6 +21,7 @@ import InventoryView from '../views/INV/InventoryView.vue'
 import MyAccountView from '../views/HMS/MyAccountView.vue'
 import FADashboardView from '../views/FA/FADashboardView.vue'
 import ChartOfAccountsView from '../views/FA/ChartOfAccountsView.vue'
+import ClientCategoryView from '../views/FA/ClientCategoryView.vue'
 
 
 const routes = [
@@ -158,6 +159,14 @@ const routes = [
     path: '/fa/chart-of-accounts',
     name: 'fa-chart-of-accounts',
     component: ChartOfAccountsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/fa/client-categories',
+    name: 'fa-client-categories',
+    component: ClientCategoryView,
     meta:{
       requireLogin: true
     }

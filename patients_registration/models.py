@@ -46,7 +46,7 @@ class Patient(models.Model):
 
 class PatientHistory(models.Model):
     patient_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient = models.ForeignKey(Patient, related_name="patient_history", on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, related_name="patient_history", on_delete=models.SET_NULL, null=True,blank=True)
     doctor = models.ForeignKey(Doctor, related_name="doctor_history", on_delete=models.DO_NOTHING)
     notes = models.TextField(blank=True, null=True)
     date = models.DateField()
@@ -55,7 +55,7 @@ class PatientHistory(models.Model):
 
 class PatientFollowupHistory(models.Model):
     patient_followup_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient_history = models.ForeignKey(PatientHistory, related_name="patient_history", on_delete=models.CASCADE)
+    patient_history = models.ForeignKey(PatientHistory, related_name="patient_history_followup", on_delete=models.CASCADE)
     notes = models.TextField(blank=True, null=True)
     date = models.DateField()
     hospital = models.ForeignKey(Company, related_name="patient_follow_up_hospital", on_delete=models.CASCADE)
@@ -74,7 +74,7 @@ class PatientAdmissionHistory(models.Model):
 
 class PatientDiagnosisHistory(models.Model):
     patient_diagnosis_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient = models.ForeignKey(Patient, related_name="patient_diagnosis_history", on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, related_name="patient_diagnosis_history", on_delete=models.SET_NULL, null=True,blank=True)
     doctor = models.ForeignKey(Doctor, related_name="doctor_diagnosis_history", on_delete=models.DO_NOTHING)
     notes = models.TextField(blank=True, null=True)
     date = models.DateField()

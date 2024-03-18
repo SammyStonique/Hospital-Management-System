@@ -501,7 +501,7 @@ export default{
             this.showLoader();
             if(this.dep_code === "" || this.dep_name === ""){
                 this.$toast.error("Please Enter Department Details",{
-                    duration:5000,
+                    duration:3000,
                     dismissible: true
                 })
                 this.hideLoader();
@@ -523,7 +523,7 @@ export default{
                 .put("api/v1/update-department/", formData)
                 .then((response)=>{
                     this.$toast.success("Department Succesfully Updated",{
-                        duration:5000,
+                        duration:3000,
                         dismissible: true
                     })
                 })

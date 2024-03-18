@@ -25,7 +25,14 @@
           </button>
         </router-link>
       </div>
-      
+      <div class="web-links py-3 px-3 pl-4 hover:bg-slate-500 hover:rounded hover:w-full">
+        <router-link to="/fa/client-categories">
+            <button class="flex">
+              <i class="fa fa-bars pt-2 mr-2" aria-hidden="true"></i>
+              <p class="text-lg">Client Categories</p>
+            </button>
+        </router-link>
+      </div>
 
   </div>
 </template>
