@@ -13,18 +13,22 @@ class EmergencyContactPerson(models.Model):
     email = models.CharField(max_length=250)
     phone_number = models.CharField(max_length=250)
     patient = models.CharField(max_length=250)
-    hospital = models.ForeignKey(Company, related_name="emmergency_contact_hospital", on_delete=models.CASCADE)
+    hospital = models.ForeignKey(Company, related_name="emergency_contact_hospital", on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.first_name + " " +self.last_name+ " Contact Person"}'
 
 class Patient(models.Model):
+    GENDER = (('','Select Gender'),('Male','Male'),('Female','Female'),('Other','Other'))
+
     patient_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
+    patient_code = models.CharField(max_length=250)
     hospital = models.ForeignKey(Company, related_name="patient_hospital", on_delete=models.CASCADE)
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)
     email = models.CharField(max_length=250)
     phone_number = models.CharField(max_length=250)
+    gender = models.CharField(max_length=250, choices=GENDER, default='')
     id_number = models.CharField(max_length=250)
     birth_date = models.DateField()
     city = models.CharField(max_length=250)
@@ -38,6 +42,7 @@ class Patient(models.Model):
     
     class Meta:
         ordering = [('-start_date')]
+
 
 class PatientHistory(models.Model):
     patient_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)

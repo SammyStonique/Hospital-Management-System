@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'inventory_management',
     'lab_management',
     'patients_registration',
+    'financial_accounts_chart_of_accounts',
     'payroll',
     'rooms',
     'xtra.apps.XtraConfig',

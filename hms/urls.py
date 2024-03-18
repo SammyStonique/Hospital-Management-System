@@ -20,5 +20,6 @@ urlpatterns = [
     path('api/v1/',include('xtra.urls')),
     path('api/v1/',include('company.urls')),
     path('api/v1/',include('rooms.urls')),
+    path('api/v1/',include('financial_accounts_chart_of_accounts.urls')),
     path('api-auth/', include('rest_framework.urls',namespace='rest_framework')),
 ] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

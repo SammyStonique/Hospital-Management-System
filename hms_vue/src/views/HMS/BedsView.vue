@@ -71,7 +71,7 @@
                         <div class="flex mb-6">
                         <div class="basis-1/2">
                             <label for="">Bed Number<em>*</em></label>
-                            <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="bed_number">
+                            <input type="number" name="" id="" class="rounded border border-gray-600 text-lg pl-2" v-model="bed_number">
                         </div>
                     </div>
                     <div class="flex mb-6">

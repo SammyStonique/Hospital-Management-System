@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import DashboardView from '../views/HMS/DashboardView.vue'
 import AppointmentsView from '../views/HMS/AppointmentsView.vue'
 import DepartmentsView from '../views/HMS/DepartmentsView.vue'
+import ManagersView from '../views/HMS/ManagersView.vue'
 import StaffRoomsView from '../views/HMS/StaffRoomsView.vue'
 import WardsView from '../views/HMS/WardsView.vue'
 import BedsView from '../views/HMS/BedsView.vue'
@@ -15,11 +16,12 @@ import EmergencyContactsView from '../views/HMS/EmergencyContactsView.vue'
 import PatientsVisitsView from '../views/HMS/PatientsVisitsView.vue'
 import StaffView from '../views/HMS/StaffView.vue'
 import PayrollView from '../views/HR/PayrollView.vue'
-import AccountsView from '../views/FA/AccountsView.vue'
 import LabManagementView from '../views/HMS/LabManagementView.vue'
 import InventoryView from '../views/INV/InventoryView.vue'
 import MyAccountView from '../views/HMS/MyAccountView.vue'
-import ManagersView from '../views/HMS/ManagersView.vue'
+import FADashboardView from '../views/FA/FADashboardView.vue'
+import ChartOfAccountsView from '../views/FA/ChartOfAccountsView.vue'
+
 
 const routes = [
   {
@@ -153,9 +155,17 @@ const routes = [
     }
   },
   {
-    path: '/fa/accounts',
-    name: 'fa-accounts',
-    component: AccountsView,
+    path: '/fa/chart-of-accounts',
+    name: 'fa-chart-of-accounts',
+    component: ChartOfAccountsView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/fa/dashboard',
+    name: 'fa-dashboard',
+    component: FADashboardView,
     meta:{
       requireLogin: true
     }

@@ -11,7 +11,7 @@
     <div class="main-content bg-gray-100 px-4 py-4">
         <div class="subsection rounded bg-white p-3">
             <h2 class="text-center font-bold">Patients Register</h2>
-            <div class="md:px-8 py-8 w-full">
+            <div class="md:px-2 py-8 w-full">
                 <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
                     <div class="mb-4 flex items-end h-24">
                         <div class="basis-1/6">
@@ -38,7 +38,12 @@
                                     </datepicker>
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="city" id="" placeholder="City..." v-model="city_search"  @keyup.enter="searchPatients">
+                                    <select name="" ref="" id="" class="rounded border-2  border-gray-200 bg-white text-lg pl-2 pt-2 w-52"  placeholder="Gender...." v-model="gender_search">
+                                        <option value="" selected disabled>Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option> 
+                                        <option value="Other">Other</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -67,44 +72,51 @@
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
                         <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
+                            <div class="basis-1/3 mr-6">
                                 <label for="">First Name<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="first_name" required>
                             </div>
-                            <div class="basis-1/2">
+                            <div class="basis-1/3 mr-6">
                                 <label for="">Last Name<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="last_name" required>
                             </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
+                            <div class="basis-1/3 mr-3">
                                 <label for="">Email<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 focus:outline-none w-60" v-model="email" :style="{borderColor: eStyle,borderWidth: bWidth+'px' }" required><br />
                                 <span v-if="watcherMsg.email" :style="{color: eStyle, fontSize:10 + 'px'}">{{watcherMsg.email}}</span>
                             </div>
-                            <div class="basis-1/2">
+                        </div>
+                        <div class="flex mb-6">   
+                            <div class="basis-1/3 mr-6">
                                 <label for="">Phone Number<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 focus:outline-none w-60" placeholder="e.g 07XXXX" v-model="phone_number" :style="{borderColor: nStyle,borderWidth: bWidth+'px' }" required><br />
                                 <span v-if="watcherMsg.phone_number" :style="{color: nStyle, fontSize:10 + 'px'}">{{watcherMsg.phone_number}}</span>
                             </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">ID Number<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="id_number">
-                            </div>
-                            <div class="basis-1/2">
+                            <div class="basis-1/3 mr-6">
                                 <label for="">Birth Date<em>*</em></label><br />
                                 <datepicker  placeholder="Birth Date...." v-model="birth_date" clearable :clear-button="clearButton">
                                 </datepicker>
+                            </div> 
+                            <div class="basis-1/3 mr-3">
+                                <label for="">ID Number<em>*</em></label><br />
+                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="id_number">
                             </div>
                         </div>
                         <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">City<em>*</em></label><br />
+                            <div class="basis-1/3 mr-6">
+                                <label for="">Gender<em>*</em></label><br />
+                                <select name="" ref="" id="" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60"  v-model="gender">
+                                  <option value="" selected disabled>---Select Gender</option>
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option> 
+                                  <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="basis-1/3 mr-6">
+                                <label for="">City/Town<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="city">
                             </div>
-                            <div class="basis-1/2">
+                            <div class="basis-1/3 mr-3">
                                 <label for="">Country<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="country">
                             </div>
@@ -223,8 +235,8 @@
                         <thead class="bg-gray-800 text-white">
                             <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
                                 <th>#</th>
-                                <th class="text-left py-3 px-2">F. Name</th>
-                                <th class="text-left py-3 px-2">L. Name</th>
+                                <th class="text-left py-3 px-2">Code</th>
+                                <th class="text-left py-3 px-2">Name</th>
                                 <th class="text-left py-3 px-2">Email</th>
                                 <th class="text-left py-3 px-2">ID No</th>
                                 <th class="text-left py-3 px-2">Phone No</th>
@@ -238,8 +250,8 @@
                         
                         <tr v-for="(pat,index) in patientList" :key="pat.patient_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3">{{ pat.first_name }}</td>
-                            <td class="text-left py-3">{{ pat.last_name }}</td>
+                            <td class="text-left py-3">{{ pat.patient_code }}</td>
+                            <td class="text-left py-3">{{ pat.first_name }} {{ pat.last_name }}</td>
                             <td class="text-left py-3">{{ pat.email }}</td>
                             <td class="text-left py-3">{{ pat.id_number }}</td>
                             <td class="text-left py-3">{{ pat.phone_number }}</td>
@@ -294,10 +306,12 @@ export default{
     return{
         title: 'Hospital Management/ Patients',
         hospitalID: "",
+        patient_code: "",
         first_name: "",
         last_name: "",
         birth_date: null,
         city: "",
+        gender: "",
         phone_number: "",
         id_number: "",
         email: "",
@@ -307,7 +321,7 @@ export default{
         last_name_search: "",
         id_number_search: "",
         phone_number_search: "",
-        city_search: "",
+        gender_search: "",
         birth_date_search: null,
         patientModalVisible: false,
         importModalVisible: false,
@@ -342,6 +356,7 @@ export default{
         excelPatList: [],
         excel_file: "",
         filePath: "",
+        axiosError: [],
     }
   },
     components: {
@@ -422,8 +437,9 @@ export default{
             this.displayExcelData();
         },
         createPatient(){
+            this.axiosError = [];
             this.showLoader();
-            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === ''
+            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === '' || this.gender === ''
                  || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
                  || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
                 this.$toast.error("Please Enter Patient Details",{
@@ -441,7 +457,7 @@ export default{
                     phone_number: this.contact_person_phone_number,
                     patient: this.first_name + " "+ this.last_name,
                 }
-                console.log(formData);
+
                 this.axios
                 .post("api/v1/create-emergency-contact-person/", formData)
                 .then((response)=>{
@@ -451,52 +467,86 @@ export default{
                 })
                 .catch((error)=>{
                     console.log(error.message);
+                    this.axiosError.push(error.message);
                 })
                 .finally(()=>{
-                    let formData = {
-                        hospital: this.hospitalID,
-                        first_name: this.first_name,
-                        last_name: this.last_name,
-                        email: this.email,
-                        birth_date: this.formatDate(this.birth_date),
-                        phone_number: this.phone_number,
-                        city: this.city,
-                        id_number: this.id_number,
-                        address: this.address,
-                        country: this.country,
-                        emergency_contact_person: this.emergencyContactID
+                    if(this.axiosError.length){
+                        this.$toast.error("Error Adding Next Of Kin",{
+                            duration: 3000,
+                            dismissible: true
+                        })
                     }
-                    
-                    this.axios
-                    .post("api/v1/create-patient/", formData)
-                    .then((response)=>{
-                        this.patientDetails = response.data;
-                        this.$toast.success("Patient Added Succesfully",{
-                            duration: 3000,
-                            dismissible: true
+                    else{
+                        this.axios
+                        .get(`api/v1/patient-code-gen/${this.hospitalID}/`)
+                        .then((response)=>{
+                            this.patient_code = response.data;
                         })
-                    })
-                    .catch((error)=>{
-                        this.$toast.error("Operation Failed",{
-                            duration: 3000,
-                            dismissible: true
+                        .catch((error)=>{
+                            console.log(error.message)
+                            this.axiosError.push(error.message)
                         })
-                        console.log(error.message);
-                    })
-                    .finally(()=>{
-                        this.first_name = "";
-                        this.last_name = "";
-                        this.email = "";
-                        this.birth_date = "";
-                        this.id_number = "";
-                        this.phone_number = "";
-                        this.city = "";
-                        this.address = "";
-                        this.country = "";
-                        this.hideLoader();
-                        this.closeModal();
-                        this.$store.commit('reloadingPage');
-                    })
+                        .finally(()=>{
+                            if(this.axiosError.length){
+                                this.$toast.error("Error Generating Patient Code",{
+                                    duration: 3000,
+                                    dismissible: true
+                                })
+                            }
+                            else{
+                                let formData = {
+                                    hospital: this.hospitalID,
+                                    patient_code: this.patient_code,
+                                    first_name: this.first_name,
+                                    last_name: this.last_name,
+                                    email: this.email,
+                                    birth_date: this.formatDate(this.birth_date),
+                                    phone_number: this.phone_number,
+                                    city: this.city,
+                                    gender: this.gender,
+                                    id_number: this.id_number,
+                                    address: this.address,
+                                    country: this.country,
+                                    emergency_contact_person: this.emergencyContactID
+                                }
+                                
+                                this.axios
+                                .post("api/v1/create-patient/", formData)
+                                .then((response)=>{
+                                    this.patientDetails = response.data;
+                                    this.$toast.success("Patient Added Succesfully",{
+                                        duration: 3000,
+                                        dismissible: true
+                                    })
+                                })
+                                .catch((error)=>{
+                                    this.$toast.error("Operation Failed",{
+                                        duration: 3000,
+                                        dismissible: true
+                                    })
+                                    console.log(error.message);
+                                })
+                                .finally(()=>{
+                                    this.patient_code = "";
+                                    this.first_name = "";
+                                    this.last_name = "";
+                                    this.email = "";
+                                    this.birth_date = "";
+                                    this.id_number = "";
+                                    this.phone_number = "";
+                                    this.city = "";
+                                    this.gender = "",
+                                    this.address = "";
+                                    this.country = "";
+                                    this.hideLoader();
+                                    this.closeModal();
+                                    this.$store.commit('reloadingPage');
+                                })
+
+                            }
+                            
+                        })
+                    }    
                 })
             }
         },
@@ -509,7 +559,7 @@ export default{
             formData.append('last_name', this.last_name_search);
             formData.append('phone_number', this.phone_number_search);
             formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('gender', this.gender_search);
             formData.append('hospital_id', this.hospitalID);  
             if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
                 formData.append('birth_date', this.formatDate(this.birth_date_search));
@@ -552,12 +602,14 @@ export default{
             .post("api/v1/get-patients/", formData)
             .then((response)=>{
                 this.patientDetails = response.data;
+                this.patient_code = this.patientDetails.patient_code;
                 this.first_name = this.patientDetails.first_name;
                 this.last_name = this.patientDetails.last_name;
                 this.email = this.patientDetails.email;
                 this.id_number = this.patientDetails.id_number;
                 this.birth_date = this.patientDetails.birth_date;
                 this.city = this.patientDetails.city;
+                this.gender = this.patientDetails.gender;
                 this.phone_number = this.patientDetails.phone_number;
                 this.address = this.patientDetails.address;
                 this.country = this.patientDetails.country;
@@ -599,7 +651,7 @@ export default{
         },
         updatePatient(){
             this.showLoader();
-            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === ''
+            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === '' || this.gender ===''
                  || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
                  || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
                     this.$toast.error("Please Enter Patient Details",{
@@ -611,6 +663,7 @@ export default{
             else if(this.contact_personID){
                 let formData = new FormData();
                 formData.append('patient',this.patientDetails.patient_id);
+                formData.append('patient_code',this.patient_code);
                 formData.append('first_name',this.first_name);
                 formData.append('last_name',this.last_name);
                 formData.append('birth_date',this.formatDate(this.birth_date));
@@ -618,6 +671,7 @@ export default{
                 formData.append('email',this.email);
                 formData.append('hospital',this.hospitalID);
                 formData.append('city',this.city);
+                formData.append('gender',this.gender);
                 formData.append('address',this.address);
                 formData.append('id_number',this.id_number);
                 formData.append('country',this.country);
@@ -652,12 +706,14 @@ export default{
                         console.log(error.message);
                     })
                     .finally(()=>{
+                        this.patient_code = "";
                         this.first_name = "";
                         this.last_name = "";
                         this.email = "";
                         this.birth_date = "";
                         this.id_number = "";
                         this.phone_number = "";
+                        this.gender = "";
                         this.city = "";
                         this.address = "";
                         this.country = "";
@@ -692,6 +748,7 @@ export default{
                 .finally(()=>{
                     let formData = new FormData();
                     formData.append('patient',this.patientDetails.patient_id);
+                    formData.append('patient_code',this.patient_code);
                     formData.append('first_name',this.first_name);
                     formData.append('last_name',this.last_name);
                     formData.append('birth_date',this.formatDate(this.birth_date));
@@ -699,6 +756,7 @@ export default{
                     formData.append('email',this.email);
                     formData.append('hospital',this.hospitalID);
                     formData.append('city',this.city);
+                    formData.append('gender',this.gender);
                     formData.append('address',this.address);
                     formData.append('id_number',this.id_number);
                     formData.append('country',this.country);
@@ -716,6 +774,7 @@ export default{
                         console.log(error.message);
                     })
                     .finally(()=>{
+                        this.patient_code = "";
                         this.first_name = "";
                         this.last_name = "";
                         this.email = "";
@@ -723,6 +782,7 @@ export default{
                         this.id_number = "";
                         this.phone_number = "";
                         this.city = "";
+                        this.gender = "";
                         this.address = "";
                         this.country = "";
                         this.contact_person_first_name = "";
@@ -871,7 +931,7 @@ export default{
             formData.append('last_name', this.last_name_search);
             formData.append('phone_number', this.phone_number_search);
             formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('gender', this.gender_search);
             formData.append('hospital_id', this.hospitalID);  
             if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
                 formData.append('birth_date', this.formatDate(this.birth_date_search));
@@ -906,7 +966,7 @@ export default{
             formData.append('last_name', this.last_name_search);
             formData.append('phone_number', this.phone_number_search);
             formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('gender', this.gender_search);
             formData.append('hospital_id', this.hospitalID);  
             if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
                 formData.append('birth_date', this.formatDate(this.birth_date_search));
@@ -941,7 +1001,7 @@ export default{
             formData.append('last_name', this.last_name_search);
             formData.append('phone_number', this.phone_number_search);
             formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('gender', this.gender_search);
             formData.append('hospital_id', this.hospitalID);  
             if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
                 formData.append('birth_date', this.formatDate(this.birth_date_search));

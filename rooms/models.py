@@ -41,7 +41,7 @@ class Bed(models.Model):
     STATUS = (('','Select Status'),('Available','Available'),('Occupied','Occupied'),('Reserved','Reserved'))
 
     bed_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    bed_number = models.CharField(max_length=100)
+    bed_number = models.IntegerField()
     status = models.CharField(max_length=250, choices=STATUS, default='Available')
     ward = models.ForeignKey(Ward, related_name="ward_beds", on_delete=models.CASCADE, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)

@@ -6,7 +6,7 @@ class PatientSerializer(serializers.ModelSerializer):
     emergency_contact_person = serializers.PrimaryKeyRelatedField(queryset=EmergencyContactPerson.objects.all(),many=False)
     class Meta:
         model = Patient
-        fields = ['patient_id','first_name','last_name','email','id_number','phone_number','address','birth_date','city','country','hospital','emergency_contact_person','start_date']
+        fields = ['patient_id','patient_code','first_name','last_name','email','id_number','phone_number','gender','address','birth_date','city','country','hospital','emergency_contact_person','start_date']
 
     def create(self, validated_data):
         patient = Patient.objects.create(**validated_data)
@@ -14,9 +14,11 @@ class PatientSerializer(serializers.ModelSerializer):
         return patient
     
     def update(self, instance, validated_data):
+        instance.patient_code = validated_data.get('patient_code', instance.patient_code)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
+        instance.gender = validated_data.get('gender', instance.gender)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.id_number = validated_data.get('id_number', instance.id_number)
         instance.birth_date = validated_data.get('birth_date', instance.birth_date)

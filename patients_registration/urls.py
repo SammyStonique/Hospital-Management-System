@@ -1,5 +1,6 @@
 from django.urls import path,include
 from . import views
+from . import patient_code_generator
 from .filters import patientsSearch,contactPersonSearch
 
 from rest_framework.routers import DefaultRouter
@@ -13,6 +14,7 @@ from . import views
 urlpatterns = [
     path("", include(router.urls)),
     path("create-patient/", views.createPatient, name="create-patient"),
+    path('patient-code-gen/<str:hospital_id>/', patient_code_generator.patient_code_generator),
     path("update-patient/", views.updatePatient, name="update-patient"),
     path("get-patients/", views.getPatients, name="get-patients"),
     path("delete-patient/", views.deletePatient, name="delete-patient"),

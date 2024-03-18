@@ -22,7 +22,7 @@ def patientsSearch(request):
     last_name = data['last_name']
     phone_number = data['phone_number']
     id_number = data['id_number']
-    city = data['city']
+    gender = data['gender']
     birth_date = data['birth_date']
     hospital_id = data['hospital_id']
 
@@ -30,12 +30,16 @@ def patientsSearch(request):
     hospital_patients = Patient.objects.filter(hospital=hospital_uuid)
 
     patients = hospital_patients.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(birth_date__icontains=birth_date)
-                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
+                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number))
+    
+    if gender:
+        patients = patients.filter(gender=gender)
 
     for pat in patients:
         if(pat.emergency_contact_person):
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
@@ -54,6 +58,7 @@ def patientsSearch(request):
         else:
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,

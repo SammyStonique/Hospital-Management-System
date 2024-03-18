@@ -2,6 +2,7 @@ import os
 from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import *
+from .patient_code_generator import patient_code_gen
 from company.models import Company
 from .serializers import *
 from rest_framework.views import APIView
@@ -153,7 +154,7 @@ def generate_patients_pdf(request):
     last_name = data['last_name']
     phone_number = data['phone_number']
     id_number = data['id_number']
-    city = data['city']
+    gender = data['gender']
     birth_date = data['birth_date']
     hospital_id = data['hospital_id']
 
@@ -161,17 +162,22 @@ def generate_patients_pdf(request):
     hospital_patients = Patient.objects.filter(hospital=hospital_uuid)
 
     patientList = hospital_patients.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(birth_date__icontains=birth_date)
-                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
+                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number))
+
+    if gender:
+        patientList = patientList.filter(gender=gender)
 
     for pat in patientList:
         if(pat.emergency_contact_person):
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
                 "id_number": pat.id_number,
                 "phone_number": pat.phone_number,
+                "gender": pat.gender,
                 "city": pat.city,
                 "address": pat.address,
                 "country": pat.country,
@@ -185,11 +191,13 @@ def generate_patients_pdf(request):
         else:
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
                 "id_number": pat.id_number,
                 "phone_number": pat.phone_number,
+                "gender": pat.gender,
                 "city": pat.city,
                 "address": pat.address,
                 "country": pat.country,
@@ -233,24 +241,29 @@ def generate_patients_excel(request):
     birth_date = data['birth_date']
     phone_number = data['phone_number']
     id_number = data['id_number']
-    city = data['city']
+    gender = data['gender']
     hospital_id = data['hospital_id']
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_patients = Patient.objects.filter(hospital=hospital_uuid)
 
     patientList = hospital_patients.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(birth_date__icontains=birth_date)
-                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
+                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number))
+
+    if gender:
+        patientList = patientList.filter(gender=gender)
 
     for pat in patientList:
         if(pat.emergency_contact_person):
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
                 "id_number": pat.id_number,
                 "phone_number": pat.phone_number,
+                "gender": pat.gender,
                 "city": pat.city,
                 "address": pat.address,
                 "country": pat.country,
@@ -264,11 +277,13 @@ def generate_patients_excel(request):
         else:
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
                 "id_number": pat.id_number,
                 "phone_number": pat.phone_number,
+                "gender": pat.gender,
                 "city": pat.city,
                 "address": pat.address,
                 "country": pat.country,
@@ -285,14 +300,14 @@ def generate_patients_excel(request):
     worksheet = workbook.add_sheet("Patients")
 
     row_num = 0
-    columns = ['First Name','Last Name','Email','ID Number','Phone Number','Address','Birth Date','City','Country','Contact Person','Phone Number','Email']
+    columns = ['Code','First Name','Last Name','Email','ID Number','Phone Number','Gender','Address','Birth Date','City','Country','Contact Person','Phone Number','Email']
     style1 = xlwt.easyxf('font:bold 1')
     for col_num in range(len(columns)):
         worksheet.write(row_num, col_num, columns[col_num],style=style1)
 
     for pat in patients:
         row_num += 1
-        row = [pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['address'],pat['birth_date'],pat['city'],pat['country'],pat['emergency_contact_person_name'],pat['emergency_contact_person_phone_number'],pat['emergency_contact_person_email']]
+        row = [pat['patient_code'],pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['gender'],pat['address'],pat['birth_date'],pat['city'],pat['country'],pat['emergency_contact_person_name'],pat['emergency_contact_person_phone_number'],pat['emergency_contact_person_email']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -310,24 +325,29 @@ def generate_patients_csv(request):
     birth_date = data['birth_date']
     phone_number = data['phone_number']
     id_number = data['id_number']
-    city = data['city']
+    gender = data['gender']
     hospital_id = data['hospital_id']
 
     hospital_uuid = uuid.UUID(hospital_id)
     hospital_patients = Patient.objects.filter(hospital=hospital_uuid)
 
     patientList = hospital_patients.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name) & Q(birth_date__icontains=birth_date)
-                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number) & Q(city__icontains=city))
+                                        & Q(phone_number__icontains=phone_number) & Q(id_number__icontains=id_number))
+
+    if gender:
+        patientList = patientList.filter(gender=gender)
 
     for pat in patientList:
         if(pat.emergency_contact_person):
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
                 "id_number": pat.id_number,
                 "phone_number": pat.phone_number,
+                "gender": pat.gender,
                 "city": pat.city,
                 "address": pat.address,
                 "country": pat.country,
@@ -341,11 +361,13 @@ def generate_patients_csv(request):
         else:
             obj = {
                 "patient_id": pat.patient_id,
+                "patient_code": pat.patient_code,
                 "first_name": pat.first_name,
                 "last_name": pat.last_name,
                 "email": pat.email,
                 "id_number": pat.id_number,
                 "phone_number": pat.phone_number,
+                "gender": pat.gender,
                 "city": pat.city,
                 "address": pat.address,
                 "country": pat.country,
@@ -357,10 +379,10 @@ def generate_patients_csv(request):
     response['Content-Disposition'] = 'attachment; filename=Patients.csv'
 
     writer = csv.writer(response)
-    writer.writerow(['First Name','Last Name','Email','ID Number','Phone Number','Address','Birth Date','City','Country','Contact Person','Phone Number','Email'])
+    writer.writerow(['Code','First Name','Last Name','Email','ID Number','Phone Number','Gender','Address','Birth Date','City','Country','Contact Person','Phone Number','Email'])
 
     for pat in patients:
-        writer.writerow([pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['address'],pat['birth_date'],pat['city'],pat['country'],pat['emergency_contact_person_name'],pat['emergency_contact_person_phone_number'],pat['emergency_contact_person_email']])
+        writer.writerow([pat['patient_code'],pat['first_name'],pat['last_name'],pat['email'],pat['id_number'],pat['phone_number'],pat['gender'],pat['address'],pat['birth_date'],pat['city'],pat['country'],pat['emergency_contact_person_name'],pat['emergency_contact_person_phone_number'],pat['emergency_contact_person_email']])
     return response
 
 @csrf_exempt
@@ -372,13 +394,14 @@ def display_patients_import_excel(request):
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        first_name,last_name,email,id_number,phone_number,address,birth_date,city,country = row
+        first_name,last_name,email,id_number,phone_number,gender,address,birth_date,city,country = row
         obj = {
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
             "id_number": id_number,
             "phone_number": phone_number,
+            "gender": gender,
             "address": address,
             "birth_date": datetime.strptime(str(birth_date), "%Y-%m-%d %H:%M:%S").strftime("%d %b, %Y"),
             "city": city,
@@ -402,9 +425,10 @@ def import_patients_excel(request):
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        first_name,last_name,email,id_number,phone_number,address,birth_date,city,country = row
-        Patient.objects.create(first_name=first_name, last_name=last_name, email=email, id_number=id_number, birth_date=birth_date,
-                               phone_number=phone_number,city=city,address=address, country=country, hospital=hospital) 
+        first_name,last_name,email,id_number,phone_number,gender,address,birth_date,city,country = row
+        pat_code = patient_code_gen(hospital_id)
+        Patient.objects.create(patient_code=pat_code, first_name=first_name, last_name=last_name, email=email, id_number=id_number, birth_date=birth_date,
+                               phone_number=phone_number,city=city, gender=gender, address=address, country=country, hospital=hospital) 
         
 
     return HttpResponse("Excel Import Succesful")
