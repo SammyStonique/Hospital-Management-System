@@ -7,12 +7,13 @@ from .models import Ledger
 
 status = "Active"
 financial_statement = "Balance Sheet"
+ledger_type = "Current Asset"
 
 
 @receiver(post_save, sender = Patient)
 def create_ledger(sender, instance, created, **kwargs):
     if created:
-        Ledger.objects.create(ledger_code=instance.patient_code, ledger_name=instance.first_name+" "+instance.last_name, phone_number=instance.phone_number, financial_statement=financial_statement,
+        Ledger.objects.create(ledger_code=instance.patient_code, ledger_type=ledger_type, ledger_name=instance.first_name+" "+instance.last_name, phone_number=instance.phone_number, financial_statement=financial_statement,
                                   inv_address=instance.address, email=instance.email, status=status, company=instance.hospital)
         print("LEDGER CREATED SUCCESSFULLY")
     else:

@@ -19,10 +19,13 @@ class Ledger(models.Model):
 
     STATUS = (('','Select Status'),('Active','Active'),('Inactive','Inactive'))
     FINANCIAL_STATEMENT = (('','Select Financial Statement'),('Balance Sheet','Balance Sheet'),('Income Statement','Income Statement'))
+    LEDGER_TYPE = (('','Select Ledger Type'),('Cashbook','Cashbook'),('Current Asset','Current Asset'),('Fixed Asset','Fixed Asset'),('Current Liability','Current Liability')
+                   ,('Longterm Liability','Longterm Liability'),('Owner Equity','Owner Equity'),('Income','Income'),('Expenses','Expenses'))
 
     ledger_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     ledger_code = models.CharField(max_length=250)
     ledger_name = models.CharField(max_length=250)
+    ledger_type = models.CharField(max_length=250, choices=LEDGER_TYPE, default='')
     overdue_bills = models.IntegerField(default=0,blank=True, null=True)
     pending_bills = models.IntegerField(default=0,blank=True, null=True)
     cleared_bills = models.IntegerField(default=0,blank=True, null=True)
@@ -41,7 +44,7 @@ class Ledger(models.Model):
     company = models.ForeignKey(Company, related_name="company_ledger", on_delete=models.CASCADE)
 
     class Meta:
-        ordering = [('ledger_name')]
+        ordering = ['ledger_type','ledger_code']
 
     def __str__(self):
         return f'{self.ledger_code} - {self.ledger_name} Ledger'
