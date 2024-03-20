@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Medical Fees List</h3>
+	<table class="staff-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Name</th>
+				<th>Posting Account</th>
+				<th>Amount</th>
+
+			</tr>
+		</thead>
+		<tbody>
+			{% for fee in fees %}
+			<tr>
+				<td></td>
+				<td>{{ fee.fees_name  }}</td>
+				<td>{{ fee.posting_account_name }}</td>
+				<td>{{ fee.fees_amount }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+
+</body>
+</html>

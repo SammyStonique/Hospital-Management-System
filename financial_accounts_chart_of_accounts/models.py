@@ -48,5 +48,28 @@ class Ledger(models.Model):
 
     def __str__(self):
         return f'{self.ledger_code} - {self.ledger_name} Ledger'
-    
 
+class Journal(models.Model):
+
+    STATUS = (('','Select Status'),('Open','Open'),('Closed','Closed'))
+
+    journal_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    journal_no = models.CharField(max_length=250)
+    client = models.CharField(max_length=250,blank=True, null=True)
+    issue_date = models.DateField()
+    due_date = models.DateField()
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    due_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=250, choices=STATUS, default='Open')
+    journal_ledger = models.ManyToManyField(Ledger)
+    description = models.TextField()
+    company = models.ForeignKey(Company, related_name="company_journal", on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['issue_date','journal_no']
+
+    def __str__(self):
+        return f'{self.journal_no} Journal'

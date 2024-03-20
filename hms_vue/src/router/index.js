@@ -17,6 +17,7 @@ import PatientsVisitsView from '../views/HMS/PatientsVisitsView.vue'
 import StaffView from '../views/HMS/StaffView.vue'
 import PayrollView from '../views/HR/PayrollView.vue'
 import LabManagementView from '../views/HMS/LabManagementView.vue'
+import MedicalFeesView from '../views/HMS/MedicalFeesView.vue'
 import InventoryView from '../views/INV/InventoryView.vue'
 import MyAccountView from '../views/HMS/MyAccountView.vue'
 import FADashboardView from '../views/FA/FADashboardView.vue'
@@ -143,6 +144,14 @@ const routes = [
     path: '/hms/staff',
     name: 'hms-staff',
     component: StaffView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/medical-fees',
+    name: 'hms-medical-fees',
+    component: MedicalFeesView,
     meta:{
       requireLogin: true
     }

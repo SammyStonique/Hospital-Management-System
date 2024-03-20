@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- MODAL component for adding a new department -->
+                <!-- MODAL component for adding a new category -->
                 <Modal v-show="isModalVisible" @close="closeModal" :index="index">
                     <template v-slot:header> Category Details </template>
                     <template v-slot:body>
@@ -183,6 +183,7 @@ export default{
                     duration: 3000,
                     dismissible: true
                 })
+                this.hideLoader();
             }
             else{
                 let new_category_name = "";

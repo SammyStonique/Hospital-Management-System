@@ -76,18 +76,18 @@
                     </div>
                     <div class="flex mb-6">
                         <div class="basis-1/2"  v-if="isEditing">
-                                <label for="">Ward<em>*</em></label><br />
-                                <select name="wardUpdate" ref="wardUpdateSelect" id="selectUpdateWard" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateWardID" onfocus="this.selectedIndex = -1;" v-model="wardEditing">
-                                    <option v-for="wrd in wardsArray" :key="wrd.ward_id" :value="(wrd.ward_code+'-'+wrd.ward_name)" :label="(wrd.ward_code+'-'+wrd.ward_name)" :selected="((wrd.ward_code+'-'+wrd.ward_name)===doctorEditing)">{{wrd.ward_code}} - {{wrd.ward_name}}</option> 
-                                </select>
-                            </div>
-                            <div class="basis-1/2" v-else>
-                                <label for="">Ward<em>*</em></label><br />
-                                <select name="ward" ref="wardSelect" id="selectWard" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setWardID" onfocus="this.selectedIndex = -1;" v-model="ward">
-                                    <option value="" disabled selected>---Select Ward---</option> 
-                                    <option v-for="wrd in wardsArray">{{wrd.ward_code}} - {{wrd.ward_name}}</option> 
-                                </select>
-                            </div>
+                            <label for="">Ward<em>*</em></label><br />
+                            <select name="wardUpdate" ref="wardUpdateSelect" id="selectUpdateWard" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateWardID" onfocus="this.selectedIndex = -1;" v-model="wardEditing">
+                                <option v-for="wrd in wardsArray" :key="wrd.ward_id" :value="(wrd.ward_code+'-'+wrd.ward_name)" :label="(wrd.ward_code+'-'+wrd.ward_name)" :selected="((wrd.ward_code+'-'+wrd.ward_name)===doctorEditing)">{{wrd.ward_code}} - {{wrd.ward_name}}</option> 
+                            </select>
+                        </div>
+                        <div class="basis-1/2" v-else>
+                            <label for="">Ward<em>*</em></label><br />
+                            <select name="ward" ref="wardSelect" id="selectWard" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setWardID" onfocus="this.selectedIndex = -1;" v-model="ward">
+                                <option value="" disabled selected>---Select Ward---</option> 
+                                <option v-for="wrd in wardsArray">{{wrd.ward_code}} - {{wrd.ward_name}}</option> 
+                            </select>
+                        </div>
                     </div>
                     <div class="flex mb-6">
                         <div class="basis-1/2">

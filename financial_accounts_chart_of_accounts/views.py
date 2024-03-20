@@ -297,6 +297,7 @@ def createLedger(request):
 def getLedgers(request):
     ledger_id = request.data.get("ledger")
     company_id = request.data.get("company")
+    ledger_type = request.data.get("ledger_type")
 
     if ledger_id is not None:
         company_uuid = uuid.UUID(company_id)
@@ -305,6 +306,14 @@ def getLedgers(request):
         ledger = Ledger.objects.get(company=company, ledger_id=ledger_uuid)
 
         serializer = LedgerSerializer(ledger)
+        return Response(serializer.data)
+    
+    elif ledger_type is not None:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        ledgers = Ledger.objects.filter(company=company, ledger_type=ledger_type)
+
+        serializer = LedgerSerializer(ledgers, many=True)
         return Response(serializer.data)
 
     else:
