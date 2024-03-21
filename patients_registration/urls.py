@@ -1,7 +1,7 @@
 from django.urls import path,include
 from . import views
 from . import patient_code_generator
-from .filters import patientsSearch,contactPersonSearch
+from .filters import patientsSearch,contactPersonSearch,patientsHistorySearch
 
 from rest_framework.routers import DefaultRouter
 
@@ -36,4 +36,14 @@ urlpatterns = [
     path("export-emergency-contact-person-pdf/", views.generate_contact_persons_pdf, name="export-emergency-contact-person-pdf"),
     path("export-emergency-contact-person-excel/", views.generate_contact_persons_excel, name="export-emergency-contact-person-excel"),
     path("export-emergency-contact-person-csv/", views.generate_contact_persons_csv, name="export-emergency-contact-person-csv"),
+    path("create-patient-history/", views.createPatientHistory, name="create-patient-history"),
+    path("update-patient-history/", views.updatePatientHistory, name="update-patient-history"),
+    path("get-patients-history/", views.getPatientHistories, name="get-patients-history"),
+    path("delete-patient-history/", views.deletePatientHistory, name="delete-patient-history"),
+    path("patient-history-list/", views.PatientHistoryList.as_view()),
+    path("patient-history-details/<str:pk>/", views.PatientHistoryDetails.as_view()),
+    path("patients-history-search/", patientsHistorySearch, name="patients_history_search"),
+    path("export-patients-history-pdf/", views.generate_patients_history_pdf, name="export-patients-history-pdf"),
+    path("export-patients-history-excel/", views.generate_patients_history_excel, name="export-patients-history-excel"),
+    path("export-patients-history-csv/", views.generate_patients_history_csv, name="export-patients-history-csv"),
 ]

@@ -51,3 +51,26 @@ class EmergencyContactPersonSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+class PatientHistorySerializer(serializers.ModelSerializer):
+    hospital = serializers.ReadOnlyField(source='hospital.company_id')
+    patient = serializers.ReadOnlyField(source='patient.patient_id')
+    staff = serializers.PrimaryKeyRelatedField(queryset = User.objects.all(), many=False)
+
+    class Meta:
+        model = PatientHistory
+        fields = '__all__'
+
+    def create(self, validated_data):
+        patient_history = PatientHistory.objects.create(**validated_data)
+            
+        return patient_history
+    
+    def update(self, instance, validated_data):
+        instance.staff = validated_data.get('staff', instance.staff)
+        instance.notes = validated_data.get('notes', instance.notes)
+        instance.date = validated_data.get('date', instance.date)
+        instance.is_doctor = validated_data.get('is_doctor', instance.is_doctor)
+
+        instance.save()
+        return instance

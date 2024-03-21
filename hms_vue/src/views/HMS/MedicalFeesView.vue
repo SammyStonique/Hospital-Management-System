@@ -107,7 +107,7 @@
                         <tr v-for="(fee,index) in feesList" :key="fee.fees_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
                             <td class="text-left py-3 px-4">{{ fee.fees_name }}</td>
-                            <td class="text-left py-3 px-4">{{ fee.posting_account_name }}</td>
+                            <td class="text-left py-3 px-4">{{ fee.posting_account_code }} - {{ fee.posting_account_name }}</td>
                             <td class="text-center py-3 px-4">{{ Number(fee.fees_amount).toLocaleString() }}</td>
                             <td>
                                 <div class="flex">

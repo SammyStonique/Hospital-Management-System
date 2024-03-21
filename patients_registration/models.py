@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from doctor_profile.models import Doctor
+from users.models import User
 from company.models import Company
 
 
@@ -43,26 +44,31 @@ class Patient(models.Model):
     class Meta:
         ordering = [('-start_date')]
 
-
 class PatientHistory(models.Model):
     patient_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient = models.ForeignKey(Patient, related_name="patient_history", on_delete=models.SET_NULL, null=True,blank=True)
-    doctor = models.ForeignKey(Doctor, related_name="doctor_history", on_delete=models.DO_NOTHING)
-    notes = models.TextField(blank=True, null=True)
+    patient = models.ForeignKey(Patient, related_name="patient_history_patient", on_delete=models.CASCADE)
+    staff = models.ForeignKey(User, related_name="patient_history_staff", on_delete=models.SET_NULL, null=True, blank=True)
+    is_doctor = models.BooleanField(default=False)
     date = models.DateField()
+    notes = models.TextField()
     hospital = models.ForeignKey(Company, related_name="patient_history_hospital", on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ['-date','patient']
+
+    def __str__(self):
+        return f'{self.patient.patient_code} - {self.patient.first_name} {self.patient.last_name} History'
 
 class PatientFollowupHistory(models.Model):
     patient_followup_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient_history = models.ForeignKey(PatientHistory, related_name="patient_history_followup", on_delete=models.CASCADE)
+    # patient_history = models.ForeignKey(PatientHistory, related_name="patient_history_followup", on_delete=models.CASCADE)
     notes = models.TextField(blank=True, null=True)
     date = models.DateField()
     hospital = models.ForeignKey(Company, related_name="patient_follow_up_hospital", on_delete=models.CASCADE)
 
 class PatientAdmissionHistory(models.Model):
     patient_admission_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient_history = models.ForeignKey(PatientHistory, related_name="patient_admission_history", on_delete=models.CASCADE)
+    # patient_history = models.ForeignKey(PatientHistory, related_name="patient_admission_history", on_delete=models.CASCADE)
     notes = models.TextField(blank=True, null=True)
     admission_date = models.DateField()
     discharge_date = models.DateField()
@@ -74,7 +80,7 @@ class PatientAdmissionHistory(models.Model):
 
 class PatientDiagnosisHistory(models.Model):
     patient_diagnosis_history_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient = models.ForeignKey(Patient, related_name="patient_diagnosis_history", on_delete=models.SET_NULL, null=True,blank=True)
+    patient = models.ForeignKey(Patient, related_name="patient_diagnosis_history", on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, related_name="doctor_diagnosis_history", on_delete=models.DO_NOTHING)
     notes = models.TextField(blank=True, null=True)
     date = models.DateField()

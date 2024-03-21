@@ -314,7 +314,7 @@ export default{
                 }
             })
             .catch((error)=>{
-            console.log(error.message)
+                console.log(error.message)
             })
             .finally(()=>{
             
@@ -327,8 +327,6 @@ export default{
                 this.userID = this.staffArray[this.selectedDep].user_id;
                 this.phone_number = this.staffArray[this.selectedDep].phone_number;
                 let userName = this.staffArray[this.selectedDep].first_name;
-                console.log("The user name is ",userName);
-                console.log("The user id is ",this.userID);
             }
         },
         createManager(){

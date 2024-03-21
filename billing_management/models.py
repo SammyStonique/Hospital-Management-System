@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
-from patients_registration.models import PatientHistory, HealthInsurance
+# from patients_registration.models import PatientHistory, HealthInsurance
+from patients_registration.models import HealthInsurance
 from financial_accounts_chart_of_accounts.models import Ledger
 from company.models import  Company
 
@@ -9,7 +10,7 @@ from company.models import  Company
 
 class PatientBill(models.Model):
     patient_bill_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient_history = models.ForeignKey(PatientHistory, related_name="patient_bill_history", on_delete=models.CASCADE)
+    # patient_history = models.ForeignKey(PatientHistory, related_name="patient_bill_history", on_delete=models.CASCADE)
     health_insurance = models.ForeignKey(HealthInsurance, related_name="patient_health_insurance", on_delete=models.DO_NOTHING)
     patient_payable = models.DecimalField(max_digits=10, decimal_places=2)
     insurance_payable = models.DecimalField(max_digits=10, decimal_places=2)

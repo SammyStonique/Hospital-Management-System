@@ -671,3 +671,299 @@ def generate_contact_persons_csv(request):
         writer.writerow([cont['first_name'],cont['last_name'],cont['email'],cont['phone_number'],cont['patient']])
     return response
 
+
+        #PATIENT HISTORY VIEWS
+
+class PatientHistoryViewSet(viewsets.ModelViewSet):
+    queryset = PatientHistory.objects.all()
+    serializer_class = PatientHistorySerializer
+    pagination_class = BasePagination
+
+class PatientHistoryList(generics.ListCreateAPIView):
+    queryset = PatientHistory.objects.all()
+    serializer_class = PatientHistorySerializer
+    pagination_class = DefaultPagination
+
+class PatientHistoryDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = PatientHistory.objects.all()
+    serializer_class = PatientHistorySerializer
+
+
+@csrf_exempt
+@api_view(['POST'])
+def createPatientHistory(request):
+    hospital_id = request.data.get("hospital")
+    patient_id = request.data.get("patient")
+    hospital_uuid = uuid.UUID(hospital_id)
+    patient_uuid = uuid.UUID(patient_id)
+    hospital = get_object_or_404(Company, company_id=hospital_uuid)
+    patient = Patient.objects.get(patient_id=patient_uuid)
+    serializer = PatientHistorySerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(hospital=hospital,patient=patient)
+
+    else:
+        print(serializer.errors) 
+
+    
+    return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def getPatientHistories(request):
+    hospital_id = request.data.get("hospital")
+    patient_history_id = request.data.get("patient_history")
+
+    if patient_history_id is not None:
+        hospital_uuid = uuid.UUID(hospital_id)
+        patient_history_uuid = uuid.UUID(patient_history_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        patient_history = PatientHistory.objects.get(hospital=hospital, patient_history_id=patient_history_uuid)
+
+        serializer = PatientHistorySerializer(patient_history)
+        return Response(serializer.data)
+
+    else:
+        hospital_uuid = uuid.UUID(hospital_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        patient_history = PatientHistory.objects.filter(hospital=hospital)
+
+        serializer = PatientHistorySerializer(patient_history, many=True)
+        return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['PUT'])
+def updatePatientHistory(request):
+    patient_history_id = request.data.get("patient_history")
+    hospital = request.data.get("hospital")
+    staff_id = request.data.get("staff")
+    
+    if staff_id is not None:
+        hospital_uuid = uuid.UUID(hospital)
+        staff_uuid = uuid.UUID(staff_id)
+        patient_history_uuid = uuid.UUID(patient_history_id)
+        hospital_id = get_object_or_404(Company, company_id=hospital_uuid)
+        staff = User.objects.get(user_id=staff_uuid, allowed_company=hospital_id)
+        patient_history = PatientHistory.objects.get(hospital=hospital_id,patient_history_id=patient_history_uuid)
+        serializer = PatientHistorySerializer(patient_history, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(staff=staff)
+        else:
+            print(serializer.errors) 
+        return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def deletePatientHistory(request):
+    patient_history_id = request.data.get("patient_history")
+    hospital = request.data.get("hospital")
+    hospital_uuid = uuid.UUID(hospital)
+    hospital_id = get_object_or_404(Company, company_id=hospital_uuid)
+    patient_history_uuid = uuid.UUID(patient_history_id)
+    patient_history = PatientHistory.objects.get(hospital=hospital_id,patient_history_id=patient_history_uuid)
+
+    patient_history.delete() 
+    message = {'msg':"The patient_history has been succesfully deleted"} 
+    return Response(message)
+
+
+@csrf_exempt   
+@api_view(['POST'])
+def generate_patients_history_pdf(request):
+    patientHistoryList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    patient = data['patient']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    staff = data['staff']
+    patient_code = data['patient_code']
+    hospital_id = data['hospital_id']
+
+    hospital_uuid = uuid.UUID(hospital_id)
+    hospital_patients_history = PatientHistory.objects.filter(hospital=hospital_uuid)
+
+    patients_history = hospital_patients_history.filter((Q(patient__first_name__icontains=patient) | Q(patient__last_name__icontains=patient))
+                                         & Q(patient__patient_code__icontains=patient_code))
+    
+    if date_from:
+        patients_history = patients_history.filter(date__gte=date_from) 
+    
+    if date_to:
+        patients_history = patients_history.filter(date__lte=date_to) 
+
+    if staff:
+        patients_history = patients_history.filter((Q(staff__first_name__icontains=staff) | Q(staff__last_name__icontains=staff)))
+
+
+    for hist in patients_history:
+        obj = {
+            "patient_history_id": hist.patient_history_id,
+            "patient_code": hist.patient.patient_code,
+            "patient_name": hist.patient.first_name+ ' '+hist.patient.last_name,
+            "patient_id_number": hist.patient.id_number,
+            "patient_id": hist.patient.patient_id,
+            "date": hist.date.strftime("%d %b, %Y"),
+            "notes": hist.notes,
+            "staff_name": hist.staff.first_name+ ' '+hist.staff.last_name,
+            "staff_id": hist.staff.user_id,
+            "staff_profile": hist.staff.profile,
+            "staff_is_doctor": hist.is_doctor
+            
+        }
+        patientHistoryList.append(obj)
+
+    context = {"patients_visits":patientHistoryList}
+
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/patients_registration/templates/patients_registration')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('patientsHistoryPDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Patients Visits.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/patients_registration/static/patients_registration/patientsPDF.css")
+
+    path = 'Patients Visits.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Patients Visits.pdf'
+    pdf.close()
+    os.remove("Patients Visits.pdf")  # remove the locally created pdf file.
+    return response
+
+@csrf_exempt
+@api_view(['POST'])
+def generate_patients_history_excel(request):
+    patientHistoryList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    patient = data['patient']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    staff = data['staff']
+    patient_code = data['patient_code']
+    hospital_id = data['hospital_id']
+
+    hospital_uuid = uuid.UUID(hospital_id)
+    hospital_patients_history = PatientHistory.objects.filter(hospital=hospital_uuid)
+
+    patients_history = hospital_patients_history.filter((Q(patient__first_name__icontains=patient) | Q(patient__last_name__icontains=patient))
+                                         & Q(patient__patient_code__icontains=patient_code))
+    
+    if date_from:
+        patients_history = patients_history.filter(date__gte=date_from) 
+    
+    if date_to:
+        patients_history = patients_history.filter(date__lte=date_to) 
+
+    if staff:
+        patients_history = patients_history.filter((Q(staff__first_name__icontains=staff) | Q(staff__last_name__icontains=staff)))
+
+
+    for hist in patients_history:
+        obj = {
+            "patient_history_id": hist.patient_history_id,
+            "patient_code": hist.patient.patient_code,
+            "patient_name": hist.patient.first_name+ ' '+hist.patient.last_name,
+            "patient_id_number": hist.patient.id_number,
+            "patient_id": hist.patient.patient_id,
+            "date": hist.date.strftime("%d %b, %Y"),
+            "notes": hist.notes,
+            "staff_name": hist.staff.first_name+ ' '+hist.staff.last_name,
+            "staff_id": hist.staff.user_id,
+            "staff_profile": hist.staff.profile,
+            "staff_is_doctor": hist.is_doctor
+            
+        }
+        patientHistoryList.append(obj)
+
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=Patients Visits.xls'
+
+    workbook = xlwt.Workbook()
+
+    worksheet = workbook.add_sheet("Patients Visits")
+
+    row_num = 0
+    columns = ['Date','Patient Code','Patient Name','Patient ID No','Staff Name','Notes']
+    style1 = xlwt.easyxf('font:bold 1')
+    for col_num in range(len(columns)):
+        worksheet.write(row_num, col_num, columns[col_num],style=style1)
+
+    for hist in patientHistoryList:
+        row_num += 1
+        row = [hist['date'],hist['patient_code'],hist['patient_name'],hist['patient_id_number'],hist['staff_name'],hist['notes']]
+        for col_num in range(len(row)):
+            worksheet.write(row_num, col_num, row[col_num])
+       
+    workbook.save(response)
+    return response
+
+@csrf_exempt
+@api_view(['POST'])
+def generate_patients_history_csv(request):
+    patientHistoryList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    patient = data['patient']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    staff = data['staff']
+    patient_code = data['patient_code']
+    hospital_id = data['hospital_id']
+
+    hospital_uuid = uuid.UUID(hospital_id)
+    hospital_patients_history = PatientHistory.objects.filter(hospital=hospital_uuid)
+
+    patients_history = hospital_patients_history.filter((Q(patient__first_name__icontains=patient) | Q(patient__last_name__icontains=patient))
+                                         & Q(patient__patient_code__icontains=patient_code))
+    
+    if date_from:
+        patients_history = patients_history.filter(date__gte=date_from) 
+    
+    if date_to:
+        patients_history = patients_history.filter(date__lte=date_to) 
+
+    if staff:
+        patients_history = patients_history.filter((Q(staff__first_name__icontains=staff) | Q(staff__last_name__icontains=staff)))
+
+
+    for hist in patients_history:
+        obj = {
+            "patient_history_id": hist.patient_history_id,
+            "patient_code": hist.patient.patient_code,
+            "patient_name": hist.patient.first_name+ ' '+hist.patient.last_name,
+            "patient_id_number": hist.patient.id_number,
+            "patient_id": hist.patient.patient_id,
+            "date": hist.date.strftime("%d %b, %Y"),
+            "notes": hist.notes,
+            "staff_name": hist.staff.first_name+ ' '+hist.staff.last_name,
+            "staff_id": hist.staff.user_id,
+            "staff_profile": hist.staff.profile,
+            "staff_is_doctor": hist.is_doctor
+            
+        }
+        patientHistoryList.append(obj)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=Patients Visits.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['Date','Patient Code','Patient Name','Patient ID No','Staff Name','Notes'])
+
+    for hist in patientHistoryList:
+        writer.writerow([hist['date'],hist['patient_code'],hist['patient_name'],hist['patient_id_number'],hist['staff_name'],hist['notes']])
+    return response

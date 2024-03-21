@@ -206,7 +206,6 @@ export default{
         showPreviousBtn: false,
         showOptions: false,
         currentPage: 1,
-        pageCount: 0,
         appointmentID: "",
         appointmentsList: [],
         appointmentsDetails: [],

@@ -3,7 +3,7 @@ from .models import *
 
 
 class DoctorSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.email')
+    user = serializers.ReadOnlyField(source='user.user_id')
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(),many=False)
     hospital = serializers.ReadOnlyField(source='hospital.name')
     class Meta:

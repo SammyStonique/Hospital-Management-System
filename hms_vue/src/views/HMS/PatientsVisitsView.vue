@@ -15,36 +15,37 @@
                 <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
                     <div class="mb-4 flex items-end h-24">
                         <div class="basis-1/6">
-                            <button class="rounded bg-green-400 text-white px-2 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Patient</button>
+                            <button class="rounded bg-green-400 text-white px-2 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Visit</button>
                         </div>
                         <div class="basis-3/4">
                             <div class="flex mb-3">
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="first_name" id="" placeholder="First Name..." v-model="first_name_search" @keyup.enter="searchPatients">
+                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="patient" id="" placeholder="Patient..." v-model="patient_search" @keyup.enter="searchPatientHistory">
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="last_name" id="" placeholder="Last Name..." v-model="last_name_search"  @keyup.enter="searchPatients">
+                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="doctor" id="" placeholder="..."  @keyup.enter="searchPatientHistory">
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="phone_number" id="" placeholder="Phone Number..." v-model="phone_number_search"  @keyup.enter="searchPatients">
+                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="staff" id="" placeholder="Staff..." v-model="staff_search"  @keyup.enter="searchPatientHistory">
                                 </div>
                             </div>
                             <div class="flex">
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="id_number" id="" placeholder="ID Number..." v-model="id_number_search"  @keyup.enter="searchPatients">
+                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="patient_code" id="" placeholder="Patient Code..." v-model="patient_code_search"  @keyup.enter="searchPatientHistory">
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <datepicker  placeholder="Birth Date...." v-model="birth_date_search" clearable :clear-button="clearButton">
+                                    <datepicker  placeholder="Date From...." v-model="date_from_search" clearable :clear-button="clearButton">
                                     </datepicker>
                                 </div>
                                 <div class="basis-1/3 pl-3 items-center">
-                                    <input type="text" class="rounded pl-3 border-2 border-gray-200 text-lg w-52" name="city" id="" placeholder="City..." v-model="city_search"  @keyup.enter="searchPatients">
+                                    <datepicker  placeholder="Date To...." v-model="date_to_search" clearable :clear-button="clearButton">
+                                    </datepicker>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="basis-1/8 pl-3 w-36">
-                            <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchPatients"><i class="fa fa-binoculars" aria-hidden="true"></i> Search</button>
+                            <button class="rounded-lg bg-green-400 text-white px-3 py-2" @click="searchPatientHistory"><i class="fa fa-binoculars" aria-hidden="true"></i> Search</button>
                         </div>
                         <div class="basis-1/8 pl-3 w-36">
                             <div class="print-dropdown">
@@ -53,168 +54,118 @@
                             </div>
                             <div class="options-container absolute right-25 pt-4 pb-2 rounded border border-gray-200 bg-white shadow-slate-400 shadow-xl" v-if="showOptions">
                                 <button class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Print List</button><br />
-                                <button @click="exportPatientsPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
-                                <button @click="exportPatientsExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
-                                <button @click="exportPatientsCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
-                                <button @click="showImportModal" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Import Excel</button>
+                                <button @click="exportPatientsHistoryPDF" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export PDF</button><br />
+                                <button @click="exportPatientsHistoryExcel" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export Excel</button>
+                                <button @click="exportPatientsHistoryCSV" class="pl-3 hover:bg-slate-500 hover:rounded hover:w-full">Export CSV</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- MODAL component for adding a new patient -->
+                <!-- MODAL component for adding a new patient visit -->
                 <Modal v-show="patientModalVisible" @close="closeModal" :index="index">
-                    <template v-slot:header> Patient Details </template>
+                    <template v-slot:header> Patient Visit Details </template>
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
                         <div class="flex mb-6">
                             <div class="basis-1/2 mr-6">
-                                <label for="">First Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="first_name" required>
-                            </div>
-                            <div class="basis-1/2">
-                                <label for="">Last Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="last_name" required>
-                            </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">Email<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 focus:outline-none w-60" v-model="email" :style="{borderColor: eStyle,borderWidth: bWidth+'px' }" required><br />
-                                <span v-if="watcherMsg.email" :style="{color: eStyle, fontSize:10 + 'px'}">{{watcherMsg.email}}</span>
-                            </div>
-                            <div class="basis-1/2">
-                                <label for="">Phone Number<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 focus:outline-none w-60" placeholder="e.g 07XXXX" v-model="phone_number" :style="{borderColor: nStyle,borderWidth: bWidth+'px' }" required><br />
-                                <span v-if="watcherMsg.phone_number" :style="{color: nStyle, fontSize:10 + 'px'}">{{watcherMsg.phone_number}}</span>
-                            </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">ID Number<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="id_number">
-                            </div>
-                            <div class="basis-1/2">
-                                <label for="">Birth Date<em>*</em></label><br />
-                                <datepicker  placeholder="Birth Date...." v-model="birth_date" clearable :clear-button="clearButton">
+                                <label for="">Date<em>*</em></label><br />
+                                <datepicker  placeholder="Date...." v-model="visit_date" clearable :clear-button="clearButton">
                                 </datepicker>
                             </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">City<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="city">
-                            </div>
                             <div class="basis-1/2">
-                                <label for="">Country<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="country">
+                                <label for="">Patient<em>*</em></label><br />
+                                <input type="text" name="" disabled id="" class="rounded border border-gray-600 bg-gray-100 text-lg pl-2" v-model="patientEditing" v-if="isEditing">
+                                <select name="patient" ref="patientSelect" id="selectPatient" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setPatientID" onfocus="this.selectedIndex = -1;" v-model="patient" v-else>
+                                    <option value="" disabled selected>---Select Patient---</option> 
+                                    <option v-for="pat in patientsArray">({{ pat.patient_code }}) - {{pat.first_name}}  {{pat.last_name}}</option> 
+                                </select>
                             </div>
                         </div>
                         <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">Address<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="address">
+                            <div class="basis-1/2 mr-6"  v-if="isEditing">
+                                <label for="">Doctor<em>*</em></label><br />
+                                <select name="doctorUpdate" ref="doctorUpdateSelect" id="selectUpdateDoctor" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateDoctorID" onfocus="this.selectedIndex = -1;" v-model="doctorEditing">
+                                    <option v-for="doct in doctorsArray" :key="doct.doctor_id" :value="(doct.first_name+' '+doct.last_name)" :label="(doct.first_name+' '+doct.last_name)" :selected="((doct.first_name+' '+doct.last_name)===doctorEditing)">{{doct.first_name}}  {{doct.last_name}}</option> 
+                                </select>
                             </div>
-                        </div>
-                        <div class="border-b border-gray-400 pb-3">
-                            <p class="font-bold">Emergency Contact Details</p>
-                        </div>
-                        <div class="flex mb-6 mt-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">First Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_first_name" required>
+                            <div class="basis-1/2" v-else>
+                                <label for="">Doctor<em>*</em></label><br />
+                                <select name="doctor" ref="doctorSelect" id="selectDoctor" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDoctorID" onfocus="this.selectedIndex = -1;" v-model="doctor">
+                                    <option value="" disabled selected>---Select Doctor---</option> 
+                                    <option v-for="doct in doctorsArray">Dr. {{doct.first_name}}  {{doct.last_name}}</option> 
+                                </select>
                             </div>
+                                <div class="basis-1/2 mr-6"  v-if="isEditing">
+                                    <label for="">Staff<em>*</em></label><br />
+                                    <select name="staffUpdate" ref="staffUpdateSelect" id="selectUpdateStaff" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateStaffID" onfocus="this.selectedIndex = -1;" v-model="staffEditing">
+                                        <option v-for="stf in staffArray" :key="stf.user_id" :value="(stf.first_name+' '+stf.last_name)" :label="(stf.first_name+' '+stf.last_name)" :selected="((stf.first_name+' '+stf.last_name)===staffEditing)">{{stf.first_name}}  {{stf.last_name}}</option> 
+                                    </select>
+                                </div>
+                                <div class="basis-1/2" v-else>
+                                    <label for="">Staff<em>*</em></label><br />
+                                    <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="staff">
+                                        <option value="" disabled selected>---Select Staff---</option> 
+                                        <option v-for="stf in staffArray">{{stf.first_name}}  {{stf.last_name}} - #{{ stf.identification_no }}</option> 
+                                    </select>
+                                </div>
+                            </div>
+                        <div class="flex">
                             <div class="basis-1/2">
-                                <label for="">Last Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_last_name" required>
+                                <label for="">Notes<em>*</em></label><br />
+                                <textarea id="notes" name="visit_notes" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2" v-model="visit_notes" rows="4" cols="50"></textarea>
                             </div>
-                        </div><div class="flex mb-6">
+                        </div>
+                        <div class="flex mb-6">
                             <div class="basis-1/2 mr-6">
-                                <label for="">Email<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_email" required>
-                            </div>
-                            <div class="basis-1/2">
-                                <label for="">Phone Number<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_phone_number" required>
+                                <label for=""><em></em></label><br />
+                                <input type="checkbox" name="" id="" class="rounded border border-gray-600 text-lg pl-2 mr-3" @click="showChargeFeesOption" v-model="applyMedicalFees">
+                                <label for="">Add Medical Fees<em></em></label>
                             </div>
                         </div>
-                        <div class="text-center" v-if="isEditing && !isAddingContactPerson">
-                            <button class="rounded border bg-green-400 w-42 py-2 px-4 text-white text-lg" @click="updatePatient">Update Patient</button>
+                        <div v-if="medicalFeeCharge">
+                            <div class="border-b border-gray-400 pb-3">
+                                <p class="font-bold">Fees Details</p>
+                            </div>
+                            <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8 mb-8 w-full fees-table">
+                                <table class="min-w-full bg-white"> 
+                                    <thead class="bg-gray-800 text-white static">
+                                        <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
+                                            <th class="text-left px-2 row-span-4">Fees Charged</th>
+                                            <th class="text-right px-2 row-span-2">Amount</th>
+                                            <th class="text-right px-2"></th>
+                                            <th class="text-right px-2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="">
+                                        <tr v-for="(fee, index) in fees" :key="index">
+        
+                                            <td class="text-left border border-black">
+                                                <select v-model="fee.type" ref="feesSelect" @change="setFeesID" onfocus="this.selectedIndex = -1;" class="bg-white text-left pl-2 px-2 w-full">
+                                                    <option v-for="feeType in feesArray" :key="feeType.fees_id" :value="feeType.fees_id">{{ feeType.fee_name }}</option>
+                                                </select>
+                                            </td>
+                                            <td class="text-left border border-black"><input type="number" class="text-right w-full" v-model="fee.amount" /></td>
+                                            <td class="border border-black">
+                                                <button type="button" @click="removeRow(index)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
+                                            </td>
+                                            <td class="border border-black">
+                                                <button type="button" @click="addRow"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                                            </td>
+                                        </tr>
+                                    
+                                    </tbody>
+                                </table>   
+                            </div>
+                        
                         </div>
-                        <div class="text-center" v-else-if="isAddingContactPerson && isEditing">
-                            <button class="rounded border bg-green-400 w-48 py-2 px-4 text-white text-lg" @click="updatePatient">Add Kin & Update</button>
+                        <div class="text-center" v-if="isEditing">
+                            <button class="rounded border bg-green-400 w-42 py-2 px-4 text-white text-lg" @click="updatePatientHistory">Update</button>
                         </div>
                         <div class="text-center" v-else>
-                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createPatient">Save Patient</button>
+                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createPatientHistory">Save</button>
                         </div>
 
                     </form>
-                    </template>
-                    <template v-slot:footer>We Value Your Partnership </template>
-                </Modal>
-                <!-- MODAL component for importing patients -->
-                <Modal v-show="importModalVisible" @close="closeImportModal" :index="index">
-                    <template v-slot:header> Import Patients </template>
-                    <template v-slot:body>
-                    
-                    <form action="" @submit.prevent="importPatientsExcel" enctype="multipart/form-data" class="import-form">
-                        <div class="border-2 rounded-lg py-4 px-3 mb-6">
-                            <div class="relative border h-18 w-76 mb-6">
-                                <DropZone 
-                                    :maxFiles="Number(10000000000)"
-                                    url=""
-                                    :uploadOnDrop="false"
-                                    :multipleUpload="true"
-                                    :parallelUpload="3"
-                                    method="POST"
-                                    @addedFile="onFileAdd"
-                                    :headers="{'Cache-Control': '' ,'X-Requested-With': ''}"
-                                    
-                                />
-                            </div>
-                            <div>
-                                <label for="" class="mb-2 mr-3">Select Excel To Import:<em>*</em></label>
-                                <input type="text" name="" class="rounded border-2 border-gray-600 text-gray-500 text-sm pl-2 mr-2 mb-4 w-72 h-8" placeholder="" v-model="filePath" >
-                                <input type="file" name="file-input" @change="onFileChange" id="file-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-                                <label class="rounded-lg border bg-gray-200 p-2 cursor-pointer" for="file-input">Browse...</label>
-                            </div>
-                            <div class="text-center">
-                                <button type="button" class="rounded border bg-green-400 w-24 py-2 px-2 text-white text-lg" @click="displayExcelData">Import</button>
-                            </div>
-                        </div>
-                        <div class="import-table">
-                            <table class="min-w-full bg-white mb-6"> 
-                                <thead class="bg-gray-800 text-white">
-                                    <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
-                                        <th>#</th>
-                                        <th class="text-left py-3 px-2">F. Name</th>
-                                        <th class="text-left py-3 px-2">L. Name</th>
-                                        <th class="text-left py-3 px-2">Email</th>
-                                        <th class="text-left py-3 px-2">ID No.</th>
-                                        <th class="text-left py-3 px-2">Phone No</th>
-                                        <th class="text-left py-3 px-2">DOB</th>
-                                        <th class="text-left py-3 px-2">City</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(pat,index) in excelPatList" :key="pat.patient_id" class="even:bg-gray-100">
-                                        <td>{{ index + 1 }}.</td>
-                                        <td class="text-left">{{ pat.first_name }}</td>
-                                        <td class="text-left">{{ pat.last_name }}</td>
-                                        <td class="text-left">{{ pat.email }}</td>
-                                        <td class="text-left">{{ pat.id_number }}</td>
-                                        <td class="text-left">{{ pat.phone_number }}</td>
-                                        <td class="text-left">{{ pat.birth_date }}</td>
-                                        <td class="text-left">{{ pat.city }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="text-center">
-                            <button type="submit" class="rounded border bg-green-400 w-24 py-2 px-2 text-white text-lg">Save</button>
-                        </div>
-                    </form>
-                    
-                    
                     </template>
                     <template v-slot:footer>We Value Your Partnership </template>
                 </Modal>
@@ -223,36 +174,29 @@
                         <thead class="bg-gray-800 text-white">
                             <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
                                 <th>#</th>
-                                <th class="text-left py-3 px-2">F. Name</th>
-                                <th class="text-left py-3 px-2">L. Name</th>
-                                <th class="text-left py-3 px-2">Email</th>
-                                <th class="text-left py-3 px-2">ID No</th>
-                                <th class="text-left py-3 px-2">Phone No</th>
-                                <th class="text-left py-3 px-2">Birth Date</th>
-                                <th class="text-left py-3 px-2">City</th>
-                                <th class="text-left py-3 px-2">Contact Person</th>
+                                <th class="text-left py-3 px-2">Date</th>
+                                <th class="text-left py-3 px-2">Patient</th>
+                                <th class="text-left py-3 px-2">Staff To Visit</th>
+                                <th class="text-left py-3 px-2">Notes</th>
                                 <th class="text-left py-3 px-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                         
-                        <tr v-for="(pat,index) in patientList" :key="pat.patient_id" class="even:bg-gray-100">
+                        <tr v-for="(hist,index) in patientHistoryList" :key="hist.patient_history_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3">{{ pat.first_name }}</td>
-                            <td class="text-left py-3">{{ pat.last_name }}</td>
-                            <td class="text-left py-3">{{ pat.email }}</td>
-                            <td class="text-left py-3">{{ pat.id_number }}</td>
-                            <td class="text-left py-3">{{ pat.phone_number }}</td>
-                            <td class="text-left py-3">{{ pat.birth_date }}</td>
-                            <td class="text-left py-3">{{ pat.city }}</td>
-                            <td class="text-left py-3">{{ pat.emergency_contact_person_name }}</td>
+                            <td class="text-left py-3">{{ hist.date }}</td>
+                            <td class="text-left py-3">{{ hist.patient_name }}</td>
+                            <td class="text-left py-3" v-if="hist.staff_profile ==='Doctor'">Dr. {{ hist.staff_name}}</td>
+                            <td class="text-left py-3" v-else>{{ hist.staff_name}}</td>
+                            <td class="text-left py-3">{{ hist.notes }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">
-                                        <button @click="editPatient(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
+                                        <button @click="editPatientHistory(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
                                     </div>
                                     <div class="basis-1/2">
-                                        <button @click="removePatient(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
+                                        <button @click="removePatientHistory(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
                                     </div>
                                 </div>
                             </td>
@@ -262,9 +206,9 @@
                 </div>
                 <div class="pagination row-span-2">
                     <MyPagination 
-                    :count="patientCount"
+                    :count="patientHistCount"
                     :currentPage="currentPage"
-                    :result="patientArrLen"
+                    :result="patientHistArrLen"
                     @loadPrev="loadPrev"
                     @loadNext="loadNext"
                     @firstPage="firstPage"
@@ -288,60 +232,66 @@ import MyPagination from '@/components/MyPagination.vue'
 import Datepicker from 'vuejs3-datepicker';
 
 export default{
-    name: 'PatientsView',
+    name: 'PatientsVisitsView',
     props: ['scrollToTop','loader','showLoader','hideLoader',],
     data(){
     return{
         title: 'Hospital Management/ Patients Visits',
         hospitalID: "",
-        first_name: "",
-        last_name: "",
-        birth_date: null,
-        city: "",
-        phone_number: "",
+        patient: "",
+        doctor: "",
+        visit_date: new Date(),
+        staff: "",
+        visit_notes: "",
         id_number: "",
-        email: "",
-        country: "",
-        address: "",
-        first_name_search: "",
-        last_name_search: "",
-        id_number_search: "",
-        phone_number_search: "",
-        city_search: "",
-        birth_date_search: null,
+        patient_search: "",
+        patient_code_search: "",
+        staff_search: "",
+        date_from_search: new Date(),
+        date_to_search: new Date(),
         patientModalVisible: false,
-        importModalVisible: false,
         isEditing: false,
         isSearching: false,
-        isAddingContactPerson: false,
+        isAddingFees: false,
         pageCount: 0,
         showNextBtn: false,
         showPreviousBtn: false,
         showOptions: false,
         currentPage: 1,
-        pageCount: 0,
+        patientHistoryID: "",
         patientID: "",
         patientName: "",
-        patientList: [],
-        patientDetails: [],
-        emergencyContactDetails: [],
-        emergencyContactID: "",
-        patientResults: [],
-        patientArr: [],
-        patientArrLen: [],
-        patientCount: 0,
-        patientEditing: "",
+        patientHistoryList: [],
+        patientHistoryDetails: [],
+        patientHistoryResults: [],
+        patientHistoryArr: [],
+        patientHistArrLen: [],
+        patientHistCount: 0,
+        patientHistoryEditing: "",
         clearButton: true,
-        contact_personID: "",
-        contact_person_first_name: "",
-        contact_person_last_name: "",
-        contact_person_email: "",
-        contact_person_phone_number: "",
-        watcherMsg: [],
-        eStyle: null, nStyle:null, bWidth: null,
-        excelPatList: [],
-        excel_file: "",
-        filePath: "",
+        doctorID: "",
+        doctorName: "",
+        doctUpdateID: "",
+        doctUpdateName: "",
+        staffID: "",
+        staffName: "",
+        stfUpdateID: "",
+        stfUpdateName: "",
+        patientEditing: "",
+        staffEditing: "",
+        doctorEditing: "",
+        staffArray: [],
+        doctorsArray: [],
+        feesID: "",
+        feesArray: [],
+        medicalFeeCharge: false,
+        fees: [
+        {itemIndex:0, type: null, amount: null }
+        ],
+        itemInd: 0,
+        applyMedicalFees: false,
+        visitDoctor: false,
+
     }
   },
     components: {
@@ -352,53 +302,20 @@ export default{
         MyPagination,
         Datepicker
     },
-    watch:{
-      email(value){
-        // binding this to the data value in the email input  
-        this.email = value; 
-        this.validateEmail(value);
-        },
-        phone_number(value){
-            this.phone_number = value;
-            this.validatePhoneNumber(value)
-        },
-    },
     methods:{
-        validateEmail(value){  
-            if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)){ 
-                this.watcherMsg['email'] = '';
-                this.eStyle = 'green';
-                this.bWidth = 2
-
-            } else{
-                if(value == ''){
-                    this.watcherMsg['email'] = ''; 
-                    this.eStyle = ''
-
-                }
-                else{
-                    this.watcherMsg['email'] = 'Invalid Email Address'; 
-                    this.eStyle = 'red'
-                    this.bWidth = 2
-                }
-            }  
+        addRow() {
+            this.itemInd += 1;
+            this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
+            console.log("the fees array on add is ",this.fees);
         },
-        validatePhoneNumber(value){
-            if ((/^(?:254|\+254|0)?((?:(?:7(?:(?:[01249][0-9])|(?:5[789])|(?:6[89])))|(?:1(?:[1][0-5])))[0-9]{6})$/.test(value))|| (/^(?:254|\+254|0)?((?:(?:7(?:(?:3[0-9])|(?:5[0-6])|(8[5-9])))|(?:1(?:[0][0-2])))[0-9]{6})$/.test(value))){
-                    this.nStyle = 'green';
-                    this.watcherMsg['phone_number'] = ''
-                    this.bWidth = 2
-
+        removeRow(){
+            if(this.fees.length > 1){
+                let selectedFee = arguments[0];
+                this.fees.splice(selectedFee, 1);
+                
             }else{
-                if(value == ''){
-                    this.nStyle = '';
-                    this.watcherMsg['phone_number'] = ''                        
-                }
-                else{
-                    this.nStyle = 'red';
-                    this.watcherMsg['phone_number'] = 'Invalid Phone Number'
-                    this.bWidth = 2
-                }
+                this.fees = [{itemIndex:0, type: null, amount: null }];
+                console.log("the fees array on remove is ",this.fees);
             }
         },
         formatDate(dateString) {
@@ -408,124 +325,213 @@ export default{
             const day = ('0' + date.getDate()).slice(-2);
             return `${year}-${month}-${day}`;
         },
-        onFileChange(e){
-            this.excel_file = e.target.files[0];
-            console.log("The target is ",e.target);
-            console.log(this.excel_file)
-            this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
+        fetchPatients(){
+            this.patientsArray = [];
+            let formData = {
+                hospital: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/get-patients/", formData)
+            .then((response)=>{
+                this.patientsArray = response.data;
+                
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
         },
-        onFileAdd(item){
-            this.excel_file = item.file;
-            console.log("The excel file is ",this.excel_file);
-            console.log("The excel file name is ",this.excel_file.name);
-            this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
-            this.displayExcelData();
+        fetchDoctors(){
+            this.doctorsArray = [];
+            let formData = {
+                hospital: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/get-department-doctors/", formData)
+            .then((response)=>{
+                this.doctorsArray = response.data;
+                
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
         },
-        createPatient(){
+        fetchStaff(){
+            this.staffArray = [];
+            let formData = {
+                company: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/department-staff-list/", formData)
+            .then((response)=>{
+                for(let i=0; i<response.data.length; i++){
+                    if(response.data[i].profile != "Super Admin" && response.data[i].profile != "Patient"&& response.data[i].profile != "Doctor"){
+                        this.staffArray.push(response.data[i]);
+                    }
+                }
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
+        },
+        fetchFees(){
+            this.feesArray = [];
+            let formData = {
+                hospital: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/get-medical-fees/", formData)
+            .then((response)=>{
+                this.feesArray = response.data;
+                
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
+        },
+        setPatientID(){
+            this.patientID = "";
+            if(this.$refs.patientSelect.selectedIndex > 0){
+                let selectedPatient = this.$refs.patientSelect.selectedIndex - 1;
+                this.patientID = this.patientsArray[selectedPatient].patient_id;
+            }
+        },
+        setDoctorID(){
+            this.doctorID = "";
+            if(this.$refs.doctorSelect.selectedIndex > 0){
+                let selectedDoctor = this.$refs.doctorSelect.selectedIndex - 1;
+                this.doctorID = this.doctorsArray[selectedDoctor].user;
+                console.log("the doctor ID is ",this.doctorID);
+            }
+        },
+        setUpdateDoctorID(){
+            this.doctUpdateID = "";
+            if(this.$refs.doctorUpdateSelect.selectedIndex >= 0){
+                let selectedUpdateDoct = this.$refs.doctorUpdateSelect.selectedIndex;
+                this.doctUpdateID = this.doctorsArray[selectedUpdateDoct].user;
+                this.doctUpdateName = this.doctorsArray[selectedUpdateDoct].first_name + " " +this.doctorsArray[selectedUpdateDoct].last_name;
+            }
+        },
+        setUserID(){
+            this.staffID = "";
+            if(this.$refs.userSelect.selectedIndex > 0){
+                let selectedStaff = this.$refs.userSelect.selectedIndex - 1;
+                this.staffID = this.staffArray[selectedStaff].user_id;
+                
+            }
+        },
+        setUpdateUserID(){
+            this.stfUpdateID = "";
+            if(this.$refs.staffUpdateSelect.selectedIndex >= 0){
+                let selectedUpdateStaff = this.$refs.staffUpdateSelect.selectedIndex;
+                this.stfUpdateID = this.staffArray[selectedUpdateStaff].user_id;
+                this.stfUpdateName = this.staffArray[selectedUpdateStaff].first_name + " " +this.staffArray[selectedUpdateStaff].last_name;
+            }
+        },
+        setFeesID(){
+            this.feesID = "";
+            if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
+                let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
+                this.feesID = this.feesArray[selectedFee].fees_id;
+                this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
+            }
+        },
+        createPatientHistory(){
             this.showLoader();
-            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === ''
-                 || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
-                 || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
-                this.$toast.error("Please Enter Patient Details",{
+            if(this.patient === '' || this.visit_date === '' || this.visit_notes === ''|| (this.staff === '' && this.doctor === '')){
+                this.$toast.error("Please Enter Patient Visit Details",{
                     duration: 3000,
                     dismissible: true
                 })
                 this.hideLoader();
             }
             else{
-                let formData = {
-                    hospital: this.hospitalID,
-                    first_name: this.contact_person_first_name,
-                    last_name: this.contact_person_last_name,
-                    email: this.contact_person_email,
-                    phone_number: this.contact_person_phone_number,
-                    patient: this.first_name + " "+ this.last_name,
+                let formData = new FormData;
+                formData.append('patient', this.patientID);
+                formData.append('date', this.formatDate(this.visit_date));
+                formData.append('notes', this.visit_notes);
+                formData.append('hospital', this.hospitalID);
+                if(this.doctor){
+                    this.visitDoctor = true;
+                    formData.append('staff', this.doctorID);
+                    formData.append('is_doctor', this.visitDoctor);
                 }
-                console.log(formData);
+                if(this.staff){
+                    formData.append('staff', this.staffID);
+                    formData.append('is_doctor', this.visitDoctor);
+                }
+                    
                 this.axios
-                .post("api/v1/create-emergency-contact-person/", formData)
+                .post("api/v1/create-patient-history/", formData)
                 .then((response)=>{
-                    this.emergencyContactDetails = response.data;
-                    console.log(this.emergencyContactDetails);
-                    this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
+                    this.patientHistoryDetails = response.data;
+                    this.$toast.success("Patient Visit Added Succesfully",{
+                        duration: 3000,
+                        dismissible: true
+                    })
                 })
                 .catch((error)=>{
+                    this.$toast.error("Operation Failed",{
+                        duration: 3000,
+                        dismissible: true
+                    })
                     console.log(error.message);
                 })
                 .finally(()=>{
-                    let formData = {
-                        hospital: this.hospitalID,
-                        first_name: this.first_name,
-                        last_name: this.last_name,
-                        email: this.email,
-                        birth_date: this.formatDate(this.birth_date),
-                        phone_number: this.phone_number,
-                        city: this.city,
-                        id_number: this.id_number,
-                        address: this.address,
-                        country: this.country,
-                        emergency_contact_person: this.emergencyContactID
-                    }
-                    
-                    this.axios
-                    .post("api/v1/create-patient/", formData)
-                    .then((response)=>{
-                        this.patientDetails = response.data;
-                        this.$toast.success("Patient Added Succesfully",{
-                            duration: 3000,
-                            dismissible: true
-                        })
-                    })
-                    .catch((error)=>{
-                        this.$toast.error("Operation Failed",{
-                            duration: 3000,
-                            dismissible: true
-                        })
-                        console.log(error.message);
-                    })
-                    .finally(()=>{
-                        this.first_name = "";
-                        this.last_name = "";
-                        this.email = "";
-                        this.birth_date = "";
-                        this.id_number = "";
-                        this.phone_number = "";
-                        this.city = "";
-                        this.address = "";
-                        this.country = "";
-                        this.hideLoader();
-                        this.closeModal();
-                        this.$store.commit('reloadingPage');
-                    })
+                    this.patient = "";
+                    this.visitDoctor = false;
+                    this.staff = "";
+                    this.visit_date = "";
+                    this.visit_notes = "";
+                    this.hideLoader();
+                    this.closeModal();
+                    this.$store.commit('reloadingPage');
                 })
             }
         },
-        searchPatients(){
+        searchPatientHistory(){
             this.isSearching = true;
             this.showNextBtn = false;
             this.showPreviousBtn = false;
             let formData = new FormData();
-            formData.append('first_name', this.first_name_search);
-            formData.append('last_name', this.last_name_search);
-            formData.append('phone_number', this.phone_number_search);
-            formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('patient', this.patient_search);
+            formData.append('staff', this.staff_search);
+            formData.append('patient_code', this.patient_code_search);
             formData.append('hospital_id', this.hospitalID);  
-            if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
-                formData.append('birth_date', this.formatDate(this.birth_date_search));
+            if((this.date_from_search !=null) && (typeof(this.date_from_search) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from_search));
             }else{
-                this.birth_date_search = "";
-                formData.append('birth_date', this.birth_date_search);
-            }               
+                this.date_from_search = "";
+                formData.append('date_from', this.date_from_search);
+            }  
+            if((this.date_to_search !=null) && (typeof(this.date_to_search) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to_search));
+            }else{
+                this.date_to_search = "";
+                formData.append('date_to', this.date_to_search);
+            }             
+            
 
             this.axios
-            .post(`api/v1/patients-search/?page=${this.currentPage}`,formData)
+            .post(`api/v1/patients-history-search/?page=${this.currentPage}`,formData)
             .then((response)=>{
-                this.patientList = response.data.results;
-                this.patientResults = response.data;
-                this.patientArrLen = this.patientList.length;
-                this.patientCount = this.patientResults.count;
-                this.pageCount = Math.ceil(this.patientCount / 10);
+                console.log(response.data);
+                this.patientHistoryList = response.data.results;
+                this.patientHistoryResults = response.data;
+                this.patientHistArrLen = this.patientHistoryList.length;
+                this.patientHistCount = this.patientHistoryResults.count;
+                this.pageCount = Math.ceil(this.patientHistCount / 10);
 
                 if(response.data.next){
                     this.showNextBtn = true;
@@ -539,95 +545,71 @@ export default{
             })
             
         },
-        editPatient(){
-            this.contact_personID = "";
+        editPatientHistory(){
             this.isEditing = true;
-            let selectedPatient = arguments[0];
-            this.patientID = this.patientList[selectedPatient].patient_id;
-            let formData = {
-                hospital: this.hospitalID,
-                patient: this.patientID
+            let selectedPatientHistory = arguments[0];
+            this.visitDoctor = this.patientHistoryList[selectedPatientHistory].staff_is_doctor;
+            this.patientHistoryID = this.patientHistoryList[selectedPatientHistory].patient_history_id;
+            this.patientID = this.patientHistoryList[selectedPatientHistory].patient_id;
+            this.visit_date = this.patientHistoryList[selectedPatientHistory].date;
+            this.visit_notes = this.patientHistoryList[selectedPatientHistory].notes;
+            if(this.visitDoctor){
+                this.doctorID = this.patientHistoryList[selectedPatientHistory].staff_id;
+                this.doctorEditing = this.patientHistoryList[selectedPatientHistory].staff_name;
+                this.staffEditing = "";
             }
-            this.axios
-            .post("api/v1/get-patients/", formData)
-            .then((response)=>{
-                this.patientDetails = response.data;
-                this.first_name = this.patientDetails.first_name;
-                this.last_name = this.patientDetails.last_name;
-                this.email = this.patientDetails.email;
-                this.id_number = this.patientDetails.id_number;
-                this.birth_date = this.patientDetails.birth_date;
-                this.city = this.patientDetails.city;
-                this.phone_number = this.patientDetails.phone_number;
-                this.address = this.patientDetails.address;
-                this.country = this.patientDetails.country;
-                this.contact_personID = this.patientDetails.emergency_contact_person;
-            })
-            .catch((error)=>{
-                console.log(error.mesage);
-            })
-            .finally(()=>{
-                if(this.contact_personID){
-                    this.isAddingContactPerson = false;
-                    let formData = {
-                        contact_person: this.contact_personID,
-                        hospital: this.hospitalID
-                    }
-                    this.axios
-                    .post("api/v1/get-emergency-contact-persons/", formData)
-                    .then((response)=>{
-                        this.contact_person_first_name = response.data.first_name;
-                        this.contact_person_last_name = response.data.last_name;
-                        this.contact_person_email = response.data.email;
-                        this.contact_person_phone_number = response.data.phone_number;
-                    })
-                    .catch((error)=>{
-                        console.log(error.message);
-                    })
-                }else{
-                    this.isAddingContactPerson = true;
-                    this.contact_person_first_name = "";
-                    this.contact_person_last_name = "";
-                    this.contact_person_email = "";
-                    this.contact_person_phone_number = "";
-                }
-                
-                this.scrollToTop();
-                this.showModal();
-            })
+            else{
+                this.staffID = this.patientHistoryList[selectedPatientHistory].staff_id;
+                this.staffEditing = this.patientHistoryList[selectedPatientHistory].staff_name;
+                this.doctorEditing = "";
+            }
+            this.patientEditing = this.patientHistoryList[selectedPatientHistory].patient_name;
+            
+            this.scrollToTop();
+            this.showModal();
             
         },
-        updatePatient(){
+        updatePatientHistory(){
             this.showLoader();
-            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === ''
-                 || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
-                 || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
-                    this.$toast.error("Please Enter Patient Details",{
+            if(this.patientEditing === '' || this.visit_date === '' || this.visit_notes === '' || (this.staffEditing === undefined && this.doctorEditing === '')
+            || (this.staffEditing === '' && this.doctorEditing === undefined) || (this.staffEditing === undefined && this.doctorEditing === undefined)){
+                    this.$toast.error("Please Enter Patient Visit Details",{
                         duration:3000,
                         dismissible: true
                     })
                     this.hideLoader();
             }
-            else if(this.contact_personID){
+            else if(!this.medicalFeeCharge || this.fees[0].type === null){
                 let formData = new FormData();
-                formData.append('patient',this.patientDetails.patient_id);
-                formData.append('first_name',this.first_name);
-                formData.append('last_name',this.last_name);
-                formData.append('birth_date',this.formatDate(this.birth_date));
-                formData.append('phone_number',this.phone_number);
-                formData.append('email',this.email);
-                formData.append('hospital',this.hospitalID);
-                formData.append('city',this.city);
-                formData.append('address',this.address);
-                formData.append('id_number',this.id_number);
-                formData.append('country',this.country);
-                formData.append('emergency_contact_person',this.contact_personID);
+                formData.append('patient_history', this.patientHistoryID);
+                formData.append('patient', this.patientID);
+                formData.append('date', this.formatDate(this.visit_date));
+                formData.append('notes', this.visit_notes);
+                formData.append('hospital', this.hospitalID);
+                if(this.doctUpdateID != 0 && (this.stfUpdateID == 0 && this.staffEditing =="")){
+                    this.visitDoctor = true;
+                    formData.append('staff', this.doctUpdateID);
+                    formData.append('is_doctor', this.visitDoctor);
+                }else if(this.doctUpdateID == 0 && this.doctorEditing != "" && (this.stfUpdateID == 0 && this.staffEditing =="")){
+                    this.visitDoctor = true;
+                    formData.append('staff', this.doctorID);
+                    formData.append('is_doctor', this.visitDoctor);
+                }
+                if(this.stfUpdateID != 0 && (this.doctUpdateID == 0 && this.doctorEditing =="")){
+                    this.visitDoctor = false;
+                    formData.append('staff', this.stfUpdateID);
+                    formData.append('is_doctor', this.visitDoctor);
+                }else if(this.stfUpdateID == 0 && this.staffEditing != "" && (this.doctUpdateID == 0 && this.doctorEditing =="")){
+                    this.visitDoctor = false;
+                    formData.append('staff', this.staffID);
+                    formData.append('is_doctor', this.visitDoctor);
+                }
 
                 this.axios
-                .put("api/v1/update-patient/", formData)
+                .put("api/v1/update-patient-history/", formData)
                 .then((response)=>{
-                    this.$toast.success("Patient Succesfully Updated",{
-                        duration:5000,
+                    this.$toast.success("Patient Visit Updated Succesfully",{
+                        duration:3000,
                         dismissible: true
                     })
                 })
@@ -635,141 +617,33 @@ export default{
                     console.log(error.message);
                 })
                 .finally(()=>{
-                    let formData = {
-                        contact_person: this.contact_personID,
-                        hospital: this.hospitalID,
-                        first_name: this.contact_person_first_name,
-                        last_name: this.contact_person_last_name,
-                        email: this.contact_person_email,
-                        phone_number: this.contact_person_phone_number,
-                    }
-                    this.axios
-                    .put("api/v1/update-emergency-contact-person/", formData)
-                    .then((response)=>{
-
-                    })
-                    .catch((error)=>{
-                        console.log(error.message);
-                    })
-                    .finally(()=>{
-                        this.first_name = "";
-                        this.last_name = "";
-                        this.email = "";
-                        this.birth_date = "";
-                        this.id_number = "";
-                        this.phone_number = "";
-                        this.city = "";
-                        this.address = "";
-                        this.country = "";
-                        this.contact_person_first_name = "";
-                        this.contact_person_last_name = "";
-                        this.contact_person_email = "";
-                        this.contact_person_phone_number = "";
-                        this.contact_personID = "";
-                        this.hideLoader();
-                        this.closeModal();
-                        this.$store.commit('reloadingPage');
-                    })
-                    
-                })
-            }else if(this.contact_personID == null){
-                let formData = {
-                    hospital: this.hospitalID,
-                    first_name: this.contact_person_first_name,
-                    last_name: this.contact_person_last_name,
-                    email: this.contact_person_email,
-                    phone_number: this.contact_person_phone_number,
-                }
-                this.axios
-                .post("api/v1/create-emergency-contact-person/", formData)
-                .then((response)=>{
-                    this.emergencyContactDetails = response.data;
-                    this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                })
-                .finally(()=>{
-                    let formData = new FormData();
-                    formData.append('patient',this.patientDetails.patient_id);
-                    formData.append('first_name',this.first_name);
-                    formData.append('last_name',this.last_name);
-                    formData.append('birth_date',this.formatDate(this.birth_date));
-                    formData.append('phone_number',this.phone_number);
-                    formData.append('email',this.email);
-                    formData.append('hospital',this.hospitalID);
-                    formData.append('city',this.city);
-                    formData.append('address',this.address);
-                    formData.append('id_number',this.id_number);
-                    formData.append('country',this.country);
-                    formData.append('emergency_contact_person', this.emergencyContactID);
-
-                    this.axios
-                    .put("api/v1/update-patient/", formData)
-                    .then((response)=>{
-                        this.$toast.success("Patient Succesfully Updated",{
-                            duration:5000,
-                            dismissible: true
-                        })
-                    })
-                    .catch((error)=>{
-                        console.log(error.message);
-                    })
-                    .finally(()=>{
-                        this.first_name = "";
-                        this.last_name = "";
-                        this.email = "";
-                        this.birth_date = "";
-                        this.id_number = "";
-                        this.phone_number = "";
-                        this.city = "";
-                        this.address = "";
-                        this.country = "";
-                        this.contact_person_first_name = "";
-                        this.contact_person_last_name = "";
-                        this.contact_person_email = "";
-                        this.contact_person_phone_number = "";
-                        this.contact_personID = "";
-                        this.isAddingContactPerson = false;
-                        this.isEditing = false;
-                        this.hideLoader();
-                        this.closeModal();
-                        this.$store.commit('reloadingPage');
-                    })
-                })
-            }
-            else{
-                this.hideLoader();
-                this.$toast.error("Error Updating Patient",{
-                    duration:3000,
-                    dismissible: true
+                    this.hideLoader();
                 })
             }
         },
-        removePatient() {
+        removePatientHistory() {
             let selectedItem = arguments[0];
-            this.patientID = this.patientList[selectedItem].patient_id;
-            this.contact_personID = this.patientList[selectedItem].emergency_contact_person_id;
-            this.patientName = this.patientList[selectedItem].first_name + " " +this.patientList[selectedItem].last_name ;
+            this.patientHistoryID = this.patientHistoryList[selectedItem].patient_history_id;
+            this.patientName = this.patientHistoryList[selectedItem].patient_name;
             this.$swal({
                 title: "Are you sure?",
-                text: `Do you wish to delete ${this.patientName}?`,
+                text: `Do you wish to delete ${this.patientName}'s Vist?`,
                 type: 'warning',
                 showCloseButton: true,
                 showCancelButton: true,
-                confirmButtonText: 'Yes Delete Patient!',
+                confirmButtonText: 'Yes Delete Visit!',
                 cancelButtonText: 'Cancel!',
                 showLoaderOnConfirm: true,
             }).then((result) => {
                 if (result.value) {
                     let formData = {
                         hospital: this.hospitalID,
-                        patient: this.patientID
+                        patient_history: this.patientHistoryID
                     }
                     this.axios
-                    .post("api/v1/delete-patient/", formData)
+                    .post("api/v1/delete-patient-history/", formData)
                     .then((response)=>{
-                        this.$swal("Poof! Patient removed succesfully!", {
+                        this.$swal("Poof! Patient Visit removed succesfully!", {
                             icon: "success",
                         });
                     })
@@ -777,59 +651,35 @@ export default{
                         console.log(error.message);
                     })
                     .finally(()=>{
-                        let formData = {
-                            contact_person: this.contact_personID,
-                            hospital: this.hospitalID
-                        }
-                        this.axios
-                        .post("api/v1/delete-emergency-contact-person/", formData)
-                        .then((response)=>{
-
-                        })
-                        .catch((error)=>{
-                            console.log(error.message);
-                        })
-                        .finally(()=>{
-                            this.$store.commit('reloadingPage');
-                        })
-                        
+                        this.$store.commit('reloadingPage');   
                     })
                 
                 } else {
-                    this.$swal(`${this.patientName} has not been deleted!`);
+                    this.$swal(`${this.patientName}'s Visit has not been deleted!`);
                 }
             });
         },
         showModal(){
             this.scrollToTop();
             if(this.isEditing == false){
-                this.first_name = "";
-                this.last_name = "";
-                this.email = "";
-                this.birth_date = "";
-                this.id_number = "";
-                this.phone_number = "";
-                this.city = "";
-                this.address = "";
-                this.country = "";
-                this.contact_person_email = "";
-                this.contact_person_first_name = "";
-                this.contact_person_last_name = "";
-                this.contact_person_phone_number = "";
+                this.patient = "";
+                this.doctor = "";
+                this.visit_date = new Date();
+                this.visit_notes = "";
+                this.staff = "";
             }
             this.patientModalVisible = !this.patientModalVisible;
+            this.fetchDoctors();
+            this.fetchStaff();
+            this.fetchPatients();
         },
-        showImportModal(){
-            this.showOptions = false;
-            this.importModalVisible = ! this.importModalVisible;
-            this.scrollToTop();
+        showChargeFeesOption(){
+            this.medicalFeeCharge = !this.medicalFeeCharge;
+            this.fetchFees();
         },
         closeModal(){
             this.patientModalVisible = false;
             this.isEditing = false;
-        },
-        closeImportModal(){
-            this.importModalVisible = false;
         },
         loadNext(){
             if(this.currentPage >= this.pageCount){
@@ -838,7 +688,7 @@ export default{
                 this.currentPage += 1;
             }
             
-            this.searchPatients();
+            this.searchPatientHistory();
             this.scrollToTop();           
         },
         loadPrev(){
@@ -848,46 +698,50 @@ export default{
                 this.currentPage -= 1;
             }
             
-            this.searchPatients();
+            this.searchPatientHistory();
             this.scrollToTop();
         },
         firstPage(){
             this.currentPage = 1;
-            this.searchPatients();
+            this.searchPatientHistory();
             this.scrollToTop();
         },
         lastPage(){
             this.currentPage = this.pageCount;
-            this.searchPatients();
+            this.searchPatientHistory();
             this.scrollToTop();
         },
         showDropdown(){
             this.showOptions = !this.showOptions;
         },
-        exportPatientsPDF(){
+        exportPatientsHistoryPDF(){
             this.showLoader();
             let formData = new FormData();
-            formData.append('first_name', this.first_name_search);
-            formData.append('last_name', this.last_name_search);
-            formData.append('phone_number', this.phone_number_search);
-            formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('patient', this.patient_search);
+            formData.append('staff', this.staff_search);
+            formData.append('patient_code', this.patient_code_search);
             formData.append('hospital_id', this.hospitalID);  
-            if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
-                formData.append('birth_date', this.formatDate(this.birth_date_search));
+            if((this.date_from_search !=null) && (typeof(this.date_from_search) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from_search));
             }else{
-                this.birth_date_search = "";
-                formData.append('birth_date', this.birth_date_search);
+                this.date_from_search = "";
+                formData.append('date_from', this.date_from_search);
+            }  
+            if((this.date_to_search !=null) && (typeof(this.date_to_search) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to_search));
+            }else{
+                this.date_to_search = "";
+                formData.append('date_to', this.date_to_search);
             } 
 
             this.axios
-            .post("api/v1/export-patients-pdf/", formData, { responseType: 'blob' })
+            .post("api/v1/export-patients-history-pdf/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'Patients.pdf');
+                  link.setAttribute('download', 'Patients Visits.pdf');
                   document.body.appendChild(link);
                   link.click();
                 }
@@ -899,30 +753,34 @@ export default{
                 this.hideLoader();
             })
         },
-        exportPatientsExcel(){
+        exportPatientsHistoryExcel(){
             this.showLoader();
             let formData = new FormData();
-            formData.append('first_name', this.first_name_search);
-            formData.append('last_name', this.last_name_search);
-            formData.append('phone_number', this.phone_number_search);
-            formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('patient', this.patient_search);
+            formData.append('staff', this.staff_search);
+            formData.append('patient_code', this.patient_code_search);
             formData.append('hospital_id', this.hospitalID);  
-            if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
-                formData.append('birth_date', this.formatDate(this.birth_date_search));
+            if((this.date_from_search !=null) && (typeof(this.date_from_search) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from_search));
             }else{
-                this.birth_date_search = "";
-                formData.append('birth_date', this.birth_date_search);
+                this.date_from_search = "";
+                formData.append('date_from', this.date_from_search);
+            }  
+            if((this.date_to_search !=null) && (typeof(this.date_to_search) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to_search));
+            }else{
+                this.date_to_search = "";
+                formData.append('date_to', this.date_to_search);
             }
 
             this.axios
-            .post("api/v1/export-patients-excel/", formData, { responseType: 'blob' })
+            .post("api/v1/export-patients-history-excel/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'Patients.xls');
+                  link.setAttribute('download', 'Patients Visits.xls');
                   document.body.appendChild(link);
                   link.click();
                 }
@@ -934,30 +792,34 @@ export default{
                 this.hideLoader();
             })
         },
-        exportPatientsCSV(){
+        exportPatientsHistoryCSV(){
             this.showLoader();
             let formData = new FormData();
-            formData.append('first_name', this.first_name_search);
-            formData.append('last_name', this.last_name_search);
-            formData.append('phone_number', this.phone_number_search);
-            formData.append('id_number', this.id_number_search);
-            formData.append('city', this.city_search);
+            formData.append('patient', this.patient_search);
+            formData.append('staff', this.staff_search);
+            formData.append('patient_code', this.patient_code_search);
             formData.append('hospital_id', this.hospitalID);  
-            if((this.birth_date_search !=null) && (typeof(this.birth_date_search) == "object")){
-                formData.append('birth_date', this.formatDate(this.birth_date_search));
+            if((this.date_from_search !=null) && (typeof(this.date_from_search) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from_search));
             }else{
-                this.birth_date_search = "";
-                formData.append('birth_date', this.birth_date_search);
+                this.date_from_search = "";
+                formData.append('date_from', this.date_from_search);
+            }  
+            if((this.date_to_search !=null) && (typeof(this.date_to_search) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to_search));
+            }else{
+                this.date_to_search = "";
+                formData.append('date_to', this.date_to_search);
             }
 
             this.axios
-            .post("api/v1/export-patients-csv/", formData, { responseType: 'blob' })
+            .post("api/v1/export-patients-history-csv/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'Patients.csv');
+                  link.setAttribute('download', 'Patients Visits.csv');
                   document.body.appendChild(link);
                   link.click();
                 }
@@ -969,77 +831,10 @@ export default{
                 this.hideLoader();
             })
         },
-        displayExcelData(){
-            this.showLoader();
-            if(this.excel_file == ""){
-                this.$toast.error("No File Selected",{
-                    duration: 3000,
-                    dismissible: true
-                })
-                this.hideLoader();
-            }else{
-                let formData = new FormData()
-                formData.append("patients_excel", this.excel_file) 
-
-                this.axios
-                .post("api/v1/display-patients-import-excel/", formData)
-                .then((response)=>{
-                    this.excelPatList = response.data.patients;
-                    console.log(this.excelPatList);
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                })
-                .finally(()=>{
-                    this.hideLoader();
-                })
-            }
-            
-        },
-        importPatientsExcel(){
-            this.showLoader();
-            if(!this.excelPatList.length){
-                this.$toast.error("Please Import Excel Template",{
-                    duration: 3000,
-                    dismissible: true
-                })
-                this.hideLoader();
-            }
-            else{
-                let formData = new FormData()
-                formData.append("patients_excel", this.excel_file)
-                formData.append("hospital_id", this.hospitalID)
-
-                this.axios
-                .post("api/v1/import-patients-excel/", formData)
-                .then((response)=>{
-                   this.$toast.success("Patients Imported Succesfully",{
-                        duration: 3000,
-                        dismissible: true
-                   })
-                })
-                .catch((error)=>{
-                    this.$toast.error("Import Error",{
-                        duration: 3000,
-                        dismissible: true
-                   })
-                    console.log(error.message);
-                })
-                .finally(()=>{
-                    this.hideLoader();
-                    this.excelPatList = [];
-                    this.excel_file = "";
-                    this.$router.push("/hms/patients")
-                    this.$store.commit('reloadingPage')
-                })
-            }
-                
-        },
-
     },
     mounted(){
         this.hospitalID = localStorage.getItem("company_id")
-        this.searchPatients();
+        this.searchPatientHistory();
     }
 }
 </script>
@@ -1081,5 +876,11 @@ em{
 }
 .import-form{
     min-width: 50vw;
+}
+.fees-table{
+    min-height: 20vh;
+    max-height: 20vh;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 </style>

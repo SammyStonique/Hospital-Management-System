@@ -116,3 +116,57 @@ def contactPersonSearch(request):
     page = paginator.paginate_queryset(contactPersonList, request)
 
     return  paginator.get_paginated_response(page)
+
+
+@api_view(['POST'])
+@csrf_exempt
+def patientsHistorySearch(request):
+    patientHistoryList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    patient = data['patient']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    staff = data['staff']
+    patient_code = data['patient_code']
+    hospital_id = data['hospital_id']
+
+    hospital_uuid = uuid.UUID(hospital_id)
+    hospital_patients_history = PatientHistory.objects.filter(hospital=hospital_uuid)
+
+    patients_history = hospital_patients_history.filter((Q(patient__first_name__icontains=patient) | Q(patient__last_name__icontains=patient))
+                                         & Q(patient__patient_code__icontains=patient_code))
+    
+    if date_from:
+        patients_history = patients_history.filter(date__gte=date_from) 
+    
+    if date_to:
+        patients_history = patients_history.filter(date__lte=date_to) 
+
+    if staff:
+        patients_history = patients_history.filter((Q(staff__first_name__icontains=staff) | Q(staff__last_name__icontains=staff)))
+
+
+    for hist in patients_history:
+        obj = {
+            "patient_history_id": hist.patient_history_id,
+            "patient_code": hist.patient.patient_code,
+            "patient_name": hist.patient.first_name+ ' '+hist.patient.last_name,
+            "patient_id": hist.patient.patient_id,
+            "date": hist.date.strftime("%d %b, %Y"),
+            "notes": hist.notes,
+            "staff_name": hist.staff.first_name+ ' '+hist.staff.last_name,
+            "staff_id": hist.staff.user_id,
+            "staff_profile": hist.staff.profile,
+            "staff_is_doctor": hist.is_doctor
+            
+        }
+        patientHistoryList.append(obj)
+
+
+    pagination_class = BasePagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(patientHistoryList, request)
+
+    return  paginator.get_paginated_response(page)

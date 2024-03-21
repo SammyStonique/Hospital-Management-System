@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Patients Visits List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+                <th>Date</th>
+                <th>Code</th>
+                <th>Patient</th>
+                <th>ID Number</th>
+                <th>Staff To Visit</th>
+                <th>Notes</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for hist in patients_visits %}
+			<tr>
+				<td></td>
+				<td>{{ hist.date }}</td>
+                <td>{{ hist.patient_code }}</td>
+                <td>{{ hist.patient_name }}</td>
+                <td>{{ hist.patient_id_number }}</td>
+                <td>{{ hist.staff_name }}</td>
+                <td>{{ hist.notes }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>

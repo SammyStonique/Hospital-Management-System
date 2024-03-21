@@ -126,6 +126,63 @@
                                 <label for="">Address<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="address">
                             </div>
+                            <div class="basis-1/2 mr-6" v-if="!isEditing">
+                                <label for=""><em></em></label><br />
+                                <input type="checkbox" name="" id="" class="rounded border border-gray-600 text-lg pl-2 mr-3" @click="showVisitCreationOption">
+                                <label for="">Create Visit<em></em></label>
+                            </div>
+                        </div>
+                        <div v-if="visit_creation">
+                            <div class="border-b border-gray-400 pb-3">
+                                <p class="font-bold">Visitation Details</p>
+                            </div>
+                            <div class="flex mb-6 mt-6">
+                                <div class="basis-1/2 mr-6">
+                                    <label for="">Doctor<em>*</em></label><br />
+                                    <select name="doctor" ref="doctorSelect" id="selectDoctor" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDoctorID" onfocus="this.selectedIndex = -1;" v-model="doctor">
+                                        <option value="" disabled selected>---Select Doctor---</option> 
+                                        <option v-for="doct in doctorsArray">Dr. {{doct.first_name}}  {{doct.last_name}}</option> 
+                                    </select>
+                                </div>
+                                <div class="basis-1/2">
+                                    <label for="">Staff<em>*</em></label><br />
+                                    <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="staff">
+                                        <option value="" disabled selected>---Select Staff---</option> 
+                                        <option v-for="stf in staffArray">{{stf.first_name}}  {{stf.last_name}} - #{{ stf.identification_no }}</option> 
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8 mb-8 w-2/3 fees-table">
+                                <table class="min-w-full bg-white"> 
+                                    <thead class="bg-gray-800 text-white static">
+                                        <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
+                                            <th class="text-left px-2 row-span-4">Fees Charged</th>
+                                            <th class="text-right px-2 row-span-2">Amount</th>
+                                            <th class="text-right px-2"></th>
+                                            <th class="text-right px-2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="">
+                                        <tr v-for="(fee, index) in fees" :key="index">
+        
+                                            <td class="text-left border border-black">
+                                                <select v-model="fee.type" ref="feesSelect" @change="setFeesID" onfocus="this.selectedIndex = -1;" class="bg-white text-left pl-2 px-2 w-full">
+                                                    <option v-for="feeType in feesArray" :key="feeType.fees_id" :value="feeType.fees_id">{{ feeType.fee_name }}</option>
+                                                </select>
+                                            </td>
+                                            <td class="text-left border border-black"><input type="number" class="text-right w-full" v-model="fee.amount" /></td>
+                                            <td class="border border-black">
+                                                <button type="button" @click="removeRow(index)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
+                                            </td>
+                                            <td class="border border-black">
+                                                <button type="button" @click="addRow"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                                            </td>
+                                        </tr>
+                                    
+                                    </tbody>
+                                </table>   
+                            </div>
+                        
                         </div>
                         <div class="border-b border-gray-400 pb-3">
                             <p class="font-bold">Emergency Contact Details</p>
@@ -139,7 +196,8 @@
                                 <label for="">Last Name<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_last_name" required>
                             </div>
-                        </div><div class="flex mb-6">
+                        </div>
+                        <div class="flex mb-6">
                             <div class="basis-1/2 mr-6">
                                 <label for="">Email<em>*</em></label><br />
                                 <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_email" required>
@@ -351,12 +409,25 @@ export default{
         contact_person_last_name: "",
         contact_person_email: "",
         contact_person_phone_number: "",
+        doctorsArray : [],
+        doctorID: "",
+        staffID: "",
+        feesID: "",
+        feesArray: [],
+        fees_amount: 0,
+        staffArray: [],
         watcherMsg: [],
         eStyle: null, nStyle:null, bWidth: null,
         excelPatList: [],
         excel_file: "",
         filePath: "",
         axiosError: [],
+        visit_creation: false,
+        visitation_fees: "",
+        fees: [
+        {itemIndex:0, type: null, amount: null }
+        ],
+        itemInd: 0
     }
   },
     components: {
@@ -378,7 +449,23 @@ export default{
             this.validatePhoneNumber(value)
         },
     },
+    computed:{
+        feesAmount(){
+            return this.fees_amount;
+        }
+    },
     methods:{
+        addRow() {
+            this.itemInd += 1;
+            this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
+            console.log("the fees array is ",this.fees);
+        },
+        removeRow(){
+            if(this.fees.length > 1){
+                let selectedFee = arguments[0];
+                this.fees.splice(selectedFee, 1);
+            }
+        },     
         validateEmail(value){  
             if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)){ 
                 this.watcherMsg['email'] = '';
@@ -425,16 +512,91 @@ export default{
         },
         onFileChange(e){
             this.excel_file = e.target.files[0];
-            console.log("The target is ",e.target);
-            console.log(this.excel_file)
             this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
         },
         onFileAdd(item){
             this.excel_file = item.file;
-            console.log("The excel file is ",this.excel_file);
-            console.log("The excel file name is ",this.excel_file.name);
             this.filePath = "C:\\fakepath\\"+ this.excel_file.name; 
             this.displayExcelData();
+        },
+        fetchDoctors(){
+            this.doctorsArray = [];
+            let formData = {
+                hospital: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/get-department-doctors/", formData)
+            .then((response)=>{
+                this.doctorsArray = response.data;
+                
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
+        },
+        fetchFees(){
+            this.feesArray = [];
+            let formData = {
+                hospital: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/get-medical-fees/", formData)
+            .then((response)=>{
+                this.feesArray = response.data;
+                
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
+        },
+        fetchStaff(){
+            this.staffArray = [];
+            let formData = {
+                company: this.hospitalID,
+            }
+            this.axios
+            .post("api/v1/department-staff-list/", formData)
+            .then((response)=>{
+                for(let i=0; i<response.data.length; i++){
+                    if(response.data[i].profile != "Super Admin" && response.data[i].profile != "Patient"&& response.data[i].profile != "Doctor"){
+                        this.staffArray.push(response.data[i]);
+                    }
+                }
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
+        },
+        setDoctorID(){
+            this.doctorID = "";
+            if(this.$refs.doctorSelect.selectedIndex > 0){
+                let selectedDoctor = this.$refs.doctorSelect.selectedIndex - 1;
+                this.doctorID = this.doctorsArray[selectedDoctor].doctor_id;
+            }
+        },
+        setUserID(){
+            this.userID = "";
+            if(this.$refs.userSelect.selectedIndex > 0){
+                this.selectedDep = this.$refs.userSelect.selectedIndex - 1;
+                this.userID = this.staffArray[this.selectedDep].user_id;
+            }
+        },
+        setFeesID(){
+            this.feesID = "";
+            if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
+                let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
+                this.feesID = this.feesArray[selectedFee].fees_id;
+                this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
+            }
         },
         createPatient(){
             this.axiosError = [];
@@ -590,6 +752,7 @@ export default{
             
         },
         editPatient(){
+            this.visit_creation = false;
             this.contact_personID = "";
             this.isEditing = true;
             let selectedPatient = arguments[0];
@@ -888,6 +1051,12 @@ export default{
             this.importModalVisible = ! this.importModalVisible;
             this.scrollToTop();
         },
+        showVisitCreationOption(){
+            this.visit_creation = !this.visit_creation;
+            this.fetchDoctors();
+            this.fetchStaff();
+            this.fetchFees();
+        },
         closeModal(){
             this.patientModalVisible = false;
             this.isEditing = false;
@@ -1146,4 +1315,11 @@ em{
 .import-form{
     min-width: 50vw;
 }
+.fees-table{
+    min-height: 20vh;
+    max-height: 20vh;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+
 </style>
