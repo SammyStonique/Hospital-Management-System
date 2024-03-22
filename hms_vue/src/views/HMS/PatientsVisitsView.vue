@@ -306,7 +306,6 @@ export default{
         addRow() {
             this.itemInd += 1;
             this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
-            console.log("the fees array on add is ",this.fees);
         },
         removeRow(){
             if(this.fees.length > 1){
@@ -315,7 +314,6 @@ export default{
                 
             }else{
                 this.fees = [{itemIndex:0, type: null, amount: null }];
-                console.log("the fees array on remove is ",this.fees);
             }
         },
         formatDate(dateString) {
@@ -489,14 +487,20 @@ export default{
                     console.log(error.message);
                 })
                 .finally(()=>{
-                    this.patient = "";
-                    this.visitDoctor = false;
-                    this.staff = "";
-                    this.visit_date = "";
-                    this.visit_notes = "";
-                    this.hideLoader();
-                    this.closeModal();
-                    this.$store.commit('reloadingPage');
+                    if(this.medicalFeeCharge && this.fee[0].type != null){
+                        let formData = {
+
+                        }
+                    }else{
+                        this.patient = "";
+                        this.visitDoctor = false;
+                        this.staff = "";
+                        this.visit_date = "";
+                        this.visit_notes = "";
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
+                    }
                 })
             }
         },

@@ -505,3 +505,620 @@ def generate_ledgers_csv(request):
     for led in chartOfAccountsList:
         writer.writerow([led['category_name']])
     return response
+
+
+        #JOURNALS VIEWS
+
+    
+class JournalViewSet(viewsets.ModelViewSet):
+    queryset = Journal.objects.all()
+    serializer_class = JournalSerializer
+    pagination_class = BasePagination
+
+class JournalList(generics.ListCreateAPIView):
+    queryset = Journal.objects.all()
+    serializer_class = JournalSerializer
+    pagination_class = DefaultPagination
+
+class JournalDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Journal.objects.all()
+    serializer_class = JournalSerializer
+        
+
+@csrf_exempt
+@api_view(['POST'])
+def createJournal(request):
+    company_id = request.data.get("company")
+    txn_type = request.data.get("txn_type")
+    done_by = request.data.get("done_by")
+
+    if txn_type == 'JNL' and done_by is not None:
+        done_by = request.user.first_name + ' '+ request.user.last_name
+        company_uuid = uuid.UUID(company_id)
+        last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
+
+        if not last_journal_no:
+            print("I'M RUNNING")
+            new_journal_no = "JNL-0001"
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
+        else:
+            print("I'M THE ONE RUNNING")
+            journal_no = last_journal_no.journal_no
+            journal_no_int = int(journal_no.split('JNL-')[-1])
+            new_journal_no_int = journal_no_int + 1
+            new_journal_no = 'JNL-'+ str(new_journal_no_int).zfill(4)
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
+        
+    
+    elif txn_type == 'INV':
+        company_uuid = uuid.UUID(company_id)
+        last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
+
+        if not last_journal_no:
+            return "INV00001"
+        journal_no = last_journal_no.journal_no
+        journal_no_int = int(journal_no.split('INV')[-1])
+        new_journal_no_int = journal_no_int + 1
+        new_journal_no = 'INV'+ str(new_journal_no_int).zfill(5)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        serializer = JournalSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(company=company, journal_no=new_journal_no)
+        else:
+            print(serializer.errors) 
+        
+        return Response(serializer.data)
+    
+    elif txn_type == 'RCPT':
+        company_uuid = uuid.UUID(company_id)
+        last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
+
+        if not last_journal_no:
+            return "RC00001"
+        journal_no = last_journal_no.journal_no
+        journal_no_int = int(journal_no.split('RC')[-1])
+        new_journal_no_int = journal_no_int + 1
+        new_journal_no = 'RC'+ str(new_journal_no_int).zfill(5)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        serializer = JournalSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(company=company, journal_no=new_journal_no)
+        else:
+            print(serializer.errors) 
+        
+        return Response(serializer.data)
+    
+    elif txn_type == 'PMT':
+        company_uuid = uuid.UUID(company_id)
+        last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
+
+        if not last_journal_no:
+            return "PM00001"
+        journal_no = last_journal_no.journal_no
+        journal_no_int = int(journal_no.split('PM')[-1])
+        new_journal_no_int = journal_no_int + 1
+        new_journal_no = 'PM'+ str(new_journal_no_int).zfill(5)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        serializer = JournalSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(company=company, journal_no=new_journal_no)
+        else:
+            print(serializer.errors) 
+        
+        return Response(serializer.data)
+    
+
+
+@csrf_exempt
+@api_view(['POST'])
+def getJournals(request):
+    journal_id = request.data.get("journal")
+    company_id = request.data.get("company")
+    txn_type = request.data.get("txn_type")
+    journal_ledger = request.data.get("journal_ledger")
+
+    if journal_id is not None:
+        company_uuid = uuid.UUID(company_id)
+        journal_uuid = uuid.UUID(journal_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journal = Journal.objects.get(company=company, journal_id=journal_uuid)
+
+        serializer = JournalSerializer(journal)
+        return Response(serializer.data)
+    
+    elif txn_type is not None:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journals = Journal.objects.filter(company=company,txn_type= txn_type)
+
+        serializer = JournalSerializer(journals, many=True)
+        return Response(serializer.data)
+    
+    elif journal_ledger is not None:
+        journal_ledger_uuid = uuid.UUID(journal_ledger)
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        ledger = get_object_or_404(Ledger, ledger_id=journal_ledger_uuid)
+        journals = Journal.objects.filter(company=company,journal_ledger= ledger)
+
+        serializer = JournalSerializer(journals, many=True)
+        return Response(serializer.data)
+
+    else:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journals = Journal.objects.filter(company=company)
+
+        serializer = JournalSerializer(journals, many=True)
+        return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['PUT'])
+def updateJournal(request):
+    journal_id = request.data.get("journal")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    journal_uuid = uuid.UUID(journal_id)
+    journal = Journal.objects.get(company=company_id,journal_id=journal_uuid)
+    
+    serializer = JournalSerializer(journal, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    else:
+        print(serializer.errors) 
+
+    
+    return Response(serializer.data)
+
+@csrf_exempt
+@api_view(['POST'])
+def deleteJournal(request):
+    journal_id = request.data.get("journal")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    journal_uuid = uuid.UUID(journal_id)
+    journal = Journal.objects.get(company=company_id,journal_id=journal_uuid)
+
+    journal.delete() 
+    message = {'msg':"The journal has been succesfully deleted"} 
+    return Response(message)
+
+
+@csrf_exempt   
+def generate_journals_pdf(request):
+    chartOfAccountsList = []
+    data = json.loads(request.body)
+    ledger_code = data['ledger_code']
+    ledger_name = data['ledger_name']
+    financial_statement = data['financial_statement']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_ledgers = Ledger.objects.filter(company=company_uuid)
+
+    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+
+    if financial_statement:
+        ledgers = ledgers.filter(financial_statement = financial_statement)
+
+    for led in ledgers:
+        obj = {
+            "ledger_id": led.ledger_id,
+            "ledger_code": led.ledger_code,
+            "ledger_name": led.ledger_name,
+            "ledger_type": led.ledger_type,
+            "financial_statement": led.financial_statement,
+            "balance": led.balance,
+
+        }
+        chartOfAccountsList.append(obj)
+
+    context = {"ledgerd":chartOfAccountsList}
+
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/templates/financial_accounts_chart_of_accounts')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('ledgerPDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Chart Of Accounts.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/clientCategoryPDF.css")
+
+    path = 'Chart Of Accounts.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.pdf'
+    pdf.close()
+    os.remove("Chart Of Accounts.pdf")  # remove the locally created pdf file.
+    return response
+
+@csrf_exempt
+def generate_journals_excel(request):
+    chartOfAccountsList = []
+    data = json.loads(request.body)
+    ledger_code = data['ledger_code']
+    ledger_name = data['ledger_name']
+    financial_statement = data['financial_statement']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_ledgers = Ledger.objects.filter(company=company_uuid)
+
+    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+
+    if financial_statement:
+        ledgers = ledgers.filter(financial_statement = financial_statement)
+
+    for led in ledgers:
+        obj = {
+            "ledger_id": led.ledger_id,
+            "ledger_code": led.ledger_code,
+            "ledger_name": led.ledger_name,
+            "ledger_type": led.ledger_type,
+            "financial_statement": led.financial_statement,
+            "balance": led.balance,
+
+        }
+        chartOfAccountsList.append(obj)
+
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.xls'
+
+    workbook = xlwt.Workbook()
+
+    worksheet = workbook.add_sheet("Chart Of Accounts")
+
+    row_num = 0
+    columns = ['Client Category Name']
+    style1 = xlwt.easyxf('font:bold 1')
+    for col_num in range(len(columns)):
+        worksheet.write(row_num, col_num, columns[col_num],style=style1)
+
+    for led in chartOfAccountsList:
+        row_num += 1
+        row = [led['category_name']]
+        for col_num in range(len(row)):
+            worksheet.write(row_num, col_num, row[col_num])
+       
+    workbook.save(response)
+    return response
+
+@csrf_exempt
+def generate_journals_csv(request):
+    chartOfAccountsList = []
+    data = json.loads(request.body)
+    ledger_code = data['ledger_code']
+    ledger_name = data['ledger_name']
+    financial_statement = data['financial_statement']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_ledgers = Ledger.objects.filter(company=company_uuid)
+
+    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+
+    if financial_statement:
+        ledgers = ledgers.filter(financial_statement = financial_statement)
+
+    for led in ledgers:
+        obj = {
+            "ledger_id": led.ledger_id,
+            "ledger_code": led.ledger_code,
+            "ledger_name": led.ledger_name,
+            "ledger_type": led.ledger_type,
+            "financial_statement": led.financial_statement,
+            "balance": led.balance,
+
+        }
+        chartOfAccountsList.append(obj)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.csv'
+
+    writer = csv.writer(response)
+    writer.writerow([ 'Client Category Name'])
+
+    for led in chartOfAccountsList:
+        writer.writerow([led['category_name']])
+    return response
+
+
+
+        #JOURNAL ENTRIES VIEWS
+
+    
+class JournalEntryViewSet(viewsets.ModelViewSet):
+    queryset = JournalEntry.objects.all()
+    serializer_class = JournalEntrySerializer
+    pagination_class = BasePagination
+
+class JournalEntryList(generics.ListCreateAPIView):
+    queryset = JournalEntry.objects.all()
+    serializer_class = JournalEntrySerializer
+    pagination_class = DefaultPagination
+
+class JournalEntryDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset = JournalEntry.objects.all()
+    serializer_class = JournalEntrySerializer
+        
+
+@csrf_exempt
+@api_view(['POST'])
+def createJournalEntry(request):
+    company_id = request.data.get("company")
+    journal_id = request.data.get("journal")
+    ledger_id = request.data.get("posting_account")
+    company_uuid = uuid.UUID(company_id)
+    journal_uuid = uuid.UUID(journal_id)
+    ledger_uuid = uuid.UUID(ledger_id)
+    company = get_object_or_404(Company, company_id=company_uuid)
+    journal = get_object_or_404(Journal, journal_id=journal_uuid)
+    ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+    serializer = JournalEntrySerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(company=company, journal=journal, posting_account=ledger)
+
+    else:
+        print(serializer.errors) 
+
+    
+    return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def getJournalEntries(request):
+    journal_entry_id = request.data.get("journal_entry")
+    company_id = request.data.get("company")
+    journal = request.data.get("journal")
+    ledger = request.data.get("posting_account")
+
+    if journal_entry_id is not None:
+        company_uuid = uuid.UUID(company_id)
+        journal_uuid = uuid.UUID(journal)
+        journal_entry_uuid = uuid.UUID(journal_entry_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journal = get_object_or_404(Journal, journal_id=journal_uuid)
+        journal_entry = JournalEntry.objects.get(company=company, journal=journal, journal_entry_id=journal_entry_uuid)
+
+        serializer = JournalEntrySerializer(journal_entry)
+        return Response(serializer.data)
+    
+    elif journal is not None:
+        journal_uuid = uuid.UUID(journal)
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journal = get_object_or_404(Journal, journal_id=journal_uuid)
+        journal_entries = JournalEntry.objects.filter(company=company,journal= journal)
+
+        serializer = JournalEntrySerializer(journal_entries, many=True)
+        return Response(serializer.data)
+
+    elif ledger is not None:
+        ledger_uuid = uuid.UUID(ledger)
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+        journal_entries = JournalEntry.objects.filter(company=company,posting_account= ledger)
+
+        serializer = JournalEntrySerializer(journal_entries, many=True)
+        return Response(serializer.data)
+    
+    else:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journal_entries = JournalEntry.objects.filter(company=company)
+
+        serializer = JournalEntrySerializer(journal_entries, many=True)
+        return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(['PUT'])
+def updateJournalEntry(request):
+    journal_entry_id = request.data.get("journal_entry")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    journal_entry_uuid = uuid.UUID(journal_entry_id)
+    journal_entry = JournalEntry.objects.get(company=company_id,journal_entry_id=journal_entry_uuid)
+    
+    serializer = JournalEntrySerializer(journal_entry, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    else:
+        print(serializer.errors) 
+
+    
+    return Response(serializer.data)
+
+@csrf_exempt
+@api_view(['POST'])
+def deleteJournalEntry(request):
+    journal_entry_id = request.data.get("journal_entry")
+    company = request.data.get("company")
+    company_uuid = uuid.UUID(company)
+    company_id = get_object_or_404(Company, company_id=company_uuid)
+    journal_entry_uuid = uuid.UUID(journal_entry_id)
+    journal_entry = JournalEntry.objects.get(company=company_id,journal_entry_id=journal_entry_uuid)
+
+    journal_entry.delete() 
+    message = {'msg':"The journal_entry has been succesfully deleted"} 
+    return Response(message)
+
+
+@csrf_exempt   
+def generate_journal_entries_pdf(request):
+    chartOfAccountsList = []
+    data = json.loads(request.body)
+    ledger_code = data['ledger_code']
+    ledger_name = data['ledger_name']
+    financial_statement = data['financial_statement']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_ledgers = Ledger.objects.filter(company=company_uuid)
+
+    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+
+    if financial_statement:
+        ledgers = ledgers.filter(financial_statement = financial_statement)
+
+    for led in ledgers:
+        obj = {
+            "ledger_id": led.ledger_id,
+            "ledger_code": led.ledger_code,
+            "ledger_name": led.ledger_name,
+            "ledger_type": led.ledger_type,
+            "financial_statement": led.financial_statement,
+            "balance": led.balance,
+
+        }
+        chartOfAccountsList.append(obj)
+
+    context = {"ledgerd":chartOfAccountsList}
+
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/templates/financial_accounts_chart_of_accounts')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('ledgerPDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Chart Of Accounts.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/clientCategoryPDF.css")
+
+    path = 'Chart Of Accounts.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.pdf'
+    pdf.close()
+    os.remove("Chart Of Accounts.pdf")  # remove the locally created pdf file.
+    return response
+
+@csrf_exempt
+def generate_journal_entries_excel(request):
+    chartOfAccountsList = []
+    data = json.loads(request.body)
+    ledger_code = data['ledger_code']
+    ledger_name = data['ledger_name']
+    financial_statement = data['financial_statement']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_ledgers = Ledger.objects.filter(company=company_uuid)
+
+    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+
+    if financial_statement:
+        ledgers = ledgers.filter(financial_statement = financial_statement)
+
+    for led in ledgers:
+        obj = {
+            "ledger_id": led.ledger_id,
+            "ledger_code": led.ledger_code,
+            "ledger_name": led.ledger_name,
+            "ledger_type": led.ledger_type,
+            "financial_statement": led.financial_statement,
+            "balance": led.balance,
+
+        }
+        chartOfAccountsList.append(obj)
+
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.xls'
+
+    workbook = xlwt.Workbook()
+
+    worksheet = workbook.add_sheet("Chart Of Accounts")
+
+    row_num = 0
+    columns = ['Client Category Name']
+    style1 = xlwt.easyxf('font:bold 1')
+    for col_num in range(len(columns)):
+        worksheet.write(row_num, col_num, columns[col_num],style=style1)
+
+    for led in chartOfAccountsList:
+        row_num += 1
+        row = [led['category_name']]
+        for col_num in range(len(row)):
+            worksheet.write(row_num, col_num, row[col_num])
+       
+    workbook.save(response)
+    return response
+
+@csrf_exempt
+def generate_journal_entries_csv(request):
+    chartOfAccountsList = []
+    data = json.loads(request.body)
+    ledger_code = data['ledger_code']
+    ledger_name = data['ledger_name']
+    financial_statement = data['financial_statement']
+    company_id = data['company_id']
+
+    company_uuid = uuid.UUID(company_id)
+    company_ledgers = Ledger.objects.filter(company=company_uuid)
+
+    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+
+    if financial_statement:
+        ledgers = ledgers.filter(financial_statement = financial_statement)
+
+    for led in ledgers:
+        obj = {
+            "ledger_id": led.ledger_id,
+            "ledger_code": led.ledger_code,
+            "ledger_name": led.ledger_name,
+            "ledger_type": led.ledger_type,
+            "financial_statement": led.financial_statement,
+            "balance": led.balance,
+
+        }
+        chartOfAccountsList.append(obj)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.csv'
+
+    writer = csv.writer(response)
+    writer.writerow([ 'Client Category Name'])
+
+    for led in chartOfAccountsList:
+        writer.writerow([led['category_name']])
+    return response
+

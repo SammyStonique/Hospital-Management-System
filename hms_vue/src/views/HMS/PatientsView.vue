@@ -458,12 +458,14 @@ export default{
         addRow() {
             this.itemInd += 1;
             this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
-            console.log("the fees array is ",this.fees);
         },
         removeRow(){
             if(this.fees.length > 1){
                 let selectedFee = arguments[0];
                 this.fees.splice(selectedFee, 1);
+                
+            }else{
+                this.fees = [{itemIndex:0, type: null, amount: null }];
             }
         },     
         validateEmail(value){  

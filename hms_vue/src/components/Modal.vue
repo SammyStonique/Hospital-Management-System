@@ -51,8 +51,8 @@
     max-width: 100%;
     height: fit-content;
     margin-top: 20px;
-    margin-left: 140px;
-    margin-right: 100px;
+    margin-left: 100px;
+    margin-right: 60px;
     margin-bottom: 100px; 
     padding-top: 30px;
     padding-bottom: 30px;

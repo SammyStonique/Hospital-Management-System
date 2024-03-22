@@ -23,7 +23,7 @@ import MyAccountView from '../views/HMS/MyAccountView.vue'
 import FADashboardView from '../views/FA/FADashboardView.vue'
 import ChartOfAccountsView from '../views/FA/ChartOfAccountsView.vue'
 import ClientCategoryView from '../views/FA/ClientCategoryView.vue'
-
+import JournalsView from '../views/FA/JournalsView.vue'
 
 const routes = [
   {
@@ -176,6 +176,14 @@ const routes = [
     path: '/fa/client-categories',
     name: 'fa-client-categories',
     component: ClientCategoryView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/fa/journals',
+    name: 'fa-journals',
+    component: JournalsView,
     meta:{
       requireLogin: true
     }

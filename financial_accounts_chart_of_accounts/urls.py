@@ -1,7 +1,6 @@
 from django.urls import path,include
 from . import views
-from .filters import clientCategorySearch, chartOfAccountsSearch
-
+from .filters import *
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -30,4 +29,24 @@ urlpatterns = [
     path("export-ledgers-pdf/", views.generate_ledgers_pdf, name="export-ledgers-pdf"),
     path("export-ledgers-excel/", views.generate_ledgers_excel, name="export-ledgers-excel"),
     path("export-ledgers-csv/", views.generate_ledgers_csv, name="export-ledgers-csv"),
+    path("create-journal/", views.createJournal, name="create-journal"),
+    path("update-journal/", views.updateJournal, name="update-journal"),
+    path("fetch-journals/", views.getJournals, name="fetch-journals"),
+    path("delete-journal/", views.deleteJournal, name="delete-journal"),
+    path("journal-list/", views.JournalList.as_view()),
+    path("journal-details/<str:pk>/", views.JournalDetails.as_view()),
+    path("journals-search/", journalSearch, name="journals-search"),
+    path("export-journals-pdf/", views.generate_journals_pdf, name="export-journals-pdf"),
+    path("export-journals-excel/", views.generate_journals_excel, name="export-journals-excel"),
+    path("export-journals-csv/", views.generate_journals_csv, name="export-journals-csv"),
+    path("create-journal-entry/", views.createJournalEntry, name="create-journal-entry"),
+    path("update-journal-entry/", views.updateJournalEntry, name="update-journal-entry"),
+    path("fetch-journal-entries/", views.getJournalEntries, name="fetch-journal-entries"),
+    path("delete-journal-entry/", views.deleteJournalEntry, name="delete-journal-entry"),
+    path("journal-entry-list/", views.JournalEntryList.as_view()),
+    path("journal-entry-details/<str:pk>/", views.JournalEntryDetails.as_view()),
+    path("journal-entries-search/", journalEntrySearch, name="journal-entries-search"),
+    path("export-journal-entries-pdf/", views.generate_journal_entries_pdf, name="export-journal-entries-pdf"),
+    path("export-journal-entries-excel/", views.generate_journal_entries_excel, name="export-journal-entries-excel"),
+    path("export-journal-entries-csv/", views.generate_journal_entries_csv, name="export-journal-entries-csv"),
 ]

@@ -52,24 +52,49 @@ class Ledger(models.Model):
 class Journal(models.Model):
 
     STATUS = (('','Select Status'),('Open','Open'),('Closed','Closed'))
+    TRANSACTION_TYPE = (('','Select Txn Type'),('BAL','BAL'),('JNL','JNL'),('INV','INV'),('RCPT','RCPT'),('PMT','PMT'))
 
     journal_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    journal_no = models.CharField(max_length=250)
+    journal_no = models.CharField(max_length=250,blank=True, null=True)
+    txn_type = models.CharField(max_length=250, choices=TRANSACTION_TYPE, default='JNL')
     client = models.CharField(max_length=250,blank=True, null=True)
     issue_date = models.DateField()
-    due_date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
     sub_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=250, choices=STATUS, default='Open')
-    journal_ledger = models.ManyToManyField(Ledger)
     description = models.TextField()
+    reference_no = models.CharField(max_length=250,blank=True, null=True)
+    done_by = models.CharField(max_length=250,blank=True, null=True)
     company = models.ForeignKey(Company, related_name="company_journal", on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ['issue_date','journal_no']
+        ordering = ['-journal_no']
 
     def __str__(self):
         return f'{self.journal_no} Journal'
+    
+
+class JournalEntry(models.Model):
+
+    TRANSACTION_TYPE = (('','Select Txn Type'),('BAL','BAL'),('JNL','JNL'),('INV','INV'),('RCPT','RCPT'),('PMT','PMT'))
+
+    journal_entry_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    journal = models.ForeignKey(Journal, related_name="journal_entryy", on_delete=models.CASCADE)
+    date = models.DateField()
+    banking_date = models.DateField(null=True, blank=True)
+    description = models.TextField()
+    txn_type = models.CharField(max_length=250, choices=TRANSACTION_TYPE, default='JNL')
+    posting_account = models.ForeignKey(Ledger, related_name="journal_entry_posting_account", on_delete=models.CASCADE)
+    debit_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    credit_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    company = models.ForeignKey(Company, related_name="company_journal_entry", on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['-date','journal']
+
+    def __str__(self):
+        return f'{self.journal.journal_no} Journal Entry'

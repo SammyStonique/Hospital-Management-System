@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(ClientCategory)
 admin.site.register(Ledger)
 admin.site.register(Journal)
+admin.site.register(JournalEntry)
