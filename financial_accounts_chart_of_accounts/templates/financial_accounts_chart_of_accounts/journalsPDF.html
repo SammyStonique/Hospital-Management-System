@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Journals List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+                <th>Journal No</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Done By</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for jnl in journals %}
+			<tr>
+				<td></td>
+				<td>{{ jnl.journal_no }}</td>
+                <td>{{ jnl.issue_date }}</td>
+                <td>{{ jnl.description }}</td>
+                <td>{{ jnl.total_amount }}</td>
+                <td>{{ jnl.done_by }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>

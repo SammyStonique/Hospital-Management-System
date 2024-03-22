@@ -170,7 +170,7 @@ def generate_client_categories_pdf(request):
     options={"enable-local-file-access": None,
              }
 
-    pdfkit.from_string(output_text, 'Client Category.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/clientCategoryPDF.css")
+    pdfkit.from_string(output_text, 'Client Category.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/journalsPDF.css")
 
     path = 'Client Category.pdf'
     with open(path, 'rb') as pdf:
@@ -390,7 +390,7 @@ def generate_ledgers_pdf(request):
         }
         chartOfAccountsList.append(obj)
 
-    context = {"ledgerd":chartOfAccountsList}
+    context = {"ledgers":chartOfAccountsList}
 
     template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/templates/financial_accounts_chart_of_accounts')
     template_env = jinja2.Environment(loader=template_loader)
@@ -704,106 +704,148 @@ def deleteJournal(request):
     return Response(message)
 
 
-@csrf_exempt   
+@csrf_exempt 
+@api_view(['POST'])  
 def generate_journals_pdf(request):
-    chartOfAccountsList = []
-    data = json.loads(request.body)
-    ledger_code = data['ledger_code']
-    ledger_name = data['ledger_name']
-    financial_statement = data['financial_statement']
+    journalList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    journal_no = data['journal_no']
+    description = data['description']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    min_amount = data['min_amount']
+    max_amount = data['max_amount']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
-    company_ledgers = Ledger.objects.filter(company=company_uuid)
+    company_journals = Journal.objects.filter(company=company_uuid)
 
-    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
 
-    if financial_statement:
-        ledgers = ledgers.filter(financial_statement = financial_statement)
+    if date_from:
+        journals = journals.filter(issue_date__gte=date_from)
 
-    for led in ledgers:
+    if date_to:
+        journals = journals.filter(issue_date__lte=date_to)
+
+    if min_amount:
+        journals = journals.filter(total_amount__gte=min_amount)
+
+    if max_amount:
+        journals = journals.filter(total_amount__lte=max_amount)
+
+    for jnl in journals:
         obj = {
-            "ledger_id": led.ledger_id,
-            "ledger_code": led.ledger_code,
-            "ledger_name": led.ledger_name,
-            "ledger_type": led.ledger_type,
-            "financial_statement": led.financial_statement,
-            "balance": led.balance,
+            "journal_id": jnl.journal_id,
+            "journal_no": jnl.journal_no,
+            "client": jnl.client,
+            "issue_date": jnl.issue_date.strftime("%d %b, %Y"),
+            "due_date": jnl.due_date,
+            "sub_total": jnl.sub_total,
+            "tax": jnl.tax,
+            "total_amount": jnl.total_amount,
+            "total_paid": jnl.total_paid,
+            "due_amount": jnl.due_amount,
+            "status": jnl.status,
+            "description": jnl.description,
+            "done_by": jnl.done_by,
 
         }
-        chartOfAccountsList.append(obj)
+        journalList.append(obj)
 
-    context = {"ledgerd":chartOfAccountsList}
+    context = {"journals":journalList}
 
     template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/templates/financial_accounts_chart_of_accounts')
     template_env = jinja2.Environment(loader=template_loader)
 
-    template  = template_env.get_template('ledgerPDF.html')
+    template  = template_env.get_template('journalsPDF.html')
     output_text = template.render(context)
 
     config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
     options={"enable-local-file-access": None,
              }
 
-    pdfkit.from_string(output_text, 'Chart Of Accounts.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/clientCategoryPDF.css")
+    pdfkit.from_string(output_text, 'Journals.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/journalsPDF.css")
 
-    path = 'Chart Of Accounts.pdf'
+    path = 'Journals.pdf'
     with open(path, 'rb') as pdf:
         contents = pdf.read()
 
     response = HttpResponse(contents, content_type='application/pdf')
 
-    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.pdf'
+    response['Content-Disposition'] = 'attachment; filename=Journals.pdf'
     pdf.close()
-    os.remove("Chart Of Accounts.pdf")  # remove the locally created pdf file.
+    os.remove("Journals.pdf")  # remove the locally created pdf file.
     return response
 
 @csrf_exempt
+@api_view(['POST'])
 def generate_journals_excel(request):
-    chartOfAccountsList = []
-    data = json.loads(request.body)
-    ledger_code = data['ledger_code']
-    ledger_name = data['ledger_name']
-    financial_statement = data['financial_statement']
+    journalList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    journal_no = data['journal_no']
+    description = data['description']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    min_amount = data['min_amount']
+    max_amount = data['max_amount']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
-    company_ledgers = Ledger.objects.filter(company=company_uuid)
+    company_journals = Journal.objects.filter(company=company_uuid)
 
-    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
 
-    if financial_statement:
-        ledgers = ledgers.filter(financial_statement = financial_statement)
+    if date_from:
+        journals = journals.filter(issue_date__gte=date_from)
 
-    for led in ledgers:
+    if date_to:
+        journals = journals.filter(issue_date__lte=date_to)
+
+    if min_amount:
+        journals = journals.filter(total_amount__gte=min_amount)
+
+    if max_amount:
+        journals = journals.filter(total_amount__lte=max_amount)
+
+    for jnl in journals:
         obj = {
-            "ledger_id": led.ledger_id,
-            "ledger_code": led.ledger_code,
-            "ledger_name": led.ledger_name,
-            "ledger_type": led.ledger_type,
-            "financial_statement": led.financial_statement,
-            "balance": led.balance,
+            "journal_id": jnl.journal_id,
+            "journal_no": jnl.journal_no,
+            "client": jnl.client,
+            "issue_date": jnl.issue_date.strftime("%d %b, %Y"),
+            "due_date": jnl.due_date,
+            "sub_total": jnl.sub_total,
+            "tax": jnl.tax,
+            "total_amount": jnl.total_amount,
+            "total_paid": jnl.total_paid,
+            "due_amount": jnl.due_amount,
+            "status": jnl.status,
+            "description": jnl.description,
+            "done_by": jnl.done_by,
 
         }
-        chartOfAccountsList.append(obj)
+        journalList.append(obj)
 
 
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.xls'
+    response['Content-Disposition'] = 'attachment; filename=Journals.xls'
 
     workbook = xlwt.Workbook()
 
-    worksheet = workbook.add_sheet("Chart Of Accounts")
+    worksheet = workbook.add_sheet("Journals")
 
     row_num = 0
-    columns = ['Client Category Name']
+    columns = ['Journal No', 'Date','Description','Amount','Done By']
     style1 = xlwt.easyxf('font:bold 1')
     for col_num in range(len(columns)):
         worksheet.write(row_num, col_num, columns[col_num],style=style1)
 
-    for led in chartOfAccountsList:
+    for jnl in journalList:
         row_num += 1
-        row = [led['category_name']]
+        row = [jnl['journal_no'],jnl['issue_date'],jnl['description'],jnl['total_amount'],jnl['done_by']]
         for col_num in range(len(row)):
             worksheet.write(row_num, col_num, row[col_num])
        
@@ -811,42 +853,63 @@ def generate_journals_excel(request):
     return response
 
 @csrf_exempt
+@api_view(['POST'])
 def generate_journals_csv(request):
-    chartOfAccountsList = []
-    data = json.loads(request.body)
-    ledger_code = data['ledger_code']
-    ledger_name = data['ledger_name']
-    financial_statement = data['financial_statement']
+    journalList = []
+    new_data = json.dumps(request.data)
+    data = json.loads(new_data)
+    journal_no = data['journal_no']
+    description = data['description']
+    date_from = data['date_from']
+    date_to = data['date_to']
+    min_amount = data['min_amount']
+    max_amount = data['max_amount']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
-    company_ledgers = Ledger.objects.filter(company=company_uuid)
+    company_journals = Journal.objects.filter(company=company_uuid)
 
-    ledgers = company_ledgers.filter(Q(ledger_name__icontains=ledger_name) & Q(ledger_code__icontains=ledger_code))
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
 
-    if financial_statement:
-        ledgers = ledgers.filter(financial_statement = financial_statement)
+    if date_from:
+        journals = journals.filter(issue_date__gte=date_from)
 
-    for led in ledgers:
+    if date_to:
+        journals = journals.filter(issue_date__lte=date_to)
+
+    if min_amount:
+        journals = journals.filter(total_amount__gte=min_amount)
+
+    if max_amount:
+        journals = journals.filter(total_amount__lte=max_amount)
+
+    for jnl in journals:
         obj = {
-            "ledger_id": led.ledger_id,
-            "ledger_code": led.ledger_code,
-            "ledger_name": led.ledger_name,
-            "ledger_type": led.ledger_type,
-            "financial_statement": led.financial_statement,
-            "balance": led.balance,
+            "journal_id": jnl.journal_id,
+            "journal_no": jnl.journal_no,
+            "client": jnl.client,
+            "issue_date": jnl.issue_date.strftime("%d %b, %Y"),
+            "due_date": jnl.due_date,
+            "sub_total": jnl.sub_total,
+            "tax": jnl.tax,
+            "total_amount": jnl.total_amount,
+            "total_paid": jnl.total_paid,
+            "due_amount": jnl.due_amount,
+            "status": jnl.status,
+            "description": jnl.description,
+            "done_by": jnl.done_by,
 
         }
-        chartOfAccountsList.append(obj)
+        journalList.append(obj)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=Chart Of Accounts.csv'
+    response['Content-Disposition'] = 'attachment; filename=Journals.csv'
 
     writer = csv.writer(response)
-    writer.writerow([ 'Client Category Name'])
+    writer.writerow(['Journal No', 'Date','Description','Amount','Done By'])
 
-    for led in chartOfAccountsList:
-        writer.writerow([led['category_name']])
+    for jnl in journalList:
+        writer.writerow([jnl['journal_no'],jnl['issue_date'],jnl['description'],jnl['total_amount'],jnl['done_by']])
     return response
 
 

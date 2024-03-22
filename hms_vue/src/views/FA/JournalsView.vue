@@ -139,7 +139,7 @@
                             <td class="text-left py-3 px-4">{{ jnl.journal_no }}</td>
                             <td class="text-left py-3 px-4">{{ jnl.issue_date }}</td>
                             <td class="text-left py-3 px-4">{{ jnl.description }}</td>
-                            <td class="text-left py-3 px-4">{{ jnl.total_amount }}</td>
+                            <td class="text-left py-3 px-4">{{ Number(jnl.total_amount).toLocaleString() }}</td>
                             <td class="text-left py-3 px-4">{{ jnl.done_by }}</td>
                             <td>
                                 <div class="flex">
@@ -529,37 +529,35 @@ export default{
         showDropdown(){
             this.showOptions = !this.showOptions;
         },
-        exportManagersPDF(){
+        exportJournalsPDF(){
             this.showLoader();
             let formData = new FormData();
-            formData.append('department', this.department);
-            formData.append('start_date', this.start_date);
-            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
-                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            formData.append('description', this.description_search);
+            if((this.date_from !=null) && (typeof(this.date_from) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from));
             }else{
-                this.start_date_from = "";
-                formData.append('start_date_from', this.start_date_from);
+                this.date_from = "";
+                formData.append('date_from', this.date_from);
             }   
-            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
-                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            if((this.date_to !=null) && (typeof(this.date_to) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to));
             }else{
-                this.start_date_to = "";
-                formData.append('start_date_to', this.start_date_to);
+                this.date_to = "";
+                formData.append('date_to', this.date_to);
             } 
-            formData.append('end_date', this.end_date);
-            formData.append('status', this.status);
-            formData.append('phone_number', this.phone_number);
-            formData.append('manager_name', this.manager_name);
+            formData.append('journal_no', this.journal_no_search);
+            formData.append('min_amount', this.min_amount_search);
+            formData.append('max_amount', this.max_amount_search);
             formData.append('company_id', this.companyID); 
 
             this.axios
-            .post("api/v1/export-managers-pdf/", formData, { responseType: 'blob' })
+            .post("api/v1/export-journals-pdf/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'Managers.pdf');
+                  link.setAttribute('download', 'Journals.pdf');
                   document.body.appendChild(link);
                   link.click();
                 }
@@ -571,36 +569,35 @@ export default{
                 this.hideLoader();
             })
         },
-        exportManagersExcel(){
+        exportJournalsExcel(){
             this.showLoader();
             let formData = new FormData();
-            formData.append('department', this.department);
-            formData.append('start_date', this.start_date);
-            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
-                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            formData.append('description', this.description_search);
+            if((this.date_from !=null) && (typeof(this.date_from) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from));
             }else{
-                this.start_date_from = "";
-                formData.append('start_date_from', this.start_date_from);
+                this.date_from = "";
+                formData.append('date_from', this.date_from);
             }   
-            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
-                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            if((this.date_to !=null) && (typeof(this.date_to) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to));
             }else{
-                this.start_date_to = "";
-                formData.append('start_date_to', this.start_date_to);
+                this.date_to = "";
+                formData.append('date_to', this.date_to);
             } 
-            formData.append('end_date', this.end_date);
-            formData.append('status', this.status);
-            formData.append('phone_number', this.phone_number);
-            formData.append('manager_name', this.manager_name);
-            formData.append('company_id', this.companyID); 
+            formData.append('journal_no', this.journal_no_search);
+            formData.append('min_amount', this.min_amount_search);
+            formData.append('max_amount', this.max_amount_search);
+            formData.append('company_id', this.companyID);
+
             this.axios
-            .post("api/v1/export-managers-excel/", formData, { responseType: 'blob' })
+            .post("api/v1/export-journals-excel/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'Managers.xls');
+                  link.setAttribute('download', 'Journals.xls');
                   document.body.appendChild(link);
                   link.click();
                 }
@@ -612,36 +609,35 @@ export default{
                 this.hideLoader();
             })
         },
-        exportManagersCSV(){
+        exportJournalsCSV(){
             this.showLoader();
             let formData = new FormData();
-            formData.append('department', this.department);
-            formData.append('start_date', this.start_date);
-            if((this.start_date_from !=null) && (typeof(this.start_date_from) == "object")){
-                formData.append('start_date_from', this.start_date_from.toDateString().slice(4));
+            formData.append('description', this.description_search);
+            if((this.date_from !=null) && (typeof(this.date_from) == "object")){
+                formData.append('date_from', this.formatDate(this.date_from));
             }else{
-                this.start_date_from = "";
-                formData.append('start_date_from', this.start_date_from);
+                this.date_from = "";
+                formData.append('date_from', this.date_from);
             }   
-            if((this.start_date_to !=null) && (typeof(this.start_date_to) == "object")){
-                formData.append('start_date_to', this.start_date_to.toDateString().slice(4));
+            if((this.date_to !=null) && (typeof(this.date_to) == "object")){
+                formData.append('date_to', this.formatDate(this.date_to));
             }else{
-                this.start_date_to = "";
-                formData.append('start_date_to', this.start_date_to);
+                this.date_to = "";
+                formData.append('date_to', this.date_to);
             } 
-            formData.append('end_date', this.end_date);
-            formData.append('status', this.status);
-            formData.append('phone_number', this.phone_number);
-            formData.append('manager_name', this.manager_name);
-            formData.append('company_id', this.companyID); 
+            formData.append('journal_no', this.journal_no_search);
+            formData.append('min_amount', this.min_amount_search);
+            formData.append('max_amount', this.max_amount_search);
+            formData.append('company_id', this.companyID);
+
             this.axios
-            .post("api/v1/export-managers-csv/", formData, { responseType: 'blob' })
+            .post("api/v1/export-journals-csv/", formData, { responseType: 'blob' })
             .then((response)=>{
                 if(response.status == 200){
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'Managers.csv');
+                  link.setAttribute('download', 'Journals.csv');
                   document.body.appendChild(link);
                   link.click();
                 }

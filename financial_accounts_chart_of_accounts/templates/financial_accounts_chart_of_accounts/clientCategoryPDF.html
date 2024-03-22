@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<h3 class="pdf-title">Categories List</h3>
+	<table class="department-info-container">
+		<thead>
+			<tr>
+				<th>#</th>
+                <th>Category Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for cat in categories %}
+			<tr>
+				<td></td>
+				<td>{{ cat.category_name }}</td>
+
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+</body>
+</html>
