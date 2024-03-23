@@ -262,6 +262,7 @@ export default{
         patientID: "",
         patientName: "",
         patientCode: "",
+        patientLedgerID: "",
         patientHistoryList: [],
         patientHistoryDetails: [],
         patientHistoryResults: [],
@@ -285,6 +286,7 @@ export default{
         doctorsArray: [],
         feesID: "",
         feesName: "",
+        feesLedger: "",
         feesArray: [],
         journalDetails: [],
         medicalFeeCharge: false,
@@ -295,6 +297,8 @@ export default{
         applyMedicalFees: false,
         visitDoctor: false,
         txn_type: "",
+        postingAccountsArr: [],
+        contra: 0
 
     }
   },
@@ -409,6 +413,7 @@ export default{
                 this.patientID = this.patientsArray[selectedPatient].patient_id;
                 this.patientName = this.patientsArray[selectedPatient].first_name+ " "+this.patientsArray[selectedPatient].last_name;
                 this.patientCode = this.patientsArray[selectedPatient].patient_code;
+                this.patientLedgerID = this.patientsArray[selectedPatient].ledger_id;
             }
         },
         setDoctorID(){
@@ -447,13 +452,14 @@ export default{
             if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
                 let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
                 this.feesID = this.feesArray[selectedFee].fees_id;
+                this.feesLedger = this.feesArray[selectedFee].posting_account;
                 this.fees[this.itemInd].fee_name = this.feesArray[selectedFee].fee_name;
                 this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
-                console.log("The fee name is ",this.fees[this.itemInd].fee_name);
             }
         },
         createPatientHistory(){
             this.showLoader();
+            this.postingAccountsArr = [];
             if(this.patient === '' || this.visit_date === '' || this.visit_notes === ''|| (this.staff === '' && this.doctor === '')){
                 this.$toast.error("Please Enter Patient Visit Details",{
                     duration: 3000,
@@ -513,6 +519,45 @@ export default{
                             .catch((error)=>{
                                 console.log(error.message);
                                 this.hideLoader();
+                            })
+                            .finally(()=>{
+                                this.postingAccountsArr.push(this.patientLedgerID, this.feesLedger)
+                                console.log("The posting account array is ",this.postingAccountsArr);
+
+                                for(let i=0; i<this.postingAccountsArr.length; i++){
+                                    let formData = new FormData();
+                                    formData.append('journal', this.journalDetails.journal_id);
+                                    formData.append('date', this.journalDetails.issue_date);
+                                    formData.append('txn_type', this.journalDetails.txn_type);
+                                    formData.append('posting_account', this.postingAccountsArr[i]);
+                                    if(this.postingAccountsArr[i] == this.patientLedgerID){
+                                        formData.append('debit_amount', this.journalDetails.total_amount);
+                                        formData.append('credit_amount', this.contra);
+                                    }else{
+                                        formData.append('debit_amount', this.contra);
+                                        formData.append('credit_amount', this.journalDetails.total_amount);
+                                    }
+                                    formData.append('description', this.journalDetails.description);
+                                    formData.append('company', this.hospitalID);
+                                    console.log("FOOORM DAAATA ", formData);
+
+                                    this.axios
+                                    .post("api/v1/create-journal-entry/", formData)
+                                    .then((response)=>{
+                                        console.log("The journal entry is ",response.data);
+                                    })
+                                    .catch((error)=>{
+                                        console.log(error.message);
+                                    })                             
+                                }
+                                this.hideLoader();
+                                this.patient = "";
+                                this.visitDoctor = false;
+                                this.staff = "";
+                                this.visit_date = "";
+                                this.visit_notes = "";
+                                this.closeModal();
+                                this.$store.commit('reloadingPage');
                             })
                         }
                     }else{
@@ -689,6 +734,7 @@ export default{
         showModal(){
             this.scrollToTop();
             this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null}];
+            this.feesLedger = "";
             this.applyMedicalFees = false;
             this.medicalFeeCharge = false;
             if(this.isEditing == false){

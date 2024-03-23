@@ -1,5 +1,6 @@
 from django.db.models.signals import post_save,post_delete
 from patients_registration.models import Patient
+from .models import Journal
 from django.dispatch import receiver
 from .models import Ledger
 
@@ -23,4 +24,5 @@ def delete_ledger(sender, instance, **kwargs):
             ledger = Ledger.objects.get(ledger_code=instance.patient_code, company=instance.hospital)
             ledger.delete()
             print("LEDGER DELETED SUCCESSFULLY")
+
 

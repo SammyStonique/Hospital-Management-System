@@ -377,8 +377,6 @@ export default{
                         }
                         formData.append('company',this.companyID);
 
-                        console.log("FormDDAAATAAA", formData);
-
                         this.axios
                         .post("api/v1/create-journal-entry/", formData)
                         .then((response)=>{

@@ -955,7 +955,8 @@ class JournalEntryDetails(generics.RetrieveUpdateDestroyAPIView):
 def createJournalEntry(request):
     company_id = request.data.get("company")
     journal_id = request.data.get("journal")
-    ledger_id = request.data.get("posting_account")
+    ledger_id = request.data.get("posting_account")      
+
     company_uuid = uuid.UUID(company_id)
     journal_uuid = uuid.UUID(journal_id)
     ledger_uuid = uuid.UUID(ledger_id)
@@ -966,10 +967,8 @@ def createJournalEntry(request):
 
     if serializer.is_valid():
         serializer.save(company=company, journal=journal, posting_account=ledger)
-
     else:
-        print(serializer.errors) 
-
+        print(serializer.errors)
     
     return Response(serializer.data)
 
