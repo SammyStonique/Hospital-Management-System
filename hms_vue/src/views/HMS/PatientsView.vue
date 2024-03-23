@@ -1002,25 +1002,7 @@ export default{
                         console.log(error.message);
                     })
                     .finally(()=>{
-                        if(this.contact_personID){
-                            let formData = {
-                                contact_person: this.contact_personID,
-                                hospital: this.hospitalID
-                            }
-                            this.axios
-                            .post("api/v1/delete-emergency-contact-person/", formData)
-                            .then((response)=>{
-
-                            })
-                            .catch((error)=>{
-                                console.log(error.message);
-                            })
-                            .finally(()=>{
-                                this.$store.commit('reloadingPage');
-                            })
-                        }else{
-                            this.$store.commit('reloadingPage');
-                        }
+                        this.$store.commit('reloadingPage');
                         
                     })
                 

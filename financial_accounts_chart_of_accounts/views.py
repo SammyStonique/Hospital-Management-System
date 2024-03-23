@@ -538,7 +538,6 @@ def createJournal(request):
         last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
 
         if not last_journal_no:
-            print("I'M RUNNING")
             new_journal_no = "JNL-0001"
             company = get_object_or_404(Company, company_id=company_uuid)
             serializer = JournalSerializer(data=request.data)
@@ -548,7 +547,6 @@ def createJournal(request):
                 print(serializer.errors) 
             return Response(serializer.data)
         else:
-            print("I'M THE ONE RUNNING")
             journal_no = last_journal_no.journal_no
             journal_no_int = int(journal_no.split('JNL-')[-1])
             new_journal_no_int = journal_no_int + 1
@@ -567,60 +565,78 @@ def createJournal(request):
         last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
 
         if not last_journal_no:
-            return "INV00001"
-        journal_no = last_journal_no.journal_no
-        journal_no_int = int(journal_no.split('INV')[-1])
-        new_journal_no_int = journal_no_int + 1
-        new_journal_no = 'INV'+ str(new_journal_no_int).zfill(5)
-        company = get_object_or_404(Company, company_id=company_uuid)
-        serializer = JournalSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save(company=company, journal_no=new_journal_no)
+            new_journal_no = "INV00001"
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
         else:
-            print(serializer.errors) 
-        
-        return Response(serializer.data)
+            journal_no = last_journal_no.journal_no
+            journal_no_int = int(journal_no.split('INV')[-1])
+            new_journal_no_int = journal_no_int + 1
+            new_journal_no = 'INV'+ str(new_journal_no_int).zfill(5)
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
     
     elif txn_type == 'RCPT':
         company_uuid = uuid.UUID(company_id)
         last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
 
         if not last_journal_no:
-            return "RC00001"
-        journal_no = last_journal_no.journal_no
-        journal_no_int = int(journal_no.split('RC')[-1])
-        new_journal_no_int = journal_no_int + 1
-        new_journal_no = 'RC'+ str(new_journal_no_int).zfill(5)
-        company = get_object_or_404(Company, company_id=company_uuid)
-        serializer = JournalSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save(company=company, journal_no=new_journal_no)
+            new_journal_no = "RC00001"
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
         else:
-            print(serializer.errors) 
-        
-        return Response(serializer.data)
+            journal_no = last_journal_no.journal_no
+            journal_no_int = int(journal_no.split('RC')[-1])
+            new_journal_no_int = journal_no_int + 1
+            new_journal_no = 'RC'+ str(new_journal_no_int).zfill(5)
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
     
     elif txn_type == 'PMT':
         company_uuid = uuid.UUID(company_id)
         last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
 
         if not last_journal_no:
-            return "PM00001"
-        journal_no = last_journal_no.journal_no
-        journal_no_int = int(journal_no.split('PM')[-1])
-        new_journal_no_int = journal_no_int + 1
-        new_journal_no = 'PM'+ str(new_journal_no_int).zfill(5)
-        company = get_object_or_404(Company, company_id=company_uuid)
-        serializer = JournalSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save(company=company, journal_no=new_journal_no)
+            new_journal_no = "PM00001"
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
         else:
-            print(serializer.errors) 
-        
-        return Response(serializer.data)
+            journal_no = last_journal_no.journal_no
+            journal_no_int = int(journal_no.split('PM')[-1])
+            new_journal_no_int = journal_no_int + 1
+            new_journal_no = 'PM'+ str(new_journal_no_int).zfill(5)
+            company = get_object_or_404(Company, company_id=company_uuid)
+            serializer = JournalSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
+            else:
+                print(serializer.errors) 
+            return Response(serializer.data)
     
 
 
@@ -716,13 +732,13 @@ def generate_journals_pdf(request):
     date_to = data['date_to']
     min_amount = data['min_amount']
     max_amount = data['max_amount']
+    txn_type = data['txn_type']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
     company_journals = Journal.objects.filter(company=company_uuid)
 
-    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
-
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description) & Q(txn_type__icontains=txn_type))
     if date_from:
         journals = journals.filter(issue_date__gte=date_from)
 
@@ -791,12 +807,13 @@ def generate_journals_excel(request):
     date_to = data['date_to']
     min_amount = data['min_amount']
     max_amount = data['max_amount']
+    txn_type = data['txn_type']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
     company_journals = Journal.objects.filter(company=company_uuid)
 
-    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description) & Q(txn_type__icontains=txn_type))
 
     if date_from:
         journals = journals.filter(issue_date__gte=date_from)
@@ -864,12 +881,13 @@ def generate_journals_csv(request):
     date_to = data['date_to']
     min_amount = data['min_amount']
     max_amount = data['max_amount']
+    txn_type = data['txn_type']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
     company_journals = Journal.objects.filter(company=company_uuid)
 
-    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description) & Q(txn_type__icontains=txn_type))
 
     if date_from:
         journals = journals.filter(issue_date__gte=date_from)

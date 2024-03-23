@@ -234,6 +234,7 @@ def generate_patients_pdf(request):
 @api_view(['POST'])
 def generate_patients_excel(request):
     patients = []
+    empty = ""
     new_data = json.dumps(request.data)
     data = json.loads(new_data)
     first_name = data['first_name']
@@ -288,6 +289,10 @@ def generate_patients_excel(request):
                 "address": pat.address,
                 "country": pat.country,
                 "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "emergency_contact_person_id": empty,
+                "emergency_contact_person_name": empty,
+                "emergency_contact_person_email": empty,
+                "emergency_contact_person_phone_number": empty,
             }
             patients.append(obj)
 
@@ -318,6 +323,7 @@ def generate_patients_excel(request):
 @api_view(['POST'])
 def generate_patients_csv(request):
     patients = []
+    empty = ""
     new_data = json.dumps(request.data)
     data = json.loads(new_data)
     first_name = data['first_name']
@@ -372,6 +378,10 @@ def generate_patients_csv(request):
                 "address": pat.address,
                 "country": pat.country,
                 "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "emergency_contact_person_id": empty,
+                "emergency_contact_person_name": empty,
+                "emergency_contact_person_email": empty,
+                "emergency_contact_person_phone_number": empty,
             }
             patients.append(obj)
 
@@ -394,7 +404,7 @@ def display_patients_import_excel(request):
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        first_name,last_name,email,id_number,phone_number,gender,address,birth_date,city,country = row
+        first_name,last_name,email,id_number,phone_number,gender,address,birth_date,city,country, contact_first_name,contact_last_name,contact_number,contact_email = row
         obj = {
             "first_name": first_name,
             "last_name": last_name,
@@ -420,15 +430,22 @@ def import_patients_excel(request):
     hospital_id = request.data.get('hospital_id')
     hospital_uuid = uuid.UUID(hospital_id)
     hospital = get_object_or_404(Company, company_id=hospital_uuid)
-    patients = Patient.objects.filter(hospital=hospital)
     wb = load_workbook(excel_file)
     ws = wb.active
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        first_name,last_name,email,id_number,phone_number,gender,address,birth_date,city,country = row
+        first_name,last_name,email,id_number,phone_number,gender,address,birth_date,city,country, contact_first_name,contact_last_name,contact_number,contact_email = row
         pat_code = patient_code_gen(hospital_id)
-        Patient.objects.create(patient_code=pat_code, first_name=first_name, last_name=last_name, email=email, id_number=id_number, birth_date=birth_date,
+        patient_name = first_name + " "+ last_name  
+        patient = Patient.objects.create(patient_code=pat_code, first_name=first_name, last_name=last_name, email=email, id_number=id_number, birth_date=birth_date,
                                phone_number=phone_number,city=city, gender=gender, address=address, country=country, hospital=hospital) 
+        
+        if(contact_first_name or contact_last_name):
+            contact_person = EmergencyContactPerson.objects.create(first_name=contact_first_name,last_name=contact_last_name,email=contact_email, phone_number=contact_number, patient=patient_name, hospital=hospital)
+            contact_person.save()
+            Patient.objects.filter(patient_code=pat_code).update(emergency_contact_person=contact_person)
+        else:
+            patient.save()
         
 
     return HttpResponse("Excel Import Succesful")

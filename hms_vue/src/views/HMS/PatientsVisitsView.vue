@@ -261,6 +261,7 @@ export default{
         patientHistoryID: "",
         patientID: "",
         patientName: "",
+        patientCode: "",
         patientHistoryList: [],
         patientHistoryDetails: [],
         patientHistoryResults: [],
@@ -283,14 +284,17 @@ export default{
         staffArray: [],
         doctorsArray: [],
         feesID: "",
+        feesName: "",
         feesArray: [],
+        journalDetails: [],
         medicalFeeCharge: false,
         fees: [
-        {itemIndex:0, type: null, amount: null }
+        {itemIndex:0, type: null, amount: null, fee_name: null }
         ],
         itemInd: 0,
         applyMedicalFees: false,
         visitDoctor: false,
+        txn_type: "",
 
     }
   },
@@ -305,7 +309,7 @@ export default{
     methods:{
         addRow() {
             this.itemInd += 1;
-            this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
+            this.fees.push({itemIndex:this.itemInd, type: null, amount: null, fee_name: null });
         },
         removeRow(){
             if(this.fees.length > 1){
@@ -313,7 +317,7 @@ export default{
                 this.fees.splice(selectedFee, 1);
                 
             }else{
-                this.fees = [{itemIndex:0, type: null, amount: null }];
+                this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null}];
             }
         },
         formatDate(dateString) {
@@ -403,6 +407,8 @@ export default{
             if(this.$refs.patientSelect.selectedIndex > 0){
                 let selectedPatient = this.$refs.patientSelect.selectedIndex - 1;
                 this.patientID = this.patientsArray[selectedPatient].patient_id;
+                this.patientName = this.patientsArray[selectedPatient].first_name+ " "+this.patientsArray[selectedPatient].last_name;
+                this.patientCode = this.patientsArray[selectedPatient].patient_code;
             }
         },
         setDoctorID(){
@@ -410,7 +416,6 @@ export default{
             if(this.$refs.doctorSelect.selectedIndex > 0){
                 let selectedDoctor = this.$refs.doctorSelect.selectedIndex - 1;
                 this.doctorID = this.doctorsArray[selectedDoctor].user;
-                console.log("the doctor ID is ",this.doctorID);
             }
         },
         setUpdateDoctorID(){
@@ -442,7 +447,9 @@ export default{
             if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
                 let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
                 this.feesID = this.feesArray[selectedFee].fees_id;
+                this.fees[this.itemInd].fee_name = this.feesArray[selectedFee].fee_name;
                 this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
+                console.log("The fee name is ",this.fees[this.itemInd].fee_name);
             }
         },
         createPatientHistory(){
@@ -487,9 +494,26 @@ export default{
                     console.log(error.message);
                 })
                 .finally(()=>{
-                    if(this.medicalFeeCharge && this.fee[0].type != null){
-                        let formData = {
-
+                    if(this.medicalFeeCharge && this.fees[0].type != null && this.fees[0].amount != null){
+                        this.txn_type = "INV";
+                        for(let i=0; i<this.fees.length; i++){
+                            let formData = {
+                                company: this.hospitalID,
+                                client: this.patientName,
+                                description: this.fees[i].fee_name +" for "+this.patientName,
+                                txn_type: this.txn_type,
+                                issue_date: this.formatDate(this.visit_date),
+                                total_amount: this.fees[i].amount,
+                            }
+                            this.axios
+                            .post("api/v1/create-journal/", formData)
+                            .then((response)=>{
+                                this.journalDetails = response.data;
+                            })
+                            .catch((error)=>{
+                                console.log(error.message);
+                                this.hideLoader();
+                            })
                         }
                     }else{
                         this.patient = "";
@@ -530,7 +554,6 @@ export default{
             this.axios
             .post(`api/v1/patients-history-search/?page=${this.currentPage}`,formData)
             .then((response)=>{
-                console.log(response.data);
                 this.patientHistoryList = response.data.results;
                 this.patientHistoryResults = response.data;
                 this.patientHistArrLen = this.patientHistoryList.length;
@@ -665,6 +688,9 @@ export default{
         },
         showModal(){
             this.scrollToTop();
+            this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null}];
+            this.applyMedicalFees = false;
+            this.medicalFeeCharge = false;
             if(this.isEditing == false){
                 this.patient = "";
                 this.doctor = "";

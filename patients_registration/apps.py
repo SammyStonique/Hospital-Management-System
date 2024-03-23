@@ -7,3 +7,4 @@ class PatientsRegistrationConfig(AppConfig):
 
     def ready(self):
         import financial_accounts_chart_of_accounts.signals
+        import patients_registration.signals

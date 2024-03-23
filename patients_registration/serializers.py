@@ -6,7 +6,7 @@ class PatientSerializer(serializers.ModelSerializer):
     emergency_contact_person = serializers.PrimaryKeyRelatedField(queryset=EmergencyContactPerson.objects.all(),many=False)
     class Meta:
         model = Patient
-        fields = ['patient_id','patient_code','first_name','last_name','email','id_number','phone_number','gender','address','birth_date','city','country','hospital','emergency_contact_person','start_date']
+        fields = ['patient_id','patient_code','first_name','last_name','email','id_number','phone_number','gender','address','birth_date','city','country','hospital','emergency_contact_person','start_date','ledger_id']
 
     def create(self, validated_data):
         patient = Patient.objects.create(**validated_data)
@@ -25,6 +25,7 @@ class PatientSerializer(serializers.ModelSerializer):
         instance.city = validated_data.get('city', instance.city)
         instance.country = validated_data.get('country', instance.country)
         instance.address = validated_data.get('address', instance.address)
+        instance.ledger_id = validated_data.get('ledger_id', instance.ledger_id)
         instance.emergency_contact_person = validated_data.get('emergency_contact_person', instance.emergency_contact_person)
 
         instance.save()

@@ -343,7 +343,7 @@ export default{
                     total_amount: this.journalTotal,
                     done_by: this.done_by,
                 }
-                console.log(formData);
+
                 this.axios
                 .post("api/v1/create-journal/", formData)
                 .then((response)=>{
@@ -400,10 +400,12 @@ export default{
             }
         },
         searchJournals(){
+            this.txn_type = 'JNL';
             this.isSearching = true;
             this.showNextBtn = false;
             this.showPreviousBtn = false;
             let formData = new FormData();
+            formData.append('txn_type', this.txn_type);
             formData.append('description', this.description_search);
             if((this.date_from !=null) && (typeof(this.date_from) == "object")){
                 formData.append('date_from', this.formatDate(this.date_from));
@@ -530,8 +532,10 @@ export default{
             this.showOptions = !this.showOptions;
         },
         exportJournalsPDF(){
+            this.txn_type = 'JNL';
             this.showLoader();
             let formData = new FormData();
+            formData.append('txn_type', this.txn_type);
             formData.append('description', this.description_search);
             if((this.date_from !=null) && (typeof(this.date_from) == "object")){
                 formData.append('date_from', this.formatDate(this.date_from));
@@ -571,7 +575,9 @@ export default{
         },
         exportJournalsExcel(){
             this.showLoader();
+            this.txn_type = 'JNL';
             let formData = new FormData();
+            formData.append('txn_type', this.txn_type);
             formData.append('description', this.description_search);
             if((this.date_from !=null) && (typeof(this.date_from) == "object")){
                 formData.append('date_from', this.formatDate(this.date_from));
@@ -611,7 +617,9 @@ export default{
         },
         exportJournalsCSV(){
             this.showLoader();
+            this.txn_type = 'JNL';
             let formData = new FormData();
+            formData.append('txn_type', this.txn_type);
             formData.append('description', this.description_search);
             if((this.date_from !=null) && (typeof(this.date_from) == "object")){
                 formData.append('date_from', this.formatDate(this.date_from));

@@ -96,12 +96,13 @@ def journalSearch(request):
     date_to = data['date_to']
     min_amount = data['min_amount']
     max_amount = data['max_amount']
+    txn_type = data['txn_type']
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
     company_journals = Journal.objects.filter(company=company_uuid)
 
-    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description))
+    journals = company_journals.filter(Q(journal_no__icontains=journal_no) & Q(description__icontains=description) & Q(txn_type__icontains=txn_type))
 
     if date_from:
         journals = journals.filter(issue_date__gte=date_from)
