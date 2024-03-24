@@ -25,6 +25,7 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 
 import uuid
+from datetime import datetime, timedelta
 
 #Data Import
 from openpyxl import load_workbook
@@ -929,6 +930,53 @@ def generate_journals_csv(request):
     for jnl in journalList:
         writer.writerow([jnl['journal_no'],jnl['issue_date'],jnl['description'],jnl['total_amount'],jnl['done_by']])
     return response
+
+
+@csrf_exempt
+@api_view(['POST'])
+def patientInvoicePDF(request):
+    invoice = request.data.get("invoice")
+    hospital_id = request.data.get("hospital")
+    patientInvoice = get_object_or_404(Journal, pk=invoice)
+    hospital = Company.objects.get(company_id=hospital_id)
+
+    invoice_no = patientInvoice.journal_no
+    client = patientInvoice.client
+    quantity = 1
+    total_amount = patientInvoice.total_amount
+    tax = patientInvoice.tax
+    issue_date = patientInvoice.issue_date.strftime("%d %b, %Y")
+    due_date = (datetime.strptime(issue_date, "%d %b, %Y")+ timedelta(days=3)).strftime("%d %b, %Y")
+    sub_total = patientInvoice.sub_total
+    description = patientInvoice.description
+
+
+    context={"hospital": hospital,"invoice_no":invoice_no, "client":client, "tax":tax,
+              "total_amount":total_amount, "due_date":due_date , "invoice_date":issue_date, "sub_total":sub_total,
+              "description":description, "quantity":quantity}
+    template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/templates/financial_accounts_chart_of_accounts/')
+    template_env = jinja2.Environment(loader=template_loader)
+
+    template  = template_env.get_template('patientInvoicePDF.html')
+    output_text = template.render(context)
+
+    config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
+    options={"enable-local-file-access": None,
+             }
+
+    pdfkit.from_string(output_text, 'Invoice.pdf', configuration=config, options=options, css="/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/static/financial_accounts_chart_of_accounts/patientInvoicePDF.css")
+
+    path = 'Invoice.pdf'
+    with open(path, 'rb') as pdf:
+        contents = pdf.read()
+
+    response = HttpResponse(contents, content_type='application/pdf')
+
+    response['Content-Disposition'] = 'attachment; filename=Invoice.pdf'
+    pdf.close()
+    os.remove("Invoice.pdf")  # remove the locally created pdf file.
+    return response
+
 
 
 

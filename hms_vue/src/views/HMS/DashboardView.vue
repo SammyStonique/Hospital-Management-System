@@ -68,7 +68,7 @@
           <div class="w-full rounded-lg py-3 px-2 bg-white h-56 mb-3">
             <h1 class="font-bold">Hospital Survey</h1>
           </div>
-          <div class="w-full rounded-lg py-3 px-2 bg-white h-56">
+          <div class="w-full rounded-lg py-3 px-2 bg-white appointments-table">
             <h1 class="font-bold mb-3">Appointment Activity</h1>
             <table class="table-auto border-collapse w-full">
               <thead class="border-b border-slate-500 font-thin text-sm bg-gray-100">
@@ -263,6 +263,11 @@
   }
   .subsection{
       min-height: 100vh;
+  }
+  .appointments-table{
+    min-height: 40vh;
+    max-height: 40vh;
+    overflow-y: scroll;
   }
   </style>
   

@@ -115,14 +115,14 @@
                                 <textarea id="notes" name="visit_notes" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2" v-model="visit_notes" rows="4" cols="50"></textarea>
                             </div>
                         </div>
-                        <div class="flex mb-6">
+                        <div class="flex mb-6" v-if="!isEditing">
                             <div class="basis-1/2 mr-6">
                                 <label for=""><em></em></label><br />
                                 <input type="checkbox" name="" id="" class="rounded border border-gray-600 text-lg pl-2 mr-3" @click="showChargeFeesOption" v-model="applyMedicalFees">
                                 <label for="">Add Medical Fees<em></em></label>
                             </div>
                         </div>
-                        <div v-if="medicalFeeCharge">
+                        <div v-if="medicalFeeCharge && !isEditing">
                             <div class="border-b border-gray-400 pb-3">
                                 <p class="font-bold">Fees Details</p>
                             </div>

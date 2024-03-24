@@ -92,6 +92,7 @@ def journalSearch(request):
     data = json.loads(new_data)
     journal_no = data['journal_no']
     description = data['description']
+    client = data['client']
     date_from = data['date_from']
     date_to = data['date_to']
     min_amount = data['min_amount']
@@ -115,6 +116,9 @@ def journalSearch(request):
 
     if max_amount:
         journals = journals.filter(total_amount__lte=max_amount)
+
+    if client:
+        journals = journals.filter(Q(client__icontains=client))
 
     for jnl in journals:
         obj = {

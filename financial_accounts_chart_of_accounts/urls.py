@@ -36,6 +36,7 @@ urlpatterns = [
     path("journal-list/", views.JournalList.as_view()),
     path("journal-details/<str:pk>/", views.JournalDetails.as_view()),
     path("journals-search/", journalSearch, name="journals-search"),
+    path('patient-invoice-pdf/',views.patientInvoicePDF, name="patient-invoice-pdf"),
     path("export-journals-pdf/", views.generate_journals_pdf, name="export-journals-pdf"),
     path("export-journals-excel/", views.generate_journals_excel, name="export-journals-excel"),
     path("export-journals-csv/", views.generate_journals_csv, name="export-journals-csv"),
