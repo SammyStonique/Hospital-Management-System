@@ -205,10 +205,10 @@
                         
                         <tr v-for="(det,index) in depList" :key="det.department_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3 px-4">{{ det.code }}</td>
-                            <td class="text-left py-3 px-4">{{ det.name }}</td>
-                            <td class="text-left py-3 px-4">{{ det.manager_first_name }} {{ det.manager_last_name }}</td>
-                            <td class="text-left py-3 px-4">{{ det.start_date }}</td>
+                            <td class="text-left py-2 px-4">{{ det.code }}</td>
+                            <td class="text-left py-2 px-4">{{ det.name }}</td>
+                            <td class="text-left py-2 px-4">{{ det.manager_first_name }} {{ det.manager_last_name }}</td>
+                            <td class="text-left py-2 px-4">{{ det.start_date }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/3">

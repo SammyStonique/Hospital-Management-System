@@ -33,19 +33,21 @@
 </tr>
 </thead>
     <tbody>
+        {% for jnl in journal_entries %}
         <tr>
             <td class="description">{{ quantity }}</td>
-            <td class="description">{{ description }}</td>
-            <td class="right description">{{total_amount}}</td>
+            <td class="description">{{ jnl.description }}</td>
+            <td class="right description">{{ jnl.debit_amount}}</td>
             <td class="right description">{{ tax}}</td>
-            <td class="bold description">{{total_amount}}</td>
+            <td class="bold description">{{jnl.debit_amount}}</td>
         </tr>
+        {% endfor %}
         <tr>
             <td></td>
             <td></td>
             <td></td>
             <td class="coupon bold">SUBTOTAL</td>
-            <td class="bold">{{sub_total}}</td>
+            <td class="bold">{{total_amount}}</td>
         </tr>
         <tr>
             <td></td>

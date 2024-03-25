@@ -220,7 +220,7 @@
                                 <th>#</th>
                                 <th class="text-left py-3 px-2">Invoice No</th>
                                 <th class="text-left py-3 px-2">Patient</th>
-                                <th class="text-left py-3 px-2">Description</th>
+                                <th class="text-left py-3 px-2 overflow-x:hidden">Description</th>
                                 <th class="text-left py-3 px-2">Amount</th>
                                 <th class="text-left py-3 px-2">Paid</th>
                                 <th class="text-left py-3 px-2">Balance</th>
@@ -232,13 +232,13 @@
                         
                         <tr v-for="(inv,index) in invoiceList" :key="inv.patient_id" class="even:bg-gray-100">
                             <td></td>
-                            <td class="text-left py-3">{{ inv.journal_no }}</td>
-                            <td class="text-left py-3">{{ inv.client }}</td>
-                            <td class="text-left py-3">{{ inv.description }}</td>
-                            <td class="text-left py-3">{{ Number(inv.total_amount).toLocaleString() }}</td>
-                            <td class="text-left py-3">{{ Number(inv.total_paid).toLocaleString() }}</td>
-                            <td class="text-left py-3">{{ Number(inv.due_amount).toLocaleString() }}</td>
-                            <td class="text-left py-3">{{ inv.status }}</td>
+                            <td class="text-left py-2">{{ inv.journal_no }}</td>
+                            <td class="text-left py-2">{{ inv.client }}</td>
+                            <td class="text-left py-2 overflow-x:hidden">{{ inv.description }}</td>
+                            <td class="text-left py-2">{{ Number(inv.total_amount).toLocaleString() }}</td>
+                            <td class="text-left py-2">{{ Number(inv.total_paid).toLocaleString() }}</td>
+                            <td class="text-left py-2">{{ Number(inv.due_amount).toLocaleString() }}</td>
+                            <td class="text-left py-2">{{ inv.status }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">
@@ -315,6 +315,7 @@ export default{
         currentPage: 1,
         invoiceID: "",
         invoiceClient: "",
+        invoiceNumber: "",
         invoiceList: [],
         invoiceDetails: [],
         invoiceResults: [],
@@ -769,30 +770,29 @@ export default{
                 })
             }
         },
-        removePatient() {
+        removeInvoice() {
             let selectedItem = arguments[0];
-            this.patientID = this.patientList[selectedItem].patient_id;
-            this.contact_personID = this.patientList[selectedItem].emergency_contact_person_id;
-            this.patientName = this.patientList[selectedItem].first_name + " " +this.patientList[selectedItem].last_name ;
+            this.invoiceID = this.invoiceList[selectedItem].journal_id;
+            this.invoiceNumber = this.invoiceList[selectedItem].journal_no;
             this.$swal({
                 title: "Are you sure?",
-                text: `Do you wish to delete ${this.patientName}?`,
+                text: `Do you wish to delete ${this.invoiceNumber}?`,
                 type: 'warning',
                 showCloseButton: true,
                 showCancelButton: true,
-                confirmButtonText: 'Yes Delete Patient!',
+                confirmButtonText: 'Yes Delete Invoice!',
                 cancelButtonText: 'Cancel!',
                 showLoaderOnConfirm: true,
             }).then((result) => {
                 if (result.value) {
                     let formData = {
-                        hospital: this.hospitalID,
-                        patient: this.patientID
+                        company: this.companyID,
+                        journal: this.invoiceID
                     }
                     this.axios
-                    .post("api/v1/delete-patient/", formData)
+                    .post("api/v1/delete-journal/", formData)
                     .then((response)=>{
-                        this.$swal("Poof! Patient removed succesfully!", {
+                        this.$swal("Poof! Invoice removed succesfully!", {
                             icon: "success",
                         });
                     })
@@ -805,7 +805,7 @@ export default{
                     })
                 
                 } else {
-                    this.$swal(`${this.patientName} has not been deleted!`);
+                    this.$swal(`${this.invoiceNumber} has not been deleted!`);
                 }
             });
         },

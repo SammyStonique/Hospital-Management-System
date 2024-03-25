@@ -299,12 +299,21 @@ def getLedgers(request):
     ledger_id = request.data.get("ledger")
     company_id = request.data.get("company")
     ledger_type = request.data.get("ledger_type")
+    ledger_code = request.data.get("ledger_code")
 
     if ledger_id is not None:
         company_uuid = uuid.UUID(company_id)
         ledger_uuid = uuid.UUID(ledger_id)
         company = get_object_or_404(Company, company_id=company_uuid)
         ledger = Ledger.objects.get(company=company, ledger_id=ledger_uuid)
+
+        serializer = LedgerSerializer(ledger)
+        return Response(serializer.data)
+    
+    elif ledger_code is not None:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        ledger = Ledger.objects.get(company=company, ledger_code=ledger_code)
 
         serializer = LedgerSerializer(ledger)
         return Response(serializer.data)
@@ -937,7 +946,10 @@ def generate_journals_csv(request):
 def patientInvoicePDF(request):
     invoice = request.data.get("invoice")
     hospital_id = request.data.get("hospital")
+    contra = 0
     patientInvoice = get_object_or_404(Journal, pk=invoice)
+    journal_entries = JournalEntry.objects.filter(journal=patientInvoice)
+    new_journal_entries = journal_entries.exclude(debit_amount=contra)
     hospital = Company.objects.get(company_id=hospital_id)
 
     invoice_no = patientInvoice.journal_no
@@ -951,8 +963,8 @@ def patientInvoicePDF(request):
     description = patientInvoice.description
 
 
-    context={"hospital": hospital,"invoice_no":invoice_no, "client":client, "tax":tax,
-              "total_amount":total_amount, "due_date":due_date , "invoice_date":issue_date, "sub_total":sub_total,
+    context={"journal_entries":new_journal_entries,"hospital": hospital,"invoice_no":invoice_no, "client":client, "tax":tax,
+              "total_amount":total_amount, "due_date":due_date , "issue_date":issue_date, "sub_total":sub_total,
               "description":description, "quantity":quantity}
     template_loader = jinja2.FileSystemLoader('/home/sammyb/Hospital Management System/hms/financial_accounts_chart_of_accounts/templates/financial_accounts_chart_of_accounts/')
     template_env = jinja2.Environment(loader=template_loader)
@@ -1003,22 +1015,43 @@ class JournalEntryDetails(generics.RetrieveUpdateDestroyAPIView):
 def createJournalEntry(request):
     company_id = request.data.get("company")
     journal_id = request.data.get("journal")
-    ledger_id = request.data.get("posting_account")      
+    ledger_id = request.data.get("posting_account")  
+    journal_entry_array = request.data.get("journal_entry_array") 
+    print("Te JoURNALeNTRY Array is ", journal_entry_array)
 
-    company_uuid = uuid.UUID(company_id)
-    journal_uuid = uuid.UUID(journal_id)
-    ledger_uuid = uuid.UUID(ledger_id)
-    company = get_object_or_404(Company, company_id=company_uuid)
-    journal = get_object_or_404(Journal, journal_id=journal_uuid)
-    ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
-    serializer = JournalEntrySerializer(data=request.data)
+    if journal_entry_array is not None:
+        company_uuid = uuid.UUID(company_id)
+        journal_uuid = uuid.UUID(journal_id)
 
-    if serializer.is_valid():
-        serializer.save(company=company, journal=journal, posting_account=ledger)
+        for jnlEntry in journal_entry_array:
+            print("The JNLE is ", jnlEntry)
+            ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+            company = get_object_or_404(Company, company_id=company_uuid)
+            journal = get_object_or_404(Journal, journal_id=journal_uuid)
+            ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+            serializer = JournalEntrySerializer(data=jnlEntry)
+            if serializer.is_valid():
+                serializer.save(company=company, journal=journal, posting_account=ledger)
+            else:
+                print(serializer.errors)
+            
+        return Response(serializer.data)
+
     else:
-        print(serializer.errors)
-    
-    return Response(serializer.data)
+        company_uuid = uuid.UUID(company_id)
+        journal_uuid = uuid.UUID(journal_id)
+        ledger_uuid = uuid.UUID(ledger_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journal = get_object_or_404(Journal, journal_id=journal_uuid)
+        ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+        serializer = JournalEntrySerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(company=company, journal=journal, posting_account=ledger)
+        else:
+            print(serializer.errors)
+        
+        return Response(serializer.data)
 
 
 @csrf_exempt

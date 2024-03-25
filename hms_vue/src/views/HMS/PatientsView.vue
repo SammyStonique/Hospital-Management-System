@@ -132,7 +132,7 @@
                                 <label for="">Create Visit<em></em></label>
                             </div>
                         </div>
-                        <div v-if="visit_creation">
+                        <div v-if="visit_creation && !isEditing">
                             <div class="border-b border-gray-400 pb-3">
                                 <p class="font-bold">Visitation Details</p>
                             </div>
@@ -308,14 +308,14 @@
                         
                         <tr v-for="(pat,index) in patientList" :key="pat.patient_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3">{{ pat.patient_code }}</td>
-                            <td class="text-left py-3">{{ pat.first_name }} {{ pat.last_name }}</td>
-                            <td class="text-left py-3">{{ pat.email }}</td>
-                            <td class="text-left py-3">{{ pat.id_number }}</td>
-                            <td class="text-left py-3">{{ pat.phone_number }}</td>
-                            <td class="text-left py-3">{{ pat.birth_date }}</td>
-                            <td class="text-left py-3">{{ pat.city }}</td>
-                            <td class="text-left py-3">{{ pat.emergency_contact_person_name }}</td>
+                            <td class="text-left py-2">{{ pat.patient_code }}</td>
+                            <td class="text-left py-2">{{ pat.first_name }} {{ pat.last_name }}</td>
+                            <td class="text-left py-2">{{ pat.email }}</td>
+                            <td class="text-left py-2">{{ pat.id_number }}</td>
+                            <td class="text-left py-2">{{ pat.phone_number }}</td>
+                            <td class="text-left py-2">{{ pat.birth_date }}</td>
+                            <td class="text-left py-2">{{ pat.city }}</td>
+                            <td class="text-left py-2">{{ pat.emergency_contact_person_name }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">
@@ -394,6 +394,7 @@ export default{
         pageCount: 0,
         patientID: "",
         patientName: "",
+        patientLedger: [],
         patientList: [],
         patientDetails: [],
         emergencyContactDetails: [],
@@ -425,9 +426,17 @@ export default{
         visit_creation: false,
         visitation_fees: "",
         fees: [
-        {itemIndex:0, type: null, amount: null }
+        {itemIndex:0, type: null, amount: null, fee_name: null, fee_ledger: null}
         ],
-        itemInd: 0
+        itemInd: 0,
+        txn_type: "",
+        journalEntryArr: [],
+        contra: 0,
+        invoice_description: [],
+        invDescr: "",
+        invoice_totals: 0,
+        journalDetails: [],
+        today_date: new Date()
     }
   },
     components: {
@@ -457,7 +466,7 @@ export default{
     methods:{
         addRow() {
             this.itemInd += 1;
-            this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
+            this.fees.push({itemIndex:this.itemInd, type: null, amount: null, fee_name: null, fee_ledger: null });
         },
         removeRow(){
             if(this.fees.length > 1){
@@ -465,7 +474,7 @@ export default{
                 this.fees.splice(selectedFee, 1);
                 
             }else{
-                this.fees = [{itemIndex:0, type: null, amount: null }];
+                this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
             }
         },     
         validateEmail(value){  
@@ -597,10 +606,13 @@ export default{
             if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
                 let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
                 this.feesID = this.feesArray[selectedFee].fees_id;
+                this.fees[this.itemInd].fee_ledger = this.feesArray[selectedFee].posting_account;
+                this.fees[this.itemInd].fee_name = this.feesArray[selectedFee].fee_name;
                 this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
+                console.log("THE FEES DETAILS ARE ",this.fees[this.itemInd]);
             }
         },
-        createPatient(){
+        async createPatient(){
             this.axiosError = [];
             this.showLoader();
             if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === '' || this.gender === ''
@@ -614,104 +626,219 @@ export default{
             }
             else{
                 let formData = {
-                    hospital: this.hospitalID,
-                    first_name: this.contact_person_first_name,
-                    last_name: this.contact_person_last_name,
-                    email: this.contact_person_email,
-                    phone_number: this.contact_person_phone_number,
-                    patient: this.first_name + " "+ this.last_name,
-                }
-
-                this.axios
-                .post("api/v1/create-emergency-contact-person/", formData)
-                .then((response)=>{
-                    this.emergencyContactDetails = response.data;
-                    console.log(this.emergencyContactDetails);
-                    this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                    this.axiosError.push(error.message);
-                })
-                .finally(()=>{
-                    if(this.axiosError.length){
-                        this.$toast.error("Error Adding Next Of Kin",{
-                            duration: 3000,
-                            dismissible: true
-                        })
+                        hospital: this.hospitalID,
+                        first_name: this.contact_person_first_name,
+                        last_name: this.contact_person_last_name,
+                        email: this.contact_person_email,
+                        phone_number: this.contact_person_phone_number,
+                        patient: this.first_name + " "+ this.last_name,
                     }
-                    else{
-                        this.axios
-                        .get(`api/v1/patient-code-gen/${this.hospitalID}/`)
-                        .then((response)=>{
-                            this.patient_code = response.data;
-                        })
-                        .catch((error)=>{
-                            console.log(error.message)
-                            this.axiosError.push(error.message)
-                        })
-                        .finally(()=>{
-                            if(this.axiosError.length){
-                                this.$toast.error("Error Generating Patient Code",{
-                                    duration: 3000,
-                                    dismissible: true
-                                })
-                            }
-                            else{
-                                let formData = {
-                                    hospital: this.hospitalID,
-                                    patient_code: this.patient_code,
-                                    first_name: this.first_name,
-                                    last_name: this.last_name,
-                                    email: this.email,
-                                    birth_date: this.formatDate(this.birth_date),
-                                    phone_number: this.phone_number,
-                                    city: this.city,
-                                    gender: this.gender,
-                                    id_number: this.id_number,
-                                    address: this.address,
-                                    country: this.country,
-                                    emergency_contact_person: this.emergencyContactID
+                
+                    this.axios
+                    .post("api/v1/create-emergency-contact-person/", formData)
+                    .then((response)=>{
+                        this.emergencyContactDetails = response.data;
+                        console.log(this.emergencyContactDetails);
+                        this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
+                    })
+                    .catch((error)=>{
+                        console.log(error.message);
+                        this.axiosError.push(error.message);
+                    })
+                    
+                    .finally(()=>{
+                        if(this.axiosError.length){
+                            this.$toast.error("Error Adding Next Of Kin",{
+                                duration: 3000,
+                                dismissible: true
+                            })
+                        }
+                        else{
+                            this.axios
+                            .get(`api/v1/patient-code-gen/${this.hospitalID}/`)
+                            .then((response)=>{
+                                this.patient_code = response.data;
+                            })
+                            .catch((error)=>{
+                                console.log(error.message)
+                                this.axiosError.push(error.message)
+                            })
+                            .finally(()=>{
+                                if(this.axiosError.length){
+                                    this.$toast.error("Error Generating Patient Code",{
+                                        duration: 3000,
+                                        dismissible: true
+                                    })
+                                }
+                                else{
+                                    let formData = {
+                                        hospital: this.hospitalID,
+                                        patient_code: this.patient_code,
+                                        first_name: this.first_name,
+                                        last_name: this.last_name,
+                                        email: this.email,
+                                        birth_date: this.formatDate(this.birth_date),
+                                        phone_number: this.phone_number,
+                                        city: this.city,
+                                        gender: this.gender,
+                                        id_number: this.id_number,
+                                        address: this.address,
+                                        country: this.country,
+                                        emergency_contact_person: this.emergencyContactID
+                                    }
+                                    
+                                    this.axios
+                                    .post("api/v1/create-patient/", formData)
+                                    .then((response)=>{
+                                        this.patientDetails = response.data;
+                                        console.log("The patients Details are ",)
+                                        this.$toast.success("Patient Added Succesfully",{
+                                            duration: 3000,
+                                            dismissible: true
+                                        })
+                                    })
+                                    .catch((error)=>{
+                                        this.$toast.error("Operation Failed",{
+                                            duration: 3000,
+                                            dismissible: true
+                                        })
+                                        console.log(error.message);
+                                    })
+                                    .finally(()=>{
+                                        let formData = {
+                                            ledger_code: this.patient_code,
+                                            company: this.hospitalID
+                                        }
+                                        this.axios
+                                        .post("api/v1/fetch-ledgers/", formData)
+                                        .then((response)=>{
+                                            console.log("The ledgers response data is ", response.data);
+                                            this.patientLedger = response.data;
+                                        })
+                                        .catch((error)=>{
+                                            console.log(error.message)
+                                        })
+                                        .finally(()=>{
+                                            this.invoice_description = [];
+                                            if(this.visit_creation && this.fees[0].type != null && this.fees[0].amount != null && ((this.staff != '' || this.staff != null) || (this.doctor != ''|| this.doctor != null))){
+                                                this.txn_type = "INV";
+                                                for(let i=0; i<this.fees.length; i++){
+                                                    if(this.fees[i].amount != null){
+                                                        this.invoice_totals += Number(this.fees[i].amount);
+                                                        this.invoice_description.push(this.fees[i].fee_name +" for "+this.patientDetails.first_name+" "+this.patientDetails.last_name);
+                                                        let jnlEntry1 ={
+                                                            "date": this.formatDate(this.today_date),
+                                                            "description": this.fees[i].fee_name +" for "+this.patientDetails.first_name+" "+this.patientDetails.last_name,
+                                                            "txn_type": this.txn_type,
+                                                            "posting_account": this.patientLedger.ledger_id,
+                                                            "debit_amount": this.fees[i].amount,
+                                                            "credit_amount": this.contra,
+                                                        }
+                                                        let jnlEntry2 = {
+                                                            "date": this.formatDate(this.today_date),
+                                                            "description": this.fees[i].fee_name +" for "+this.patientDetails.first_name+" "+this.patientDetails.last_name,
+                                                            "txn_type": this.txn_type,
+                                                            "posting_account": this.fees[i].fee_ledger,
+                                                            "debit_amount": this.contra,
+                                                            "credit_amount": this.fees[i].amount,
+                                                        }
+                                                        this.journalEntryArr.push(jnlEntry1,jnlEntry2);
+                                                    }else{
+                                                        this.$toast.error("Please input fee amount",{
+                                                            duration: 3000,
+                                                            dismissible: true
+                                                        })
+                                                    }
+                                                }
+                                                console.log("The journalEntryArr is ", this.journalEntryArr);
+                                                if(this.invoice_description.length > 1){
+                                                    for(let x=0; x<this.invoice_description.length; x++){
+                                                        this.invDescr += (this.invoice_description[x]+", ")
+                                                    }
+                                                }else{
+                                                    this.invDescr = this.invoice_description[0];
+                                                }
+                                                
+                                                this.journalDetails = [];
+                                                let formData = {
+                                                    company: this.hospitalID,
+                                                    client: this.patientDetails.first_name+" "+this.patientDetails.last_name,
+                                                    description: this.invDescr,
+                                                    txn_type: this.txn_type,
+                                                    issue_date: this.formatDate(this.today_date),
+                                                    total_amount: this.invoice_totals,
+                                                }
+                                                this.axios
+                                                .post("api/v1/create-journal/", formData)
+                                                .then((response)=>{
+                                                    this.journalDetails = response.data;
+                                                })
+                                                .catch((error)=>{
+                                                    console.log(error.message);
+                                                    this.hideLoader();
+                                                })
+                                                .finally(()=>{
+                                                        let formData  ={
+                                                            journal: this.journalDetails.journal_id,
+                                                            journal_entry_array: this.journalEntryArr,
+                                                            company:  this.hospitalID
+                                                        }
+
+                                                        this.axios
+                                                        .post("api/v1/create-journal-entry/", formData)
+                                                        .then((response)=>{
+
+                                                        })
+                                                        .catch((error)=>{
+                                                            console.log(error.message);
+                                                        })    
+                                                        .finally(()=>{
+                                                            this.hideLoader();
+                                                            this.patient = "";
+                                                            this.visitDoctor = false;
+                                                            this.staff = "";
+                                                            this.visit_date = "";
+                                                            this.visit_notes = "";
+                                                            this.closeModal();
+                                                            // this.$store.commit('reloadingPage');
+                                                        })                            
+                                                    })                     
+                                            }else{
+                                                this.patient = "";
+                                                this.visitDoctor = false;
+                                                this.staff = "";
+                                                this.visit_date = "";
+                                                this.visit_notes = "";
+                                                this.hideLoader();
+                                                this.closeModal();
+                                                // this.$store.commit('reloadingPage');
+                                            }
+                                        })
+                                        
+                                    })
+                                    // .finally(()=>{
+                                    //     this.patient_code = "";
+                                    //     this.first_name = "";
+                                    //     this.last_name = "";
+                                    //     this.email = "";
+                                    //     this.birth_date = "";
+                                    //     this.id_number = "";
+                                    //     this.phone_number = "";
+                                    //     this.city = "";
+                                    //     this.gender = "",
+                                    //     this.address = "";
+                                    //     this.country = "";
+                                    //     this.hideLoader();
+                                    //     this.closeModal();
+                                    //     this.$store.commit('reloadingPage');
+                                    // })
+
                                 }
                                 
-                                this.axios
-                                .post("api/v1/create-patient/", formData)
-                                .then((response)=>{
-                                    this.patientDetails = response.data;
-                                    this.$toast.success("Patient Added Succesfully",{
-                                        duration: 3000,
-                                        dismissible: true
-                                    })
-                                })
-                                .catch((error)=>{
-                                    this.$toast.error("Operation Failed",{
-                                        duration: 3000,
-                                        dismissible: true
-                                    })
-                                    console.log(error.message);
-                                })
-                                .finally(()=>{
-                                    this.patient_code = "";
-                                    this.first_name = "";
-                                    this.last_name = "";
-                                    this.email = "";
-                                    this.birth_date = "";
-                                    this.id_number = "";
-                                    this.phone_number = "";
-                                    this.city = "";
-                                    this.gender = "",
-                                    this.address = "";
-                                    this.country = "";
-                                    this.hideLoader();
-                                    this.closeModal();
-                                    this.$store.commit('reloadingPage');
-                                })
+                            })
+                        }    
+                    })
 
-                            }
-                            
-                        })
-                    }    
-                })
             }
         },
         searchPatients(){
@@ -1013,6 +1140,7 @@ export default{
         },
         showModal(){
             this.scrollToTop();
+            this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
             if(this.isEditing == false){
                 this.first_name = "";
                 this.last_name = "";

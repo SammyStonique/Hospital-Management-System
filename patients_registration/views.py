@@ -1,4 +1,6 @@
 import os
+from django.db import transaction
+from django.db.models import F
 from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import *
@@ -79,6 +81,14 @@ def createPatient(request):
 
     
     return Response(serializer.data)
+
+# @transaction.atomic
+# @csrf_exempt
+# @api_view(['POST'])
+# def create_patient_with_nextofkin_visit_and_charges(request):
+
+
+
 
 
 @csrf_exempt

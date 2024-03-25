@@ -185,11 +185,11 @@
                         
                         <tr v-for="(hist,index) in patientHistoryList" :key="hist.patient_history_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3">{{ hist.date }}</td>
-                            <td class="text-left py-3">{{ hist.patient_name }}</td>
-                            <td class="text-left py-3" v-if="hist.staff_profile ==='Doctor'">Dr. {{ hist.staff_name}}</td>
-                            <td class="text-left py-3" v-else>{{ hist.staff_name}}</td>
-                            <td class="text-left py-3">{{ hist.notes }}</td>
+                            <td class="text-left py-2">{{ hist.date }}</td>
+                            <td class="text-left py-2">{{ hist.patient_name }}</td>
+                            <td class="text-left py-2" v-if="hist.staff_profile ==='Doctor'">Dr. {{ hist.staff_name}}</td>
+                            <td class="text-left py-2" v-else>{{ hist.staff_name}}</td>
+                            <td class="text-left py-2">{{ hist.notes }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">
@@ -291,14 +291,17 @@ export default{
         journalDetails: [],
         medicalFeeCharge: false,
         fees: [
-        {itemIndex:0, type: null, amount: null, fee_name: null }
+        {itemIndex:0, type: null, amount: null, fee_name: null, fee_ledger: null }
         ],
         itemInd: 0,
         applyMedicalFees: false,
         visitDoctor: false,
         txn_type: "",
-        postingAccountsArr: [],
-        contra: 0
+        journalEntryArr: [],
+        contra: 0,
+        invoice_description: [],
+        invDescr: "",
+        invoice_totals: 0,
 
     }
   },
@@ -313,7 +316,7 @@ export default{
     methods:{
         addRow() {
             this.itemInd += 1;
-            this.fees.push({itemIndex:this.itemInd, type: null, amount: null, fee_name: null });
+            this.fees.push({itemIndex:this.itemInd, type: null, amount: null, fee_name: null, fee_ledger: null });
         },
         removeRow(){
             if(this.fees.length > 1){
@@ -321,7 +324,7 @@ export default{
                 this.fees.splice(selectedFee, 1);
                 
             }else{
-                this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null}];
+                this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
             }
         },
         formatDate(dateString) {
@@ -452,7 +455,7 @@ export default{
             if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
                 let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
                 this.feesID = this.feesArray[selectedFee].fees_id;
-                this.feesLedger = this.feesArray[selectedFee].posting_account;
+                this.fees[this.itemInd].fee_ledger = this.feesArray[selectedFee].posting_account;
                 this.fees[this.itemInd].fee_name = this.feesArray[selectedFee].fee_name;
                 this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
             }
@@ -500,66 +503,89 @@ export default{
                     console.log(error.message);
                 })
                 .finally(()=>{
+                    this.invoice_description = [];
                     if(this.medicalFeeCharge && this.fees[0].type != null && this.fees[0].amount != null){
                         this.txn_type = "INV";
                         for(let i=0; i<this.fees.length; i++){
-                            let formData = {
-                                company: this.hospitalID,
-                                client: this.patientName,
-                                description: this.fees[i].fee_name +" for "+this.patientName,
-                                txn_type: this.txn_type,
-                                issue_date: this.formatDate(this.visit_date),
-                                total_amount: this.fees[i].amount,
-                            }
-                            this.axios
-                            .post("api/v1/create-journal/", formData)
-                            .then((response)=>{
-                                this.journalDetails = response.data;
-                            })
-                            .catch((error)=>{
-                                console.log(error.message);
-                                this.hideLoader();
-                            })
-                            .finally(()=>{
-                                this.postingAccountsArr.push(this.patientLedgerID, this.feesLedger)
-                                console.log("The posting account array is ",this.postingAccountsArr);
-
-                                for(let i=0; i<this.postingAccountsArr.length; i++){
-                                    let formData = new FormData();
-                                    formData.append('journal', this.journalDetails.journal_id);
-                                    formData.append('date', this.journalDetails.issue_date);
-                                    formData.append('txn_type', this.journalDetails.txn_type);
-                                    formData.append('posting_account', this.postingAccountsArr[i]);
-                                    if(this.postingAccountsArr[i] == this.patientLedgerID){
-                                        formData.append('debit_amount', this.journalDetails.total_amount);
-                                        formData.append('credit_amount', this.contra);
-                                    }else{
-                                        formData.append('debit_amount', this.contra);
-                                        formData.append('credit_amount', this.journalDetails.total_amount);
-                                    }
-                                    formData.append('description', this.journalDetails.description);
-                                    formData.append('company', this.hospitalID);
-                                    console.log("FOOORM DAAATA ", formData);
-
-                                    this.axios
-                                    .post("api/v1/create-journal-entry/", formData)
-                                    .then((response)=>{
-                                        console.log("The journal entry is ",response.data);
-                                    })
-                                    .catch((error)=>{
-                                        console.log(error.message);
-                                    })                             
+                            if(this.fees[i].amount != null){
+                                this.invoice_totals += Number(this.fees[i].amount);
+                                this.invoice_description.push(this.fees[i].fee_name +" for "+this.patientName);
+                                let jnlEntry1 ={
+                                    "date": this.formatDate(this.visit_date),
+                                    "description": this.fees[i].fee_name +" for "+this.patientName,
+                                    "txn_type": this.txn_type,
+                                    "posting_account": this.patientLedgerID,
+                                    "debit_amount": this.fees[i].amount,
+                                    "credit_amount": this.contra,
                                 }
-                                this.hideLoader();
-                                this.patient = "";
-                                this.visitDoctor = false;
-                                this.staff = "";
-                                this.visit_date = "";
-                                this.visit_notes = "";
-                                this.closeModal();
-                                this.$store.commit('reloadingPage');
-                            })
+                                let jnlEntry2 = {
+                                    "date": this.formatDate(this.visit_date),
+                                    "description": this.fees[i].fee_name +" for "+this.patientName,
+                                    "txn_type": this.txn_type,
+                                    "posting_account": this.fees[i].fee_ledger,
+                                    "debit_amount": this.contra,
+                                    "credit_amount": this.fees[i].amount,
+                                }
+                                this.journalEntryArr.push(jnlEntry1,jnlEntry2);
+                            }else{
+                                this.$toast.error("Please input fee amount",{
+                                    duration: 3000,
+                                    dismissible: true
+                                })
+                            }
                         }
+                        if(this.invoice_description.length > 1){
+                            for(let x=0; x<this.invoice_description.length; x++){
+                                this.invDescr += (this.invoice_description[x]+", ")
+                            }
+                        }else{
+                            this.invDescr = this.invoice_description[0];
+                        }
+                        
+                        this.journalDetails = [];
+                        let formData = {
+                            company: this.hospitalID,
+                            client: this.patientName,
+                            description: this.invDescr,
+                            txn_type: this.txn_type,
+                            issue_date: this.formatDate(this.visit_date),
+                            total_amount: this.invoice_totals,
+                        }
+                        this.axios
+                        .post("api/v1/create-journal/", formData)
+                        .then((response)=>{
+                            this.journalDetails = response.data;
+                        })
+                        .catch((error)=>{
+                            console.log(error.message);
+                            this.hideLoader();
+                        })
+                        .finally(()=>{
+                                let formData  ={
+                                    journal: this.journalDetails.journal_id,
+                                    journal_entry_array: this.journalEntryArr,
+                                    company:  this.hospitalID
+                                }
+
+                                this.axios
+                                .post("api/v1/create-journal-entry/", formData)
+                                .then((response)=>{
+
+                                })
+                                .catch((error)=>{
+                                    console.log(error.message);
+                                })    
+                                .finally(()=>{
+                                    this.hideLoader();
+                                    this.patient = "";
+                                    this.visitDoctor = false;
+                                    this.staff = "";
+                                    this.visit_date = "";
+                                    this.visit_notes = "";
+                                    this.closeModal();
+                                    this.$store.commit('reloadingPage');
+                                })                            
+                            })                     
                     }else{
                         this.patient = "";
                         this.visitDoctor = false;
@@ -699,7 +725,7 @@ export default{
             this.patientName = this.patientHistoryList[selectedItem].patient_name;
             this.$swal({
                 title: "Are you sure?",
-                text: `Do you wish to delete ${this.patientName}'s Vist?`,
+                text: `Do you wish to delete ${this.patientName}'s Visit?`,
                 type: 'warning',
                 showCloseButton: true,
                 showCancelButton: true,
@@ -733,8 +759,10 @@ export default{
         },
         showModal(){
             this.scrollToTop();
-            this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null}];
+            this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
             this.feesLedger = "";
+            this.invoice_totals = 0;
+            this.invoice_description = "";
             this.applyMedicalFees = false;
             this.medicalFeeCharge = false;
             if(this.isEditing == false){
