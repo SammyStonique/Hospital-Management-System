@@ -53,6 +53,8 @@ def patientsSearch(request):
                 "emergency_contact_person_name": pat.emergency_contact_person.first_name + " "+pat.emergency_contact_person.last_name,
                 "emergency_contact_person_email": pat.emergency_contact_person.email,
                 "emergency_contact_person_phone_number": pat.emergency_contact_person.phone_number,
+                "patient_ledger_id": pat.ledger_id.ledger_id,
+                "start_date": pat.start_date,
             }
             patientList.append(obj)
         else:
@@ -68,6 +70,8 @@ def patientsSearch(request):
                 "address": pat.address,
                 "country": pat.country,
                 "birth_date": pat.birth_date.strftime("%d %b, %Y"),
+                "patient_ledger_id": pat.ledger_id.ledger_id,
+                "start_date": pat.start_date,
             }
             patientList.append(obj)
 

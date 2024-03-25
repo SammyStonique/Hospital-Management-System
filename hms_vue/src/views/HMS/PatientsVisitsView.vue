@@ -548,6 +548,7 @@ export default{
                             client: this.patientName,
                             description: this.invDescr,
                             txn_type: this.txn_type,
+                            client_id: this.patientID,
                             issue_date: this.formatDate(this.visit_date),
                             total_amount: this.invoice_totals,
                         }

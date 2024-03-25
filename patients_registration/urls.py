@@ -14,6 +14,7 @@ from . import views
 urlpatterns = [
     path("", include(router.urls)),
     path("create-patient/", views.createPatient, name="create-patient"),
+    path("create-patient-with-visit/", views.create_patient_with_nextofkin_visit_and_charges, name="create-patient-with-visit"),
     path('patient-code-gen/<str:hospital_id>/', patient_code_generator.patient_code_generator),
     path("update-patient/", views.updatePatient, name="update-patient"),
     path("get-patients/", views.getPatients, name="get-patients"),

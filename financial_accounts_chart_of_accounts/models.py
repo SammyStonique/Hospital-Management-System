@@ -58,6 +58,7 @@ class Journal(models.Model):
     journal_no = models.CharField(max_length=250,blank=True, null=True)
     txn_type = models.CharField(max_length=250, choices=TRANSACTION_TYPE, default='JNL')
     client = models.CharField(max_length=250,blank=True, null=True)
+    client_id = models.CharField(max_length=250,blank=True, null=True)
     issue_date = models.DateField()
     due_date = models.DateField(null=True, blank=True)
     sub_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)

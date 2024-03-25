@@ -47,6 +47,7 @@ urlpatterns = [
     path("journal-entry-list/", views.JournalEntryList.as_view()),
     path("journal-entry-details/<str:pk>/", views.JournalEntryDetails.as_view()),
     path("journal-entries-search/", journalEntrySearch, name="journal-entries-search"),
+    path("ledger-journal-entries-search/", jnlSearch, name="ledger-journal-entries-search"),
     path("export-journal-entries-pdf/", views.generate_journal_entries_pdf, name="export-journal-entries-pdf"),
     path("export-journal-entries-excel/", views.generate_journal_entries_excel, name="export-journal-entries-excel"),
     path("export-journal-entries-csv/", views.generate_journal_entries_csv, name="export-journal-entries-csv"),

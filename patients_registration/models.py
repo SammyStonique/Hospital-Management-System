@@ -24,7 +24,7 @@ class Patient(models.Model):
     GENDER = (('','Select Gender'),('Male','Male'),('Female','Female'),('Other','Other'))
 
     patient_id = models.UUIDField(unique=True, primary_key=True, default=uuid.uuid4, editable=False)
-    patient_code = models.CharField(max_length=250)
+    patient_code = models.CharField(max_length=250, unique=True)
     hospital = models.ForeignKey(Company, related_name="patient_hospital", on_delete=models.CASCADE)
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)

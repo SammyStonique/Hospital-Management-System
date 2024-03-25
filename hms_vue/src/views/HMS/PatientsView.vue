@@ -152,6 +152,12 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="flex">
+                                <div class="basis-1/2">
+                                    <label for="">Notes<em>*</em></label><br />
+                                    <textarea id="notes" name="visit_notes" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2" v-model="visit_notes" rows="4" cols="50"></textarea>
+                                </div>
+                            </div>
                             <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8 mb-8 w-2/3 fees-table">
                                 <table class="min-w-full bg-white"> 
                                     <thead class="bg-gray-800 text-white static">
@@ -288,6 +294,73 @@
                     </template>
                     <template v-slot:footer>We Value Your Partnership </template>
                 </Modal>
+                <!-- MODAL component for showing patient statement -->
+                <Modal v-show="statementModalVisible" @close="closeStatementModal" :index="index">
+                    <template v-slot:header> Patient Statement Details </template>
+                    <template v-slot:body>
+                        <div class="statements-table">
+                            <table class="w-full mb-6">
+                                <tr>
+                                    <td class="font-bold">Patient Name:</td>
+                                    <td> {{ first_name }} {{ last_name }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="font-bold">Patient Code:</td>
+                                    <td>{{ patient_code }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">ID Number:</td>
+                                    <td>{{ id_number }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="font-bold">Phone Number:</td>
+                                    <td>{{ phone_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">Start Date:</td>
+                                    <td>{{ start_date }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="font-bold">Email:</td>
+                                    <td>{{ email }}</td>
+                                </tr>
+                            </table>
+                            <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8 statement-table">
+                                <table class="min-w-full bg-white"> 
+                                    <thead class="bg-gray-800 text-white">
+                                        <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
+                                            <th>#</th>
+                                            <th class="text-left py-2 px-2">Date</th>
+                                            <th class="text-left py-2 px-2">Ref No.</th>
+                                            <th class="text-left py-2 px-2">Txn No.</th>
+                                            <th class="text-left py-2 px-2">Details</th>
+                                            <th class="text-left py-2 px-2">Charges</th>
+                                            <th class="text-left py-2 px-2">Payments</th>
+                                            <th class="text-left py-2 px-2">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    
+                                    <tr v-for="(jnl,index) in jnlArray" :key="jnl.journal_entry_id" class="even:bg-gray-100">
+                                        <td></td>
+                                        <td class="text-left">{{ jnl.date }}</td>
+                                        <td class="text-left">{{ jnl.reference_no }}</td>
+                                        <td class="text-left">{{ jnl.journal_no }}</td>
+                                        <td class="text-left">{{ jnl.description }}</td>
+                                        <td class="text-left" v-if="jnl.debit_amount != 0">{{ Number(jnl.debit_amount).toLocaleString() }}</td>
+                                        <td class="text-left" v-else>-</td>
+                                        <td class="text-left" v-if="jnl.credit_amount != 0">{{ Number(jnl.credit_amount).toLocaleString() }}</td>
+                                        <td class="text-left" v-else>-</td>
+                                        <td class="text-left">{{ Number(jnl.running_balance).toLocaleString() }}</td>
+                                       
+                                    </tr>
+                                    </tbody>
+                                </table>   
+                            </div>
+                        </div>
+                    </template>
+                    <template v-slot:footer>We Value Your Partnership </template>
+                </Modal>
                 <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8">
                     <table class="min-w-full bg-white"> 
                         <thead class="bg-gray-800 text-white">
@@ -318,10 +391,13 @@
                             <td class="text-left py-2">{{ pat.emergency_contact_person_name }}</td>
                             <td>
                                 <div class="flex">
-                                    <div class="basis-1/2">
+                                    <div class="basis-1/3">
                                         <button @click="editPatient(index)"><i class="fa fa-pencil" aria-hidden="true" title="Edit"></i></button>
                                     </div>
-                                    <div class="basis-1/2">
+                                    <div class="basis-1/3">
+                                        <button @click="showStatementModal(index)"><i class="fa fa-file-pdf-o" aria-hidden="true" title="Statement"></i></button>
+                                    </div>
+                                    <div class="basis-1/3">
                                         <button @click="removePatient(index)"><i class="fa fa-trash-o" aria-hidden="true" title="Delete"></i></button>
                                     </div>
                                 </div>
@@ -382,6 +458,7 @@ export default{
         gender_search: "",
         birth_date_search: null,
         patientModalVisible: false,
+        statementModalVisible:false,
         importModalVisible: false,
         isEditing: false,
         isSearching: false,
@@ -394,8 +471,10 @@ export default{
         pageCount: 0,
         patientID: "",
         patientName: "",
-        patientLedger: [],
+        patientLedger: "",
         patientList: [],
+        journalsArray: [],
+        jnlArray: [],
         patientDetails: [],
         emergencyContactDetails: [],
         emergencyContactID: "",
@@ -425,6 +504,7 @@ export default{
         axiosError: [],
         visit_creation: false,
         visitation_fees: "",
+        visit_notes: "",
         fees: [
         {itemIndex:0, type: null, amount: null, fee_name: null, fee_ledger: null}
         ],
@@ -587,11 +667,44 @@ export default{
             
             })
         },
+        fetchJournals(patientID){
+            this.journalsArray = [];
+            let formData = {
+                company: this.hospitalID,
+                patient: patientID
+            }
+            this.axios
+            .post("api/v1/ledger-journal-entries-search/", formData)
+            .then((response)=>{
+                this.jnlArray = [];
+                let running_balance = 0;
+                this.journalsArray = response.data.results;
+                for(let i=0; i<this.journalsArray.length; i++){
+                    if(this.journalsArray[i].debit_amount != 0){
+                        running_balance += this.journalsArray[i].debit_amount;
+                        this.journalsArray[i]['running_balance'] = running_balance;
+                        this.jnlArray.push(this.journalsArray[i])
+                    }
+                    else if(this.journalsArray[i].credit_amount != 0){
+                        running_balance -= this.journalsArray[i].credit_amount;
+                        this.journalsArray[i]['running_balance'] = running_balance;
+                        this.jnlArray.push(this.journalsArray[i])
+                    }
+                }
+                console.log("The jnlArray consists of ",this.jnlArray);
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
+        },
         setDoctorID(){
             this.doctorID = "";
             if(this.$refs.doctorSelect.selectedIndex > 0){
                 let selectedDoctor = this.$refs.doctorSelect.selectedIndex - 1;
-                this.doctorID = this.doctorsArray[selectedDoctor].doctor_id;
+                this.doctorID = this.doctorsArray[selectedDoctor].user;
             }
         },
         setUserID(){
@@ -609,10 +722,9 @@ export default{
                 this.fees[this.itemInd].fee_ledger = this.feesArray[selectedFee].posting_account;
                 this.fees[this.itemInd].fee_name = this.feesArray[selectedFee].fee_name;
                 this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
-                console.log("THE FEES DETAILS ARE ",this.fees[this.itemInd]);
             }
         },
-        async createPatient(){
+        createPatient(){
             this.axiosError = [];
             this.showLoader();
             if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === '' || this.gender === ''
@@ -624,221 +736,256 @@ export default{
                 })
                 this.hideLoader();
             }
+            else if(this.visit_creation && this.fees[0].type != null && this.fees[0].amount != null && this.visit_notes && ((this.staff != '' || this.staff != null) || (this.doctor != ''|| this.doctor != null))){
+                this.txn_type = "INV";
+                this.invoice_description = [];
+                for(let i=0; i<this.fees.length; i++){
+                    if(this.fees[i].amount != null){
+                        this.invoice_totals += Number(this.fees[i].amount);
+                        this.invoice_description.push(this.fees[i].fee_name +" for "+this.first_name+" "+this.last_name);
+                        let jnlEntry1 ={
+                            "date": this.formatDate(this.today_date),
+                            "description": this.fees[i].fee_name +" for "+this.first_name+" "+this.last_name,
+                            "txn_type": this.txn_type,
+                            "posting_account": this.patientLedger,
+                            "debit_amount": this.fees[i].amount,
+                            "credit_amount": this.contra,
+                        }
+                        let jnlEntry2 = {
+                            "date": this.formatDate(this.today_date),
+                            "description": this.fees[i].fee_name +" for "+this.first_name+" "+this.last_name,
+                            "txn_type": this.txn_type,
+                            "posting_account": this.fees[i].fee_ledger,
+                            "debit_amount": this.contra,
+                            "credit_amount": this.fees[i].amount,
+                        }
+                        this.journalEntryArr.push(jnlEntry1,jnlEntry2);
+                    }else{
+                        this.$toast.error("Please input fee amount",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                    }
+                }
+                if(this.invoice_description.length > 1){
+                    for(let x=0; x<this.invoice_description.length; x++){
+                        this.invDescr += (this.invoice_description[x]+", ")
+                    }
+                }else{
+                    this.invDescr = this.invoice_description[0];
+                }
+                let formData = {
+                    hospital: this.hospitalID,
+                    contact_first_name: this.contact_person_first_name,
+                    contact_last_name: this.contact_person_last_name,
+                    contact_email: this.contact_person_email,
+                    contact_phone_number: this.contact_person_phone_number,
+                    patient: this.first_name + " "+ this.last_name,
+                    first_name: this.first_name,
+                    last_name: this.last_name,
+                    email: this.email,
+                    birth_date: this.formatDate(this.birth_date),
+                    phone_number: this.phone_number,
+                    city: this.city,
+                    gender: this.gender,
+                    id_number: this.id_number,
+                    address: this.address,
+                    country: this.country,
+                    doctor: this.doctorID,
+                    staff: this.userID,
+                    visit_notes: this.visit_notes,
+                    company: this.hospitalID,
+                    client: this.first_name+" "+this.last_name,
+                    description: this.invDescr,
+                    txn_type: this.txn_type,
+                    issue_date: this.formatDate(this.today_date),
+                    total_amount: this.invoice_totals,
+                    journal_entry_array: this.journalEntryArr,
+                }
+                this.axios
+                .post("api/v1/create-patient-with-visit/", formData)
+                .then((response)=>{
+                    console.log(response.data);
+                    if (response.status == 200){
+                        this.$toast.success("Patient Added Succesfully",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.first_name = "";
+                        this.last_name = "";
+                        this.email = "";
+                        this.birth_date = "";
+                        this.id_number = "";
+                        this.phone_number = "";
+                        this.city = "";
+                        this.gender = "",
+                        this.address = "";
+                        this.country = "";
+                        this.contact_person_first_name = "";
+                        this.contact_person_last_name = "";
+                        this.contact_person_email = "";
+                        this.contact_person_phone_number = "";
+                        this.visit_notes = "";
+                        this.visit_creation = false;
+                        this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
+                    }
+                    else{
+                        this.$toast.error("Error Adding Patient",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                    }
+                    
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                    this.$toast.error("Error Adding Patient",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                })
+                .finally(()=>{
+
+                })    
+            }
+            else if(this.visit_creation && this.visit_notes && ((this.staff != '' || this.staff != null) || (this.doctor != ''|| this.doctor != null)) && this.fees[0].type == null && this.fees[0].amount == null){
+                let formData = {
+                    hospital: this.hospitalID,
+                    contact_first_name: this.contact_person_first_name,
+                    contact_last_name: this.contact_person_last_name,
+                    contact_email: this.contact_person_email,
+                    contact_phone_number: this.contact_person_phone_number,
+                    patient: this.first_name + " "+ this.last_name,
+                    first_name: this.first_name,
+                    last_name: this.last_name,
+                    email: this.email,
+                    birth_date: this.formatDate(this.birth_date),
+                    phone_number: this.phone_number,
+                    city: this.city,
+                    gender: this.gender,
+                    id_number: this.id_number,
+                    address: this.address,
+                    country: this.country,
+                    doctor: this.doctorID,
+                    staff: this.userID,
+                    visit_notes: this.visit_notes,
+                    issue_date: this.formatDate(this.today_date)
+                }
+                this.axios
+                .post("api/v1/create-patient-with-visit/", formData)
+                .then((response)=>{
+                    console.log(response.data);
+                    if (response.status == 200){
+                        this.$toast.success("Patient Added Succesfully",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.first_name = "";
+                        this.last_name = "";
+                        this.email = "";
+                        this.birth_date = "";
+                        this.id_number = "";
+                        this.phone_number = "";
+                        this.city = "";
+                        this.gender = "",
+                        this.address = "";
+                        this.country = "";
+                        this.contact_person_first_name = "";
+                        this.contact_person_last_name = "";
+                        this.contact_person_email = "";
+                        this.contact_person_phone_number = "";
+                        this.visit_notes = "";
+                        this.visit_creation = false;
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
+                    }
+                    else{
+                        this.$toast.error("Error Adding Patient",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                    }
+                    
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                    this.$toast.error("Error Adding Patient",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                })
+                .finally(()=>{
+
+                })
+            }
             else{
                 let formData = {
-                        hospital: this.hospitalID,
-                        first_name: this.contact_person_first_name,
-                        last_name: this.contact_person_last_name,
-                        email: this.contact_person_email,
-                        phone_number: this.contact_person_phone_number,
-                        patient: this.first_name + " "+ this.last_name,
+                    hospital: this.hospitalID,
+                    contact_first_name: this.contact_person_first_name,
+                    contact_last_name: this.contact_person_last_name,
+                    contact_email: this.contact_person_email,
+                    contact_phone_number: this.contact_person_phone_number,
+                    patient: this.first_name + " "+ this.last_name,
+                    first_name: this.first_name,
+                    last_name: this.last_name,
+                    email: this.email,
+                    birth_date: this.formatDate(this.birth_date),
+                    phone_number: this.phone_number,
+                    city: this.city,
+                    gender: this.gender,
+                    id_number: this.id_number,
+                    address: this.address,
+                    country: this.country,
+                }
+                this.axios
+                .post("api/v1/create-patient-with-visit/", formData)
+                .then((response)=>{
+                    console.log(response.data);
+                    if (response.status == 200){
+                        this.$toast.success("Patient Added Succesfully",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.first_name = "";
+                        this.last_name = "";
+                        this.email = "";
+                        this.birth_date = "";
+                        this.id_number = "";
+                        this.phone_number = "";
+                        this.city = "";
+                        this.gender = "",
+                        this.address = "";
+                        this.country = "";
+                        this.contact_person_first_name = "";
+                        this.contact_person_last_name = "";
+                        this.contact_person_email = "";
+                        this.contact_person_phone_number = "";
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
                     }
-                
-                    this.axios
-                    .post("api/v1/create-emergency-contact-person/", formData)
-                    .then((response)=>{
-                        this.emergencyContactDetails = response.data;
-                        console.log(this.emergencyContactDetails);
-                        this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
-                    })
-                    .catch((error)=>{
-                        console.log(error.message);
-                        this.axiosError.push(error.message);
-                    })
+                    else{
+                        this.$toast.error("Error Adding Patient",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                    }
                     
-                    .finally(()=>{
-                        if(this.axiosError.length){
-                            this.$toast.error("Error Adding Next Of Kin",{
-                                duration: 3000,
-                                dismissible: true
-                            })
-                        }
-                        else{
-                            this.axios
-                            .get(`api/v1/patient-code-gen/${this.hospitalID}/`)
-                            .then((response)=>{
-                                this.patient_code = response.data;
-                            })
-                            .catch((error)=>{
-                                console.log(error.message)
-                                this.axiosError.push(error.message)
-                            })
-                            .finally(()=>{
-                                if(this.axiosError.length){
-                                    this.$toast.error("Error Generating Patient Code",{
-                                        duration: 3000,
-                                        dismissible: true
-                                    })
-                                }
-                                else{
-                                    let formData = {
-                                        hospital: this.hospitalID,
-                                        patient_code: this.patient_code,
-                                        first_name: this.first_name,
-                                        last_name: this.last_name,
-                                        email: this.email,
-                                        birth_date: this.formatDate(this.birth_date),
-                                        phone_number: this.phone_number,
-                                        city: this.city,
-                                        gender: this.gender,
-                                        id_number: this.id_number,
-                                        address: this.address,
-                                        country: this.country,
-                                        emergency_contact_person: this.emergencyContactID
-                                    }
-                                    
-                                    this.axios
-                                    .post("api/v1/create-patient/", formData)
-                                    .then((response)=>{
-                                        this.patientDetails = response.data;
-                                        console.log("The patients Details are ",)
-                                        this.$toast.success("Patient Added Succesfully",{
-                                            duration: 3000,
-                                            dismissible: true
-                                        })
-                                    })
-                                    .catch((error)=>{
-                                        this.$toast.error("Operation Failed",{
-                                            duration: 3000,
-                                            dismissible: true
-                                        })
-                                        console.log(error.message);
-                                    })
-                                    .finally(()=>{
-                                        let formData = {
-                                            ledger_code: this.patient_code,
-                                            company: this.hospitalID
-                                        }
-                                        this.axios
-                                        .post("api/v1/fetch-ledgers/", formData)
-                                        .then((response)=>{
-                                            console.log("The ledgers response data is ", response.data);
-                                            this.patientLedger = response.data;
-                                        })
-                                        .catch((error)=>{
-                                            console.log(error.message)
-                                        })
-                                        .finally(()=>{
-                                            this.invoice_description = [];
-                                            if(this.visit_creation && this.fees[0].type != null && this.fees[0].amount != null && ((this.staff != '' || this.staff != null) || (this.doctor != ''|| this.doctor != null))){
-                                                this.txn_type = "INV";
-                                                for(let i=0; i<this.fees.length; i++){
-                                                    if(this.fees[i].amount != null){
-                                                        this.invoice_totals += Number(this.fees[i].amount);
-                                                        this.invoice_description.push(this.fees[i].fee_name +" for "+this.patientDetails.first_name+" "+this.patientDetails.last_name);
-                                                        let jnlEntry1 ={
-                                                            "date": this.formatDate(this.today_date),
-                                                            "description": this.fees[i].fee_name +" for "+this.patientDetails.first_name+" "+this.patientDetails.last_name,
-                                                            "txn_type": this.txn_type,
-                                                            "posting_account": this.patientLedger.ledger_id,
-                                                            "debit_amount": this.fees[i].amount,
-                                                            "credit_amount": this.contra,
-                                                        }
-                                                        let jnlEntry2 = {
-                                                            "date": this.formatDate(this.today_date),
-                                                            "description": this.fees[i].fee_name +" for "+this.patientDetails.first_name+" "+this.patientDetails.last_name,
-                                                            "txn_type": this.txn_type,
-                                                            "posting_account": this.fees[i].fee_ledger,
-                                                            "debit_amount": this.contra,
-                                                            "credit_amount": this.fees[i].amount,
-                                                        }
-                                                        this.journalEntryArr.push(jnlEntry1,jnlEntry2);
-                                                    }else{
-                                                        this.$toast.error("Please input fee amount",{
-                                                            duration: 3000,
-                                                            dismissible: true
-                                                        })
-                                                    }
-                                                }
-                                                console.log("The journalEntryArr is ", this.journalEntryArr);
-                                                if(this.invoice_description.length > 1){
-                                                    for(let x=0; x<this.invoice_description.length; x++){
-                                                        this.invDescr += (this.invoice_description[x]+", ")
-                                                    }
-                                                }else{
-                                                    this.invDescr = this.invoice_description[0];
-                                                }
-                                                
-                                                this.journalDetails = [];
-                                                let formData = {
-                                                    company: this.hospitalID,
-                                                    client: this.patientDetails.first_name+" "+this.patientDetails.last_name,
-                                                    description: this.invDescr,
-                                                    txn_type: this.txn_type,
-                                                    issue_date: this.formatDate(this.today_date),
-                                                    total_amount: this.invoice_totals,
-                                                }
-                                                this.axios
-                                                .post("api/v1/create-journal/", formData)
-                                                .then((response)=>{
-                                                    this.journalDetails = response.data;
-                                                })
-                                                .catch((error)=>{
-                                                    console.log(error.message);
-                                                    this.hideLoader();
-                                                })
-                                                .finally(()=>{
-                                                        let formData  ={
-                                                            journal: this.journalDetails.journal_id,
-                                                            journal_entry_array: this.journalEntryArr,
-                                                            company:  this.hospitalID
-                                                        }
-
-                                                        this.axios
-                                                        .post("api/v1/create-journal-entry/", formData)
-                                                        .then((response)=>{
-
-                                                        })
-                                                        .catch((error)=>{
-                                                            console.log(error.message);
-                                                        })    
-                                                        .finally(()=>{
-                                                            this.hideLoader();
-                                                            this.patient = "";
-                                                            this.visitDoctor = false;
-                                                            this.staff = "";
-                                                            this.visit_date = "";
-                                                            this.visit_notes = "";
-                                                            this.closeModal();
-                                                            // this.$store.commit('reloadingPage');
-                                                        })                            
-                                                    })                     
-                                            }else{
-                                                this.patient = "";
-                                                this.visitDoctor = false;
-                                                this.staff = "";
-                                                this.visit_date = "";
-                                                this.visit_notes = "";
-                                                this.hideLoader();
-                                                this.closeModal();
-                                                // this.$store.commit('reloadingPage');
-                                            }
-                                        })
-                                        
-                                    })
-                                    // .finally(()=>{
-                                    //     this.patient_code = "";
-                                    //     this.first_name = "";
-                                    //     this.last_name = "";
-                                    //     this.email = "";
-                                    //     this.birth_date = "";
-                                    //     this.id_number = "";
-                                    //     this.phone_number = "";
-                                    //     this.city = "";
-                                    //     this.gender = "",
-                                    //     this.address = "";
-                                    //     this.country = "";
-                                    //     this.hideLoader();
-                                    //     this.closeModal();
-                                    //     this.$store.commit('reloadingPage');
-                                    // })
-
-                                }
-                                
-                            })
-                        }    
+                })
+                .catch((error)=>{
+                    console.log(error.message);
+                    this.$toast.error("Error Adding Patient",{
+                        duration: 3000,
+                        dismissible: true
                     })
-
+                })
+                .finally(()=>{
+                    
+                })
             }
         },
         searchPatients(){
@@ -1158,6 +1305,20 @@ export default{
             }
             this.patientModalVisible = !this.patientModalVisible;
         },
+        showStatementModal(){
+            let selectedPatient = arguments[0];
+            this.patientID = this.patientList[selectedPatient].patient_id;
+            this.first_name = this.patientList[selectedPatient].first_name;
+            this.last_name = this.patientList[selectedPatient].last_name;
+            this.patient_code = this.patientList[selectedPatient].patient_code;
+            this.email = this.patientList[selectedPatient].email;
+            this.id_number = this.patientList[selectedPatient].id_number;
+            this.phone_number = this.patientList[selectedPatient].phone_number;
+            this.start_date = this.patientList[selectedPatient].start_date;
+            this.fetchJournals(this.patientID);
+            this.scrollToTop();
+            this.statementModalVisible = !this.statementModalVisible;
+        },
         showImportModal(){
             this.showOptions = false;
             this.importModalVisible = ! this.importModalVisible;
@@ -1175,6 +1336,9 @@ export default{
         },
         closeImportModal(){
             this.importModalVisible = false;
+        },
+        closeStatementModal(){
+            this.statementModalVisible = false;
         },
         loadNext(){
             if(this.currentPage >= this.pageCount){
@@ -1433,5 +1597,10 @@ em{
     overflow-y: scroll;
     overflow-x: scroll;
 }
-
+.statements-table{
+    min-width: 70vw;
+}
+.statement-table{
+    min-height: 50vh;
+}
 </style>

@@ -124,11 +124,11 @@
                         
                         <tr v-for="(cont,index) in contactPersonList" :key="cont.contact_person_id" class="even:bg-gray-100">
                             <td>{{ index + 1 }}.</td>
-                            <td class="text-left py-3 px-2">{{ cont.first_name }}</td>
-                            <td class="text-left py-3 px-2">{{ cont.last_name }}</td>
-                            <td class="text-left py-3 px-2">{{ cont.email }}</td>
-                            <td class="text-left py-3 px-2">{{ cont.phone_number }}</td>
-                            <td class="text-left py-3 px-2">{{ cont.patient }}</td>
+                            <td class="text-left py-2 px-2">{{ cont.first_name }}</td>
+                            <td class="text-left py-2 px-2">{{ cont.last_name }}</td>
+                            <td class="text-left py-2 px-2">{{ cont.email }}</td>
+                            <td class="text-left py-2 px-2">{{ cont.phone_number }}</td>
+                            <td class="text-left py-2 px-2">{{ cont.patient }}</td>
                             <td>
                                 <div class="flex">
                                     <div class="basis-1/2">

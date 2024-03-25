@@ -5,7 +5,10 @@ from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import *
 from .patient_code_generator import patient_code_gen
+from financial_accounts_chart_of_accounts.journal_no_generator import invoice_number_gen
 from company.models import Company
+from financial_accounts_chart_of_accounts.models import *
+from users.models import *
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
@@ -82,12 +85,128 @@ def createPatient(request):
     
     return Response(serializer.data)
 
-# @transaction.atomic
-# @csrf_exempt
-# @api_view(['POST'])
-# def create_patient_with_nextofkin_visit_and_charges(request):
+@transaction.atomic
+@csrf_exempt
+@api_view(['POST'])
+def create_patient_with_nextofkin_visit_and_charges(request):
+    hospital_id = request.data.get('hospital')
+    contact_first_name = request.data.get('contact_first_name')
+    contact_last_name = request.data.get('contact_last_name')
+    contact_email = request.data.get('contact_email')
+    contact_phone_number = request.data.get('contact_phone_number')
+    patient_name = request.data.get('patient')
+    first_name = request.data.get('first_name')
+    last_name = request.data.get('last_name')
+    email = request.data.get('email')
+    birth_date = request.data.get('birth_date')
+    phone_number = request.data.get('phone_number')
+    city = request.data.get('city')
+    gender = request.data.get('gender')
+    id_number = request.data.get('id_number')
+    address = request.data.get('address')
+    country = request.data.get('country')
+    doctor = request.data.get('doctor')
+    is_doctor = True
+    staff = request.data.get('staff')
+    visit_notes = request.data.get('visit_notes')
+    company = request.data.get('company')
+    client = request.data.get('client')
+    description = request.data.get('description')
+    txn_type = request.data.get('txn_type')
+    issue_date = request.data.get('issue_date')
+    total_amount = request.data.get('total_amount')
+    journal_entry_array = request.data.get('journal_entry_array')
+    print("The journal array is ",journal_entry_array)
 
+    if journal_entry_array is not None:
+        hospital_uuid = uuid.UUID(hospital_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        contact_person = EmergencyContactPerson.objects.create(first_name=contact_first_name, last_name=contact_last_name, email=contact_email,
+                                                               phone_number=contact_phone_number, patient=patient_name, hospital=hospital)
+        print("The contact person is ",contact_person)
+        patient_code = patient_code_gen(hospital_id)
+        print("The patient code is ",patient_code)
+        patient = Patient.objects.create(hospital=hospital, first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, gender=gender, 
+                                         id_number=id_number, birth_date=birth_date, city=city, address=address, country=country, emergency_contact_person=contact_person, patient_code=patient_code)
+        print("The patient is ",patient)
+        patient_ledger = Ledger.objects.get(ledger_code=patient.patient_code)
+        print("The patient ledger is ",patient_ledger)
 
+        if staff is not None and doctor is None:
+            staff_uuid = uuid.UUID(staff)
+            staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
+            PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, hospital=hospital)
+        elif doctor is not None and staff is None:
+            staff_uuid = uuid.UUID(doctor)
+            staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
+            PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, is_doctor=is_doctor, hospital=hospital)
+
+        invoice_number = invoice_number_gen(hospital_id)
+        print("The invoice number is ",invoice_number)
+        invoice_journal = Journal.objects.create(journal_no=invoice_number,txn_type=txn_type, client=client, description=description, issue_date=issue_date,
+                                                 client_id=patient.patient_id, total_amount=total_amount, company=hospital)
+        print("The invoice journal is ",invoice_journal)
+        for jnlEntry in journal_entry_array:
+            print("The JNLE is ", jnlEntry)
+            print("The patient ledger is ",patient_ledger.ledger_id)
+            if jnlEntry['posting_account'] == "":
+                jnlEntry['posting_account'] = patient_ledger.ledger_id
+                print("The posting account is ", jnlEntry['posting_account'])
+                ledger_uuid = uuid.UUID(str(patient_ledger.ledger_id))
+                company = get_object_or_404(Company, company_id=hospital_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                            posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+               
+            else:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=hospital_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                            posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+
+        message = {'msg':"The patient, visit and charges have been succesfully added"}    
+        return Response(message)
+
+    elif staff is not None or doctor is not None and journal_entry_array is None:
+        hospital_uuid = uuid.UUID(hospital_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        contact_person = EmergencyContactPerson.objects.create(first_name=contact_first_name, last_name=contact_last_name, email=contact_email,
+                                                               phone_number=contact_phone_number, patient=patient_name, hospital=hospital)
+        print("The contact person is ",contact_person)
+        patient_code = patient_code_gen(hospital_id)
+        print("The patient code is ",patient_code)
+        patient = Patient.objects.create(hospital=hospital, first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, gender=gender, 
+                                         id_number=id_number, birth_date=birth_date, city=city, address=address, country=country, emergency_contact_person=contact_person, patient_code=patient_code)
+        print("The patient is ",patient)
+        patient_ledger = Ledger.objects.get(ledger_code=patient.patient_code)
+        print("The patient ledger is ",patient_ledger)
+
+        if staff is not None and doctor is None:
+            staff_uuid = uuid.UUID(staff)
+            staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
+            PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, hospital=hospital)
+        elif doctor is not None and staff is None:
+            staff_uuid = uuid.UUID(doctor)
+            staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
+            PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, is_doctor=is_doctor, hospital=hospital)
+
+        message = {'msg':"The patient and visit without the charges have been succesfully added"}    
+        return Response(message)
+
+    else:
+        hospital_uuid = uuid.UUID(hospital_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        contact_person = EmergencyContactPerson.objects.create(first_name=contact_first_name, last_name=contact_last_name, email=contact_email,
+                                                               phone_number=contact_phone_number, patient=patient_name, hospital=hospital)
+        print("The contact person is ",contact_person)
+        patient_code = patient_code_gen(hospital_id)
+        print("The patient code is ",patient_code)
+        patient = Patient.objects.create(hospital=hospital, first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, gender=gender, 
+                                         id_number=id_number, birth_date=birth_date, city=city, address=address, country=country, emergency_contact_person=contact_person, patient_code=patient_code)
+        print("The patient is ",patient)
+        message = {'msg':"Patient Added Succesfully"}    
+        return Response(message)
 
 
 

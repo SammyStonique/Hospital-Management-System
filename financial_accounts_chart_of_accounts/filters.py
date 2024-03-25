@@ -13,9 +13,9 @@ class BasePagination(PageNumberPagination):
     max_page_size = 1000
 
 class DefaultPagination(PageNumberPagination):
-    page_size = 1000
+    page_size = 10000
     page_size_query_param = 'page_size'
-    max_page_size = 1000
+    max_page_size = 100000
 
 @api_view(['POST'])
 @csrf_exempt
@@ -206,5 +206,57 @@ def journalEntrySearch(request):
     paginator = pagination_class()
 
     page = paginator.paginate_queryset(journalEntryList, request)
+
+    return  paginator.get_paginated_response(page)
+
+
+@api_view(['POST'])
+@csrf_exempt
+def jnlSearch(request):
+    journalList = []
+    data = json.loads(request.body)
+    patient_id = data['patient']
+    company_id = data['company']
+    contra = 0
+
+    company_uuid = uuid.UUID(company_id)
+    journals = Journal.objects.filter(company=company_uuid, client_id=patient_id)
+
+    for jnl in journals:
+        if jnl.txn_type == "INV":
+            obj = {
+                "journal_id": jnl.journal_id,
+                "journal_no": jnl.journal_no,
+                "date": jnl.issue_date.strftime("%d %b, %Y"),
+                "description": jnl.description,
+                "txn_type": jnl.txn_type,
+                "debit_amount": jnl.total_amount,
+                "credit_amount": contra,
+                "reference_no": jnl.reference_no,
+                "total_amount": jnl.total_amount,
+                "done_by": jnl.done_by,
+
+            }
+            journalList.append(obj)
+        elif jnl.txn_type == "RCPT":
+            obj = {
+                "journal_id": jnl.journal_id,
+                "journal_no": jnl.journal_no,
+                "date": jnl.issue_date.strftime("%d %b, %Y"),
+                "description": jnl.description,
+                "txn_type": jnl.txn_type,
+                "debit_amount": contra,
+                "credit_amount": jnl.total_amount,
+                "reference_no": jnl.reference_no,
+                "total_amount": jnl.total_amount,
+                "done_by": jnl.done_by,
+
+            }
+            journalList.append(obj)
+
+    pagination_class = DefaultPagination
+    paginator = pagination_class()
+
+    page = paginator.paginate_queryset(journalList, request)
 
     return  paginator.get_paginated_response(page)

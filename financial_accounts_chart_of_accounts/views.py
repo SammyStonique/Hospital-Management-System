@@ -656,7 +656,6 @@ def getJournals(request):
     journal_id = request.data.get("journal")
     company_id = request.data.get("company")
     txn_type = request.data.get("txn_type")
-    journal_ledger = request.data.get("journal_ledger")
 
     if journal_id is not None:
         company_uuid = uuid.UUID(company_id)
@@ -671,16 +670,6 @@ def getJournals(request):
         company_uuid = uuid.UUID(company_id)
         company = get_object_or_404(Company, company_id=company_uuid)
         journals = Journal.objects.filter(company=company,txn_type= txn_type)
-
-        serializer = JournalSerializer(journals, many=True)
-        return Response(serializer.data)
-    
-    elif journal_ledger is not None:
-        journal_ledger_uuid = uuid.UUID(journal_ledger)
-        company_uuid = uuid.UUID(company_id)
-        company = get_object_or_404(Company, company_id=company_uuid)
-        ledger = get_object_or_404(Ledger, ledger_id=journal_ledger_uuid)
-        journals = Journal.objects.filter(company=company,journal_ledger= ledger)
 
         serializer = JournalSerializer(journals, many=True)
         return Response(serializer.data)
