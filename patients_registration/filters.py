@@ -12,6 +12,11 @@ class BasePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
+class PatientsPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
 @api_view(['POST'])
 @csrf_exempt
 def patientsSearch(request):
@@ -77,7 +82,7 @@ def patientsSearch(request):
 
         
 
-    pagination_class = BasePagination
+    pagination_class = PatientsPagination
     paginator = pagination_class()
 
     page = paginator.paginate_queryset(patientList, request)

@@ -1314,7 +1314,7 @@ export default{
             this.email = this.patientList[selectedPatient].email;
             this.id_number = this.patientList[selectedPatient].id_number;
             this.phone_number = this.patientList[selectedPatient].phone_number;
-            this.start_date = this.patientList[selectedPatient].start_date;
+            this.start_date = this.formatDate(this.patientList[selectedPatient].start_date);
             this.fetchJournals(this.patientID);
             this.scrollToTop();
             this.statementModalVisible = !this.statementModalVisible;

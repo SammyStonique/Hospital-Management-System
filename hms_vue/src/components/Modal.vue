@@ -53,7 +53,7 @@
     margin-top: 10px;
     margin-left: 40px;
     margin-right: 20px;
-    margin-bottom: 40px; 
+    margin-bottom: 120px; 
     padding-top: 30px;
     padding-bottom: 30px;
   }

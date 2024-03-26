@@ -62,107 +62,72 @@
                     </div>
                 </div>
                 <!-- MODAL component for adding a new invoice -->
-                <Modal v-show="patientModalVisible" @close="closeModal" :index="index">
-                    <template v-slot:header> Patient Details </template>
+                <Modal v-show="isModalVisible" @close="closeModal" :index="index">
+                    <template v-slot:header> Invoice Details </template>
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
-                        <div class="flex mb-6">
-                            <div class="basis-1/3 mr-6">
-                                <label for="">First Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="first_name" required>
-                            </div>
-                            <div class="basis-1/3 mr-6">
-                                <label for="">Last Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="last_name" required>
-                            </div>
-                            <div class="basis-1/3 mr-3">
-                                <label for="">Email<em>*</em></label><br />
-
-                            </div>
-                        </div>
-                        <div class="flex mb-6">   
-                            <div class="basis-1/3 mr-6">
-                                <label for="">Phone Number<em>*</em></label><br />
-                            </div>
-                            <div class="basis-1/3 mr-6">
-                                <label for="">Birth Date<em>*</em></label><br />
-                                <datepicker  placeholder="Birth Date...." v-model="birth_date" clearable :clear-button="clearButton">
-                                </datepicker>
-                            </div> 
-                            <div class="basis-1/3 mr-3">
-                                <label for="">ID Number<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="id_number">
-                            </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/3 mr-6">
-                                <label for="">Gender<em>*</em></label><br />
-                                <select name="" ref="" id="" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60"  v-model="gender">
-                                  <option value="" selected disabled>---Select Gender</option>
-                                  <option value="Male">Male</option>
-                                  <option value="Female">Female</option> 
-                                  <option value="Other">Other</option>
+                        <div class="flex mb-6 invoices-table">
+                            <!-- <div class="basis-1/3 mr-6">
+                                <label for="">Patient<em>*</em></label><br />
+                                <select name="patient" ref="patientSelect" id="selectPatient" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setPatientID" onfocus="this.selectedIndex = -1;" v-model="patient">
+                                    <option value="" disabled selected>---Select Patient---</option> 
+                                    <option v-for="pat in patientsArray">({{ pat.patient_code }}) - {{pat.first_name}}  {{pat.last_name}}</option> 
                                 </select>
+                            </div> -->
+                            <div class="basis-1/2 w-72 mr-6">
+                                <label for="">Patient<em>*</em></label><br />
+                                <SearchableDropdown
+                                :options="patientsArr"
+                                :dropdownWidth="patientDropdownWidth"
+                                @option-selected="handleSelectedPatient"
+                                />
                             </div>
-                            <div class="basis-1/3 mr-6">
-                                <label for="">City/Town<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="city">
+                            <div class="basis-1/4 mr-6">
+                                <label for="">Invoice Date<em>*</em></label><br />
+                                <datepicker  placeholder="Invoice Date...." v-model="invoice_date" clearable :clear-button="clearButton">
+                                </datepicker>
                             </div>
-                            <div class="basis-1/3 mr-3">
-                                <label for="">Country<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="country">
+                            <div class="basis-1/4 mr-3">
+                                <label for="">Due Date<em>*</em></label><br />
+                                <datepicker  placeholder="Due Date...." v-model="due_date" clearable :clear-button="clearButton">
+                                </datepicker>
                             </div>
                         </div>
                         <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">Address<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="address">
-                            </div>
-                            <div class="basis-1/2 mr-6" v-if="!isEditing">
-                                <label for=""><em></em></label><br />
-                                <input type="checkbox" name="" id="" class="rounded border border-gray-600 text-lg pl-2 mr-3" @click="showVisitCreationOption">
-                                <label for="">Create Visit<em></em></label>
+                            <div class="basis-1/2">
+                                <label for="">Memo<em>*</em></label><br />
+                                <textarea id="notes" name="description" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2" v-model="description" rows="4" cols="50"></textarea>
                             </div>
                         </div>
-                        <div v-if="visit_creation">
-                            <div class="border-b border-gray-400 pb-3">
-                                <p class="font-bold">Visitation Details</p>
-                            </div>
-                            <div class="flex mb-6 mt-6">
-                                <div class="basis-1/2 mr-6">
-                                    <label for="">Doctor<em>*</em></label><br />
-                                    <select name="doctor" ref="doctorSelect" id="selectDoctor" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDoctorID" onfocus="this.selectedIndex = -1;" v-model="doctor">
-                                        <option value="" disabled selected>---Select Doctor---</option> 
-                                        <option v-for="doct in doctorsArray">Dr. {{doct.first_name}}  {{doct.last_name}}</option> 
-                                    </select>
-                                </div>
-                                <div class="basis-1/2">
-                                    <label for="">Staff<em>*</em></label><br />
-                                    <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="staff">
-                                        <option value="" disabled selected>---Select Staff---</option> 
-                                        <option v-for="stf in staffArray">{{stf.first_name}}  {{stf.last_name}} - #{{ stf.identification_no }}</option> 
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8 mb-8 w-2/3 fees-table">
-                                <table class="min-w-full bg-white"> 
+                        <div class="shadow overflow-hidden rounded border-b border-gray-200 mb-8 w-full invoice-table">
+                                <table class="min-w-full bg-white" style="width:100%"> 
                                     <thead class="bg-gray-800 text-white static">
-                                        <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
-                                            <th class="text-left px-2 row-span-4">Fees Charged</th>
-                                            <th class="text-right px-2 row-span-2">Amount</th>
-                                            <th class="text-right px-2"></th>
-                                            <th class="text-right px-2"></th>
+                                        <tr class="rounded bg-slate-800 text-white font-semibold text-sm capitalize">
+                                            <th class="text-left py-2 px-2" style="width:20%">Income Account</th>
+                                            <th class="text-left py-2 px-2" style="width:35%">Description</th>
+                                            <th class="text-left py-2 px-2" style="width:8%">Cost</th>
+                                            <th class="text-left py-2 px-2" style="width:3%">Qty</th>
+                                            <th class="text-left py-2 px-2" style="width:8%">Tax Rate</th>
+                                            <th class="text-left py-2 px-2" style="width:10%">Tax Amnt</th>
+                                            <th class="text-left py-2 px-2" style="width:10%">Sub Total</th>
+                                            <th class="text-left py-2 px-2" style="width:3%"></th>
+                                            <th class="text-left py-2 px-2" style="width:3%"></th>
                                         </tr>
                                     </thead>
                                     <tbody class="">
-                                        <tr v-for="(fee, index) in fees" :key="index">
+                                        <tr v-for="(led, index) in ledgers" :key="index">
         
                                             <td class="text-left border border-black">
-                                                <select v-model="fee.type" ref="feesSelect" @change="setFeesID" onfocus="this.selectedIndex = -1;" class="bg-white text-left pl-2 px-2 w-full">
-                                                    <option v-for="feeType in feesArray" :key="feeType.fees_id" :value="feeType.fees_id">{{ feeType.fee_name }}</option>
+                                                <select v-model="led.account" ref="ledgerSelect" @change="setLedgerID" onfocus="this.selectedIndex = -1;" class="bg-white text-left pl-2 px-2 w-full">
+                                                    <option v-for="ledger in ledgersArray" :key="ledger.ledger_id" :value="ledger.ledger_id">{{ ledger.ledger_code }} - {{ ledger.ledger_name }}</option>
                                                 </select>
                                             </td>
-                                            <td class="text-left border border-black"><input type="number" class="text-right w-full" v-model="fee.amount" /></td>
+                                            <td class="text-left border border-black"><input type="text" class="text-left w-full" v-model="led.details" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.debit" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
                                             <td class="border border-black">
                                                 <button type="button" @click="removeRow(index)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
                                             </td>
@@ -173,59 +138,27 @@
                                     
                                     </tbody>
                                 </table>   
-                            </div>
-                        
                         </div>
-                        <div class="border-b border-gray-400 pb-3">
-                            <p class="font-bold">Emergency Contact Details</p>
+                        <div class="text-center">
+                            <button class="rounded border bg-green-400 w-42 py-2 px-4 text-white text-lg" @click="createInvoice">Save</button>
                         </div>
-                        <div class="flex mb-6 mt-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">First Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_first_name" required>
-                            </div>
-                            <div class="basis-1/2">
-                                <label for="">Last Name<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_last_name" required>
-                            </div>
-                        </div>
-                        <div class="flex mb-6">
-                            <div class="basis-1/2 mr-6">
-                                <label for="">Email<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_email" required>
-                            </div>
-                            <div class="basis-1/2">
-                                <label for="">Phone Number<em>*</em></label><br />
-                                <input type="text" name="" id="" class="rounded border border-gray-600 text-lg pl-2 w-60" v-model="contact_person_phone_number" required>
-                            </div>
-                        </div>
-                        <div class="text-center" v-if="isEditing && !isAddingContactPerson">
-                            <button class="rounded border bg-green-400 w-42 py-2 px-4 text-white text-lg" @click="updatePatient">Update Patient</button>
-                        </div>
-                        <div class="text-center" v-else-if="isAddingContactPerson && isEditing">
-                            <button class="rounded border bg-green-400 w-48 py-2 px-4 text-white text-lg" @click="updatePatient">Add Kin & Update</button>
-                        </div>
-                        <div class="text-center" v-else>
-                            <button class="rounded border bg-green-400 w-36 py-2 px-4 text-white text-lg" @click="createPatient">Save Patient</button>
-                        </div>
-
                     </form>
                     </template>
                     <template v-slot:footer>We Value Your Partnership </template>
                 </Modal>
                 <div class="shadow overflow-hidden rounded border-b border-gray-200 row-span-8">
-                    <table class="min-w-full bg-white"> 
+                    <table class="min-w-full bg-white" style="width:100%"> 
                         <thead class="bg-gray-800 text-white">
                             <tr class="rounded bg-slate-800 text-white font-semibold text-sm uppercase">
-                                <th>#</th>
-                                <th class="text-left py-3 px-2">Invoice No</th>
-                                <th class="text-left py-3 px-2">Patient</th>
-                                <th class="text-left py-3 px-2 overflow-x:hidden">Description</th>
-                                <th class="text-left py-3 px-2">Amount</th>
-                                <th class="text-left py-3 px-2">Paid</th>
-                                <th class="text-left py-3 px-2">Balance</th>
-                                <th class="text-left py-3 px-2">Status</th>
-                                <th class="text-left py-3 px-2">Actions</th>
+                                <th style="width:1%">#</th>
+                                <th class="text-left py-3 px-2" style="width:10%">Invoice No</th>
+                                <th class="text-left py-3 px-2" style="width:15%">Patient</th>
+                                <th class="text-left py-3 px-2" style="width:55%">Description</th>
+                                <th class="text-left py-3 px-2" style="width:5%">Amnt</th>
+                                <th class="text-left py-3 px-2" style="width:3%">Paid</th>
+                                <th class="text-left py-3 px-2" style="width:5%">Balance</th>
+                                <th class="text-left py-3 px-2" style="width:3%">Status</th>
+                                <th class="text-left py-3 px-2" style="width:3%">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -278,6 +211,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import SearchableDropdown from '@/components/SearchableDropdown.vue'
 import Datepicker from 'vuejs3-datepicker';
 
 export default{
@@ -287,15 +221,9 @@ export default{
     return{
         title: 'Hospital Management/ Invoices',
         companyID: "",
-        client: "",
+        patient: "",
         invoice_date: "",
-        invoice_due_date: "",
-        sub_total: 0,
-        tax: 0,
-        total_amount: 0,
-        total_paid: 0,
-        due_amount: 0,
-        status: "",
+        due_date: "",
         description: "",
         client_search: "",
         description_search: "",
@@ -325,9 +253,18 @@ export default{
         invoiceEditing: "",
         clearButton: true,
         patientsArray : [],
+        patientsArr : [],
         patientID: "",
-        axiosError: [],
-        txn_type: "INV"
+        txn_type: "INV",
+        ledgersArray: [],
+        ledgerID: "",
+        ledgerName: "",
+        ledgers: [
+            {itemIndex:0, account: null, details: null, cost: null, quantity: null, tax_rate: null, tax_amount: null, sub_total: null }
+        ],
+        itemInd: 0,
+        patientDropdownWidth: '400px',
+        selectedPatient: "",
     }
   },
     components: {
@@ -336,20 +273,33 @@ export default{
         Modal,
         Loader,
         MyPagination,
-        Datepicker
+        Datepicker,
+        SearchableDropdown
     },
     methods:{
+        handleSelectedPatient(option) {
+            this.selectedPatient = option;
+            console.log("The selected patient is ",this.selectedPatient);
+            console.log("The patient array is ",this.patientsArray);
+            for (let i=0; i<this.patientsArray.length; i++){
+                if((this.patientsArray[i].patient_code+ " - "+this.patientsArray[i].first_name+ " "+this.patientsArray[i].last_name) == this.selectedPatient){
+                    this.patientID = this.patientsArray[i].patient_id;
+                }else{
+                   
+                }
+            }
+        },
         addRow() {
             this.itemInd += 1;
-            this.fees.push({itemIndex:this.itemInd, type: null, amount: null });
+            this.ledgers.push({itemIndex:0,account: null, details: null, cost: null, quantity: null, tax_rate: null, tax_amount: null, sub_total: null});
         },
         removeRow(){
-            if(this.fees.length > 1){
-                let selectedFee = arguments[0];
-                this.fees.splice(selectedFee, 1);
+            if(this.ledgers.length > 1){
+                let selectedLedger = arguments[0];
+                this.ledgers.splice(selectedLedger, 1);
                 
             }else{
-                this.fees = [{itemIndex:0, type: null, amount: null }];
+                this.ledgers = [{itemIndex:0,account: null, details: null, cost: null, quantity: null, tax_rate: null, tax_amount: null, sub_total: null }];
             }
         },     
         formatDate(dateString) {
@@ -362,13 +312,16 @@ export default{
         fetchPatients(){
             this.patientsArray = [];
             let formData = {
-                hospital: this.hospitalID,
+                hospital: this.companyID,
             }
             this.axios
             .post("api/v1/get-patients/", formData)
             .then((response)=>{
                 this.patientsArray = response.data;
-                
+                for(let i=0; i<this.patientsArray.length; i++){
+                    this.patientsArr.push(this.patientsArray[i].patient_code + " - "+this.patientsArray[i].first_name+ " "+this.patientsArray[i].last_name)
+                }
+                return this.patientsArr;
             })
             .catch((error)=>{
             console.log(error.message)
@@ -431,6 +384,7 @@ export default{
                             duration: 3000,
                             dismissible: true
                         })
+                        this.hideLoader();
                     }
                     else{
                         this.axios
@@ -811,40 +765,18 @@ export default{
         },
         showModal(){
             this.scrollToTop();
+            this.fetchPatients();
             if(this.isEditing == false){
-                this.first_name = "";
-                this.last_name = "";
-                this.email = "";
-                this.birth_date = "";
-                this.id_number = "";
-                this.phone_number = "";
-                this.city = "";
-                this.address = "";
-                this.country = "";
-                this.contact_person_email = "";
-                this.contact_person_first_name = "";
-                this.contact_person_last_name = "";
-                this.contact_person_phone_number = "";
+                this.invoice_date = "";
+                this.due_date = "";
+                this.patient = "";
+                this.ledgers = [{itemIndex:0, account: null, details: null, cost: null, quantity: null, tax_rate: null, tax_amount: null, sub_total: null }];
             }
-            this.patientModalVisible = !this.patientModalVisible;
-        },
-        showImportModal(){
-            this.showOptions = false;
-            this.importModalVisible = ! this.importModalVisible;
-            this.scrollToTop();
-        },
-        showVisitCreationOption(){
-            this.visit_creation = !this.visit_creation;
-            this.fetchDoctors();
-            this.fetchStaff();
-            this.fetchFees();
+            this.isModalVisible = !this.isModalVisible;
         },
         closeModal(){
-            this.patientModalVisible = false;
+            this.isModalVisible = false;
             this.isEditing = false;
-        },
-        closeImportModal(){
-            this.importModalVisible = false;
         },
         loadNext(){
             if(this.currentPage >= this.pageCount){
@@ -1127,11 +1059,11 @@ em{
 .import-form{
     min-width: 50vw;
 }
-.fees-table{
-    min-height: 20vh;
-    max-height: 20vh;
-    overflow-y: scroll;
-    overflow-x: scroll;
+.invoices-table{
+    min-width: 70vw;
+}
+.invoice-table{
+    min-height: 50vh;
 }
 
 </style>
