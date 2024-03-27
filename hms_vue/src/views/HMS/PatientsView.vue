@@ -9,10 +9,10 @@
     />
     <SideBarHMS />
     <div class="main-content bg-gray-100 px-4 py-4">
-        <div class="subsection rounded bg-white p-3">
+        <div class="subsection rounded bg-white">
             <h2 class="text-center font-bold">Patients Register</h2>
-            <div class="md:px-2 py-8 w-full">
-                <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
+            <div class="md:px-2  w-full">
+                <div class="flex items-end pb-3 w-full border-b-2 border-gray-300 mb-3">
                     <div class="mb-4 flex items-end h-24">
                         <div class="basis-1/6">
                             <button class="rounded bg-green-400 text-white px-2 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Patient</button>
@@ -475,6 +475,7 @@ export default{
         patientList: [],
         journalsArray: [],
         jnlArray: [],
+        jnlSortedArr: [],
         patientDetails: [],
         emergencyContactDetails: [],
         emergencyContactID: "",
@@ -679,6 +680,15 @@ export default{
                 this.jnlArray = [];
                 let running_balance = 0;
                 this.journalsArray = response.data.results;
+                this.jnlSortedArr = this.journalsArray.sort(function(a, b){
+                    // Convert the date strings to Date objects
+                    let dateA = new Date(a.date);
+                    let dateB = new Date(b.date);
+
+                    // Subtract the dates to get a value that is either negative, positive, or zero
+                    return dateA - dateB;
+                })
+                console.log("The sorted array is ",this.jnlSortedArr );
                 for(let i=0; i<this.journalsArray.length; i++){
                     if(this.journalsArray[i].debit_amount != 0){
                         running_balance += this.journalsArray[i].debit_amount;
@@ -691,7 +701,6 @@ export default{
                         this.jnlArray.push(this.journalsArray[i])
                     }
                 }
-                console.log("The jnlArray consists of ",this.jnlArray);
             })
             .catch((error)=>{
             console.log(error.message)
@@ -742,10 +751,10 @@ export default{
                 for(let i=0; i<this.fees.length; i++){
                     if(this.fees[i].amount != null){
                         this.invoice_totals += Number(this.fees[i].amount);
-                        this.invoice_description.push(this.fees[i].fee_name +" for "+this.first_name+" "+this.last_name);
+                        this.invoice_description.push(this.fees[i].fee_name);
                         let jnlEntry1 ={
                             "date": this.formatDate(this.today_date),
-                            "description": this.fees[i].fee_name +" for "+this.first_name+" "+this.last_name,
+                            "description": this.fees[i].fee_name,
                             "txn_type": this.txn_type,
                             "posting_account": this.patientLedger,
                             "debit_amount": this.fees[i].amount,

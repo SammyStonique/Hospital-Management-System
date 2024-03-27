@@ -9,10 +9,10 @@
     />
     <SideBarHMS />
     <div class="main-content bg-gray-100 px-4 py-4">
-        <div class="subsection rounded bg-white p-3">
+        <div class="subsection rounded bg-white">
             <h2 class="text-center font-bold">Invoices</h2>
-            <div class="md:px-2 py-8 w-full">
-                <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
+            <div class="md:px-2 w-full">
+                <div class="flex items-end pb-3 w-full border-b-2 border-gray-300 mb-3">
                     <div class="mb-4 flex items-end h-24">
                         <div class="basis-1/6">
                             <button class="rounded bg-green-400 text-white px-2 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Invoice</button>
@@ -67,18 +67,12 @@
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
                         <div class="flex mb-6 invoices-table">
-                            <!-- <div class="basis-1/3 mr-6">
-                                <label for="">Patient<em>*</em></label><br />
-                                <select name="patient" ref="patientSelect" id="selectPatient" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setPatientID" onfocus="this.selectedIndex = -1;" v-model="patient">
-                                    <option value="" disabled selected>---Select Patient---</option> 
-                                    <option v-for="pat in patientsArray">({{ pat.patient_code }}) - {{pat.first_name}}  {{pat.last_name}}</option> 
-                                </select>
-                            </div> -->
                             <div class="basis-1/2 w-72 mr-6">
                                 <label for="">Patient<em>*</em></label><br />
                                 <SearchableDropdown
                                 :options="patientsArr"
                                 :dropdownWidth="patientDropdownWidth"
+                                :searchPlaceholder="patientsPlaceholder"
                                 @option-selected="handleSelectedPatient"
                                 />
                             </div>
@@ -105,29 +99,31 @@
                                         <tr class="rounded bg-slate-800 text-white font-semibold text-sm capitalize">
                                             <th class="text-left py-2 px-2" style="width:20%">Income Account</th>
                                             <th class="text-left py-2 px-2" style="width:35%">Description</th>
-                                            <th class="text-left py-2 px-2" style="width:8%">Cost</th>
-                                            <th class="text-left py-2 px-2" style="width:3%">Qty</th>
+                                            <th class="text-left py-2 px-2" style="width:10%">Cost</th>
+                                            <th class="text-left py-2 px-2" style="width:5%">Qty</th>
                                             <th class="text-left py-2 px-2" style="width:8%">Tax Rate</th>
                                             <th class="text-left py-2 px-2" style="width:10%">Tax Amnt</th>
                                             <th class="text-left py-2 px-2" style="width:10%">Sub Total</th>
-                                            <th class="text-left py-2 px-2" style="width:3%"></th>
-                                            <th class="text-left py-2 px-2" style="width:3%"></th>
+                                            <th class="text-left py-2 px-2" style="width:1%"></th>
+                                            <th class="text-left py-2 px-2" style="width:1%"></th>
                                         </tr>
                                     </thead>
                                     <tbody class="">
                                         <tr v-for="(led, index) in ledgers" :key="index">
         
-                                            <td class="text-left border border-black">
-                                                <select v-model="led.account" ref="ledgerSelect" @change="setLedgerID" onfocus="this.selectedIndex = -1;" class="bg-white text-left pl-2 px-2 w-full">
-                                                    <option v-for="ledger in ledgersArray" :key="ledger.ledger_id" :value="ledger.ledger_id">{{ ledger.ledger_code }} - {{ ledger.ledger_name }}</option>
-                                                </select>
+                                            <td class="text-left text-sm border border-black">
+                                                <SearchableDropdown
+                                                    :options="ledgersArr"
+                                                    :searchPlaceholder="ledgersPlaceholder"
+                                                    @option-selected="handleSelectedLedger"
+                                                />
                                             </td>
                                             <td class="text-left border border-black"><input type="text" class="text-left w-full" v-model="led.details" /></td>
-                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.debit" /></td>
-                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
-                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
-                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
-                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.credit" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.cost" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.quantity" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.tax_rate" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.tax_amount" /></td>
+                                            <td class="text-left border border-black"><input type="number" class="text-left w-full" v-model="led.sub_total" /></td>
                                             <td class="border border-black">
                                                 <button type="button" @click="removeRow(index)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
                                             </td>
@@ -250,21 +246,29 @@ export default{
         invoiceArr: [],
         invoiceArrLen: [],
         invoiceCount: 0,
-        invoiceEditing: "",
+        invoice_totals: 0,
         clearButton: true,
         patientsArray : [],
         patientsArr : [],
         patientID: "",
+        patientName: "",
+        patientLedger: "",
         txn_type: "INV",
         ledgersArray: [],
+        ledgersArr: [],
         ledgerID: "",
         ledgerName: "",
         ledgers: [
             {itemIndex:0, account: null, details: null, cost: null, quantity: null, tax_rate: null, tax_amount: null, sub_total: null }
         ],
         itemInd: 0,
+        contra: 0,
+        ledgersPlaceholder: 'Posting Account...',
         patientDropdownWidth: '400px',
+        patientsPlaceholder: 'Select Patient...',
         selectedPatient: "",
+        selectedLedger: "",
+        journalEntryArr: [],
     }
   },
     components: {
@@ -279,11 +283,23 @@ export default{
     methods:{
         handleSelectedPatient(option) {
             this.selectedPatient = option;
-            console.log("The selected patient is ",this.selectedPatient);
-            console.log("The patient array is ",this.patientsArray);
             for (let i=0; i<this.patientsArray.length; i++){
                 if((this.patientsArray[i].patient_code+ " - "+this.patientsArray[i].first_name+ " "+this.patientsArray[i].last_name) == this.selectedPatient){
                     this.patientID = this.patientsArray[i].patient_id;
+                    this.patientName = this.patientsArray[i].first_name + " "+ this.patientsArray[i].last_name;
+                    this.patientLedger = this.patientsArray[i].ledger_id;
+                }else{
+                   
+                }
+            }
+        },
+        handleSelectedLedger(option) {
+            this.selectedLedger = option;
+            console.log("The selected ledger is ",this.selectedLedger);
+            for (let i=0; i<this.ledgersArray.length; i++){
+                if((this.ledgersArray[i].ledger_code+ " - "+this.ledgersArray[i].ledger_name) == this.selectedLedger){
+                    this.ledgerID = this.ledgersArray[i].ledger_id;
+                    this.ledgers[this.itemInd].account = this.ledgersArray[i].ledger_id;
                 }else{
                    
                 }
@@ -330,134 +346,124 @@ export default{
             
             })
         },
-        setPatientID(){
-            this.patientID = "";
-            if(this.$refs.patientSelect.selectedIndex > 0){
-                let selectedPatient = this.$refs.patientSelect.selectedIndex - 1;
-                this.patientID = this.patientsArray[selectedPatient].patient_id;
+        fetchLedgers(){
+            this.ledgersArray = [];
+            let formData = {
+                company: this.companyID,
             }
-        },
-        setFeesID(){
-            this.feesID = "";
-            if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
-                let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
-                this.feesID = this.feesArray[selectedFee].fees_id;
-                this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
-            }
+            this.axios
+            .post("api/v1/fetch-ledgers/", formData)
+            .then((response)=>{
+                this.ledgersArray = response.data;
+                for(let i=0; i<this.ledgersArray.length; i++){
+                    this.ledgersArr.push(this.ledgersArray[i].ledger_code + " - "+this.ledgersArray[i].ledger_name)
+                }
+                return this.ledgersArr;
+                
+            })
+            .catch((error)=>{
+            console.log(error.message)
+            })
+            .finally(()=>{
+            
+            })
         },
         createInvoice(){
-            this.axiosError = [];
             this.showLoader();
-            if(this.first_name === '' || this.last_name === '' || this.email === '' || this.birth_date === '' || this.city === '' || this.gender === ''
-                 || this.phone_number === '' || this.id_number === '' || this.address === '' || this.country === '' || this.contact_person_first_name === ''
-                 || this.contact_person_last_name === '' || this.contact_person_email === '' || this.contact_person_phone_number === ''){
-                this.$toast.error("Please Enter Patient Details",{
+            this.journalEntryArr = [];
+            if(this.selectedPatient === '' || this.invoice_date === '' || this.due_date === '' || this.description === ""){
+                this.$toast.error("Please Enter Invoice Details",{
                     duration: 3000,
                     dismissible: true
                 })
                 this.hideLoader();
+                console.log("Ledger account is ", this.ledgers[0].account);
+                console.log("Ledger cost is ", this.ledgers[0].cost);
+                console.log("Ledger subtotal is ", this.ledgers[0].sub_total);
             }
-            else{
-                let formData = {
-                    hospital: this.hospitalID,
-                    first_name: this.contact_person_first_name,
-                    last_name: this.contact_person_last_name,
-                    email: this.contact_person_email,
-                    phone_number: this.contact_person_phone_number,
-                    patient: this.first_name + " "+ this.last_name,
-                }
+            else if(this.ledgers[0].account != null && this.ledgers[0].cost != null && this.ledgers[0].sub_total != null){
+                this.txn_type = "INV";
+                for(let i=0; i<this.ledgers.length; i++){
+                    if(this.ledgers[i].sub_total != null){
+                        this.invoice_totals += Number(this.ledgers[i].sub_total);
+                        let jnlEntry1 ={
+                            "date": this.formatDate(this.invoice_date),
+                            "description": this.ledgers[i].details,
+                            "txn_type": this.txn_type,
+                            "posting_account": this.patientLedger,
+                            "debit_amount": this.ledgers[i].sub_total,
+                            "credit_amount": this.contra,
+                        }
+                        let jnlEntry2 = {
+                            "date": this.formatDate(this.invoice_date),
+                            "description": this.ledgers[i].details +" for "+this.patientName,
+                            "txn_type": this.txn_type,
+                            "posting_account": this.ledgerID,
+                            "debit_amount": this.contra,
+                            "credit_amount": this.ledgers[i].sub_total,
+                        }
+                        this.journalEntryArr.push(jnlEntry1,jnlEntry2);
+                        console.log("The journal entry array is ",this.journalEntryArr);
+                    }else{
 
+                    }
+                }
+                let formData = {
+                    company: this.companyID,
+                    client: this.patientName,
+                    client_id: this.patientID,
+                    description: this.description,
+                    txn_type: this.txn_type,
+                    issue_date: this.formatDate(this.invoice_date),
+                    due_date: this.formatDate(this.due_date),
+                    total_amount: this.invoice_totals,
+                    journal_entry_array: this.journalEntryArr,
+                }
+                console.log("FORM DATA IS ",formData);
                 this.axios
-                .post("api/v1/create-emergency-contact-person/", formData)
+                .post("api/v1/create-journal/", formData)
                 .then((response)=>{
-                    this.emergencyContactDetails = response.data;
-                    console.log(this.emergencyContactDetails);
-                    this.emergencyContactID = this.emergencyContactDetails.contact_person_id;
-                })
-                .catch((error)=>{
-                    console.log(error.message);
-                    this.axiosError.push(error.message);
-                })
-                .finally(()=>{
-                    if(this.axiosError.length){
-                        this.$toast.error("Error Adding Next Of Kin",{
+                    console.log(response.data);
+                    if (response.status == 200){
+                        this.$toast.success("Patient Invoice Added Succesfully",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.patient = "";
+                        this.invoice_date = "";
+                        this.due_date = "";
+                        this.description = "";
+                        this.ledgers = [{itemIndex:0, account: null, details: null, cost: null, quantity: null, tax_rate: null, tax_amount: null, sub_total: null }];
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
+                    }
+                    else{
+                        this.$toast.error("Error Adding Patient",{
                             duration: 3000,
                             dismissible: true
                         })
                         this.hideLoader();
                     }
-                    else{
-                        this.axios
-                        .get(`api/v1/patient-code-gen/${this.hospitalID}/`)
-                        .then((response)=>{
-                            this.patient_code = response.data;
-                        })
-                        .catch((error)=>{
-                            console.log(error.message)
-                            this.axiosError.push(error.message)
-                        })
-                        .finally(()=>{
-                            if(this.axiosError.length){
-                                this.$toast.error("Error Generating Patient Code",{
-                                    duration: 3000,
-                                    dismissible: true
-                                })
-                            }
-                            else{
-                                let formData = {
-                                    hospital: this.hospitalID,
-                                    patient_code: this.patient_code,
-                                    first_name: this.first_name,
-                                    last_name: this.last_name,
-                                    email: this.email,
-                                    birth_date: this.formatDate(this.birth_date),
-                                    phone_number: this.phone_number,
-                                    city: this.city,
-                                    gender: this.gender,
-                                    id_number: this.id_number,
-                                    address: this.address,
-                                    country: this.country,
-                                    emergency_contact_person: this.emergencyContactID
-                                }
-                                
-                                this.axios
-                                .post("api/v1/create-patient/", formData)
-                                .then((response)=>{
-                                    this.patientDetails = response.data;
-                                    this.$toast.success("Patient Added Succesfully",{
-                                        duration: 3000,
-                                        dismissible: true
-                                    })
-                                })
-                                .catch((error)=>{
-                                    this.$toast.error("Operation Failed",{
-                                        duration: 3000,
-                                        dismissible: true
-                                    })
-                                    console.log(error.message);
-                                })
-                                .finally(()=>{
-                                    this.patient_code = "";
-                                    this.first_name = "";
-                                    this.last_name = "";
-                                    this.email = "";
-                                    this.birth_date = "";
-                                    this.id_number = "";
-                                    this.phone_number = "";
-                                    this.city = "";
-                                    this.gender = "",
-                                    this.address = "";
-                                    this.country = "";
-                                    this.hideLoader();
-                                    this.closeModal();
-                                    this.$store.commit('reloadingPage');
-                                })
-
-                            }
-                            
-                        })
-                    }    
+                    
                 })
+                .catch((error)=>{
+                    console.log(error.message);
+                    this.$toast.error("Error Adding Patient Invoice",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                    this.hideLoader();
+                })
+                .finally(()=>{
+
+                })
+            }else{
+                this.$toast.error("ERROR",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                    this.hideLoader();
             }
         },
         searchInvoices(){
@@ -766,6 +772,7 @@ export default{
         showModal(){
             this.scrollToTop();
             this.fetchPatients();
+            this.fetchLedgers();
             if(this.isEditing == false){
                 this.invoice_date = "";
                 this.due_date = "";

@@ -23,7 +23,7 @@ class Ledger(models.Model):
                    ,('Longterm Liability','Longterm Liability'),('Owner Equity','Owner Equity'),('Income','Income'),('Expenses','Expenses'))
 
     ledger_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    ledger_code = models.CharField(max_length=250)
+    ledger_code = models.CharField(max_length=250, unique=True)
     ledger_name = models.CharField(max_length=250)
     ledger_type = models.CharField(max_length=250, choices=LEDGER_TYPE, default='')
     overdue_bills = models.IntegerField(default=0,blank=True, null=True)

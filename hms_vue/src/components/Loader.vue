@@ -22,11 +22,12 @@ export default{
     bottom: 0;
     right: 0;
     width: 100%;
+    z-index: 1020;
 }
  .loader {
     position: absolute;
     display: block;
-    z-index: 1;
+    z-index: 2000;
     left: 50%;
     top: 50%;
     border: 16px solid #f3f3f3;

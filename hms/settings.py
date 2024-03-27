@@ -103,6 +103,7 @@ DATABASES = {
         "TEST": {
             "NAME": env('TEST_DATABASE'),
         },
+        'ATOMIC_REQUESTS': True,
 
     }
 }

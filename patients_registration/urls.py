@@ -38,6 +38,7 @@ urlpatterns = [
     path("export-emergency-contact-person-excel/", views.generate_contact_persons_excel, name="export-emergency-contact-person-excel"),
     path("export-emergency-contact-person-csv/", views.generate_contact_persons_csv, name="export-emergency-contact-person-csv"),
     path("create-patient-history/", views.createPatientHistory, name="create-patient-history"),
+    path("create-patient-visit/", views.create_patient_visit_with_charges, name="create-patient-visit"),
     path("update-patient-history/", views.updatePatientHistory, name="update-patient-history"),
     path("get-patients-history/", views.getPatientHistories, name="get-patients-history"),
     path("delete-patient-history/", views.deletePatientHistory, name="delete-patient-history"),

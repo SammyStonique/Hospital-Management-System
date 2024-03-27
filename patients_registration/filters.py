@@ -119,7 +119,7 @@ def contactPersonSearch(request):
         }
         contactPersonList.append(obj)
 
-    pagination_class = BasePagination
+    pagination_class = PatientsPagination
     paginator = pagination_class()
 
     page = paginator.paginate_queryset(contactPersonList, request)
@@ -166,6 +166,7 @@ def patientsHistorySearch(request):
             "notes": hist.notes,
             "staff_name": hist.staff.first_name+ ' '+hist.staff.last_name,
             "staff_id": hist.staff.user_id,
+            "staff_email": hist.staff.email,
             "staff_profile": hist.staff.profile,
             "staff_is_doctor": hist.is_doctor
             
@@ -173,7 +174,7 @@ def patientsHistorySearch(request):
         patientHistoryList.append(obj)
 
 
-    pagination_class = BasePagination
+    pagination_class = PatientsPagination
     paginator = pagination_class()
 
     page = paginator.paginate_queryset(patientHistoryList, request)

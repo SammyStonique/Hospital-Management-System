@@ -9,10 +9,10 @@
     />
     <SideBarHMS />
     <div class="main-content bg-gray-100 px-4 py-4">
-        <div class="subsection rounded bg-white p-3">
+        <div class="subsection rounded bg-white">
             <h2 class="text-center font-bold">Patients Visits</h2>
-            <div class="md:px-8 py-8 w-full">
-                <div class="flex items-end pt-4 pb-3 w-full border-b-2 border-gray-300 mb-6">
+            <div class="md:px-8 w-full">
+                <div class="flex items-end pb-3 w-full border-b-2 border-gray-300 mb-3">
                     <div class="mb-4 flex items-end h-24">
                         <div class="basis-1/6">
                             <button class="rounded bg-green-400 text-white px-2 py-2" @click="showModal"><i class="fa fa-plus" aria-hidden="true"></i> New Visit</button>
@@ -66,7 +66,7 @@
                     <template v-slot:header> Patient Visit Details </template>
                     <template v-slot:body>
                     <form action="" @submit.prevent="">
-                        <div class="flex mb-6">
+                        <div class="flex mb-6 patient-visit-container">
                             <div class="basis-1/2 mr-6">
                                 <label for="">Date<em>*</em></label><br />
                                 <datepicker  placeholder="Date...." v-model="visit_date" clearable :clear-button="clearButton">
@@ -75,41 +75,50 @@
                             <div class="basis-1/2">
                                 <label for="">Patient<em>*</em></label><br />
                                 <input type="text" name="" disabled id="" class="rounded border border-gray-600 bg-gray-100 text-lg pl-2" v-model="patientEditing" v-if="isEditing">
-                                <select name="patient" ref="patientSelect" id="selectPatient" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setPatientID" onfocus="this.selectedIndex = -1;" v-model="patient" v-else>
-                                    <option value="" disabled selected>---Select Patient---</option> 
-                                    <option v-for="pat in patientsArray">({{ pat.patient_code }}) - {{pat.first_name}}  {{pat.last_name}}</option> 
-                                </select>
+                                <div v-else>
+                                    <SearchableDropdown
+                                        :options="patientsArr"
+                                        :dropdownWidth="patientDropdownWidth"
+                                        :searchPlaceholder="patientsPlaceholder"
+                                        @option-selected="handleSelectedPatient"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div class="flex mb-6">
                             <div class="basis-1/2 mr-6"  v-if="isEditing">
                                 <label for="">Doctor<em>*</em></label><br />
-                                <select name="doctorUpdate" ref="doctorUpdateSelect" id="selectUpdateDoctor" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateDoctorID" onfocus="this.selectedIndex = -1;" v-model="doctorEditing">
-                                    <option v-for="doct in doctorsArray" :key="doct.doctor_id" :value="(doct.first_name+' '+doct.last_name)" :label="(doct.first_name+' '+doct.last_name)" :selected="((doct.first_name+' '+doct.last_name)===doctorEditing)">{{doct.first_name}}  {{doct.last_name}}</option> 
-                                </select>
+                                <SearchableDropdown
+                                    :updateValue="selectedDoctor"
+                                    :options="doctorsArr"
+                                    :dropdownWidth="patientDropdownWidth"
+                                    :fontSize="doctorFontSize"
+                                    @option-selected="handleSelectedDoctor"
+                                />
                             </div>
                             <div class="basis-1/2" v-else>
                                 <label for="">Doctor<em>*</em></label><br />
-                                <select name="doctor" ref="doctorSelect" id="selectDoctor" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setDoctorID" onfocus="this.selectedIndex = -1;" v-model="doctor">
-                                    <option value="" disabled selected>---Select Doctor---</option> 
-                                    <option v-for="doct in doctorsArray">Dr. {{doct.first_name}}  {{doct.last_name}}</option> 
-                                </select>
+                                <SearchableDropdown
+                                    :options="doctorsArr"
+                                    :dropdownWidth="patientDropdownWidth"
+                                    :searchPlaceholder="doctorsPlaceholder"
+                                    :fontSize="doctorFontSize"
+                                    @option-selected="handleSelectedDoctor"
+                                />
                             </div>
-                                <div class="basis-1/2 mr-6"  v-if="isEditing">
+                    
+                                <div class="basis-1/2">
                                     <label for="">Staff<em>*</em></label><br />
-                                    <select name="staffUpdate" ref="staffUpdateSelect" id="selectUpdateStaff" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUpdateStaffID" onfocus="this.selectedIndex = -1;" v-model="staffEditing">
-                                        <option v-for="stf in staffArray" :key="stf.user_id" :value="(stf.first_name+' '+stf.last_name)" :label="(stf.first_name+' '+stf.last_name)" :selected="((stf.first_name+' '+stf.last_name)===staffEditing)">{{stf.first_name}}  {{stf.last_name}}</option> 
-                                    </select>
-                                </div>
-                                <div class="basis-1/2" v-else>
-                                    <label for="">Staff<em>*</em></label><br />
-                                    <select name="user" ref="userSelect" id="selectUser" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2 w-60" @change="setUserID" onfocus="this.selectedIndex = -1;" v-model="staff">
-                                        <option value="" disabled selected>---Select Staff---</option> 
-                                        <option v-for="stf in staffArray">{{stf.first_name}}  {{stf.last_name}} - #{{ stf.identification_no }}</option> 
-                                    </select>
+                                    <SearchableDropdown
+                                        :options="staffArr"
+                                        :dropdownWidth="patientDropdownWidth"
+                                        :searchPlaceholder="staffPlaceholder"
+                                        :fontSize="doctorFontSize"
+                                        @option-selected="handleSelectedStaff"
+                                    />
                                 </div>
                             </div>
-                        <div class="flex">
+                        <div class="flex mb-3">
                             <div class="basis-1/2">
                                 <label for="">Notes<em>*</em></label><br />
                                 <textarea id="notes" name="visit_notes" class="rounded border border-gray-600 bg-white text-lg pl-2 pt-2" v-model="visit_notes" rows="4" cols="50"></textarea>
@@ -139,10 +148,14 @@
                                     <tbody class="">
                                         <tr v-for="(fee, index) in fees" :key="index">
         
-                                            <td class="text-left border border-black">
-                                                <select v-model="fee.type" ref="feesSelect" @change="setFeesID" onfocus="this.selectedIndex = -1;" class="bg-white text-left pl-2 px-2 w-full">
-                                                    <option v-for="feeType in feesArray" :key="feeType.fees_id" :value="feeType.fees_id">{{ feeType.fee_name }}</option>
-                                                </select>
+                                            <td class="text-left border border-black text-sm">
+                                                <SearchableDropdown
+                                                    :options="feesArr"
+                                                    :dropdownWidth="feesDropdownWidth"
+                                                    :searchPlaceholder="feesPlaceholder"
+                                                    @option-selected="handleSelectedFees"
+                                                    @reset="removeRow"
+                                                />
                                             </td>
                                             <td class="text-left border border-black"><input type="number" class="text-right w-full" v-model="fee.amount" /></td>
                                             <td class="border border-black">
@@ -229,6 +242,7 @@ import NavBar from '@/components/NavBar.vue'
 import SideBarHMS from '@/components/SideBarHMS.vue'
 import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
+import SearchableDropdown from '@/components/SearchableDropdown.vue'
 import Datepicker from 'vuejs3-datepicker';
 
 export default{
@@ -273,21 +287,18 @@ export default{
         clearButton: true,
         doctorID: "",
         doctorName: "",
-        doctUpdateID: "",
-        doctUpdateName: "",
         staffID: "",
         staffName: "",
-        stfUpdateID: "",
-        stfUpdateName: "",
         patientEditing: "",
-        staffEditing: "",
-        doctorEditing: "",
         staffArray: [],
+        staffArr: [],
         doctorsArray: [],
+        doctorsArr: [],
         feesID: "",
         feesName: "",
         feesLedger: "",
         feesArray: [],
+        feesArr: [],
         journalDetails: [],
         medicalFeeCharge: false,
         fees: [
@@ -302,7 +313,19 @@ export default{
         invoice_description: [],
         invDescr: "",
         invoice_totals: 0,
-
+        patientDropdownWidth: '400px',
+        patientsPlaceholder: 'Select Patient...',
+        selectedPatient: "",
+        patientsArray: [],
+        patientsArr: [],
+        doctorsPlaceholder: 'Select Doctor...',
+        doctorFontSize: '14px',
+        selectedDoctor: "",
+        staffPlaceholder: 'Select Staff...',
+        selectedStaff: "",
+        feesDropdownWidth: '250px',
+        feesPlaceholder: 'Select Fees...',
+        selectedFees: "",
     }
   },
     components: {
@@ -311,7 +334,8 @@ export default{
         Modal,
         Loader,
         MyPagination,
-        Datepicker
+        Datepicker,
+        SearchableDropdown
     },
     methods:{
         addRow() {
@@ -325,6 +349,7 @@ export default{
                 
             }else{
                 this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
+                this.selectedFees = "";
             }
         },
         formatDate(dateString) {
@@ -343,7 +368,10 @@ export default{
             .post("api/v1/get-patients/", formData)
             .then((response)=>{
                 this.patientsArray = response.data;
-                
+                for(let i=0; i<this.patientsArray.length; i++){
+                    this.patientsArr.push(this.patientsArray[i].patient_code + " - "+this.patientsArray[i].first_name+ " "+this.patientsArray[i].last_name)
+                }
+                return this.patientsArr;
             })
             .catch((error)=>{
             console.log(error.message)
@@ -361,6 +389,10 @@ export default{
             .post("api/v1/get-department-doctors/", formData)
             .then((response)=>{
                 this.doctorsArray = response.data;
+                for(let i=0; i<this.doctorsArray.length; i++){
+                    this.doctorsArr.push("Dr. " +this.doctorsArray[i].first_name+ " "+this.doctorsArray[i].last_name+" ("+this.doctorsArray[i].email+")")
+                }
+                return this.doctorsArr;
                 
             })
             .catch((error)=>{
@@ -383,6 +415,10 @@ export default{
                         this.staffArray.push(response.data[i]);
                     }
                 }
+                for(let i=0; i<this.staffArray.length; i++){
+                    this.staffArr.push(this.staffArray[i].first_name+ " "+this.staffArray[i].last_name+" ("+this.staffArray[i].email+")")
+                }
+                return this.staffArr;
             })
             .catch((error)=>{
             console.log(error.message)
@@ -400,6 +436,9 @@ export default{
             .post("api/v1/get-medical-fees/", formData)
             .then((response)=>{
                 this.feesArray = response.data;
+                for(let i=0; i<this.feesArray.length; i++){
+                    this.feesArr.push(this.feesArray[i].fee_name);
+                }
                 
             })
             .catch((error)=>{
@@ -409,195 +448,197 @@ export default{
             
             })
         },
-        setPatientID(){
-            this.patientID = "";
-            if(this.$refs.patientSelect.selectedIndex > 0){
-                let selectedPatient = this.$refs.patientSelect.selectedIndex - 1;
-                this.patientID = this.patientsArray[selectedPatient].patient_id;
-                this.patientName = this.patientsArray[selectedPatient].first_name+ " "+this.patientsArray[selectedPatient].last_name;
-                this.patientCode = this.patientsArray[selectedPatient].patient_code;
-                this.patientLedgerID = this.patientsArray[selectedPatient].ledger_id;
+        handleSelectedPatient(option) {
+            this.selectedPatient = option;
+            for (let i=0; i<this.patientsArray.length; i++){
+                if((this.patientsArray[i].patient_code+ " - "+this.patientsArray[i].first_name+ " "+this.patientsArray[i].last_name) == this.selectedPatient){
+                    this.patientID = this.patientsArray[i].patient_id;
+                    this.patientName = this.patientsArray[i].first_name + " "+ this.patientsArray[i].last_name;
+                    this.patientLedgerID = this.patientsArray[i].ledger_id;
+                }else{
+                   
+                }
             }
         },
-        setDoctorID(){
-            this.doctorID = "";
-            if(this.$refs.doctorSelect.selectedIndex > 0){
-                let selectedDoctor = this.$refs.doctorSelect.selectedIndex - 1;
-                this.doctorID = this.doctorsArray[selectedDoctor].user;
+        handleSelectedDoctor(option) {
+            this.selectedDoctor = option;
+            for (let i=0; i<this.doctorsArray.length; i++){
+                if(("Dr. " +this.doctorsArray[i].first_name+ " "+this.doctorsArray[i].last_name+" ("+this.doctorsArray[i].email+")") == this.selectedDoctor){
+                    this.doctorID = this.doctorsArray[i].user;
+                    this.doctorName = this.doctorsArray[i].first_name + " "+ this.doctorsArray[i].last_name;
+                }else{
+                   
+                }
             }
         },
-        setUpdateDoctorID(){
-            this.doctUpdateID = "";
-            if(this.$refs.doctorUpdateSelect.selectedIndex >= 0){
-                let selectedUpdateDoct = this.$refs.doctorUpdateSelect.selectedIndex;
-                this.doctUpdateID = this.doctorsArray[selectedUpdateDoct].user;
-                this.doctUpdateName = this.doctorsArray[selectedUpdateDoct].first_name + " " +this.doctorsArray[selectedUpdateDoct].last_name;
+        handleSelectedStaff(option) {
+            this.selectedStaff = option;
+            for (let i=0; i<this.staffArray.length; i++){
+                if((this.staffArray[i].first_name+ " "+this.staffArray[i].last_name+" ("+this.staffArray[i].email+")") == this.selectedStaff){
+                    this.staffID = this.staffArray[i].user_id;
+                    this.staffName = this.staffArray[i].first_name + " "+ this.staffArray[i].last_name;
+                }else{
+                   
+                }
             }
         },
-        setUserID(){
-            this.staffID = "";
-            if(this.$refs.userSelect.selectedIndex > 0){
-                let selectedStaff = this.$refs.userSelect.selectedIndex - 1;
-                this.staffID = this.staffArray[selectedStaff].user_id;
-                
+        handleSelectedFees(option) {
+            this.selectedFees = option;
+            for (let i=0; i<this.feesArray.length; i++){
+                if((this.feesArray[i].fee_name) == this.selectedFees){
+                    this.feesID = this.feesArray[i].fees_id;
+                    this.fees[this.itemInd].fee_ledger = this.feesArray[i].posting_account;
+                    this.fees[this.itemInd].fee_name = this.feesArray[i].fee_name;
+                    this.fees[this.itemInd].amount = this.feesArray[i].default_amount;
+                }else{
+                   
+                }
             }
-        },
-        setUpdateUserID(){
-            this.stfUpdateID = "";
-            if(this.$refs.staffUpdateSelect.selectedIndex >= 0){
-                let selectedUpdateStaff = this.$refs.staffUpdateSelect.selectedIndex;
-                this.stfUpdateID = this.staffArray[selectedUpdateStaff].user_id;
-                this.stfUpdateName = this.staffArray[selectedUpdateStaff].first_name + " " +this.staffArray[selectedUpdateStaff].last_name;
-            }
-        },
-        setFeesID(){
-            this.feesID = "";
-            if(this.$refs.feesSelect[this.itemInd].selectedIndex >= 0){
-                let selectedFee = this.$refs.feesSelect[this.itemInd].selectedIndex;
-                this.feesID = this.feesArray[selectedFee].fees_id;
-                this.fees[this.itemInd].fee_ledger = this.feesArray[selectedFee].posting_account;
-                this.fees[this.itemInd].fee_name = this.feesArray[selectedFee].fee_name;
-                this.fees[this.itemInd].amount = this.feesArray[selectedFee].default_amount;
-            }
+            console.log("The fees array is ",this.fees);
         },
         createPatientHistory(){
             this.showLoader();
-            this.postingAccountsArr = [];
-            if(this.patient === '' || this.visit_date === '' || this.visit_notes === ''|| (this.staff === '' && this.doctor === '')){
+            if(this.selectedPatient === '' || this.visit_date === '' || this.visit_notes === ''|| (this.selectedStaff === '' && this.selectedDocotor === '')){
                 this.$toast.error("Please Enter Patient Visit Details",{
                     duration: 3000,
                     dismissible: true
                 })
                 this.hideLoader();
             }
-            else{
-                let formData = new FormData;
-                formData.append('patient', this.patientID);
-                formData.append('date', this.formatDate(this.visit_date));
-                formData.append('notes', this.visit_notes);
-                formData.append('hospital', this.hospitalID);
-                if(this.doctor){
-                    this.visitDoctor = true;
-                    formData.append('staff', this.doctorID);
-                    formData.append('is_doctor', this.visitDoctor);
+            else if(this.medicalFeeCharge && this.fees[0].type != null && this.fees[0].amount != null){
+                this.invoice_description = [];
+                this.txn_type = "INV";
+                this.journalEntryArr = [];
+                for(let i=0; i<this.fees.length; i++){
+                    if(this.fees[i].amount != null){
+                        this.invoice_totals += Number(this.fees[i].amount);
+                        this.invoice_description.push(this.fees[i].fee_name);
+                        let jnlEntry1 ={
+                            "date": this.formatDate(this.visit_date),
+                            "description": this.fees[i].fee_name,
+                            "txn_type": this.txn_type,
+                            "posting_account": this.patientID,
+                            "debit_amount": this.fees[i].amount,
+                            "credit_amount": this.contra,
+                        }
+                        let jnlEntry2 = {
+                            "date": this.formatDate(this.visit_date),
+                            "description": this.fees[i].fee_name +" for "+this.patientName,
+                            "txn_type": this.txn_type,
+                            "posting_account": this.fees[i].fee_ledger,
+                            "debit_amount": this.contra,
+                            "credit_amount": this.fees[i].amount,
+                        }
+                        this.journalEntryArr.push(jnlEntry1,jnlEntry2);
+                    }else{
+                        this.$toast.error("Please input fee amount",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                    }
                 }
-                if(this.staff){
-                    formData.append('staff', this.staffID);
-                    formData.append('is_doctor', this.visitDoctor);
+                if(this.invoice_description.length > 1){
+                    for(let x=0; x<this.invoice_description.length; x++){
+                        this.invDescr += (this.invoice_description[x]+", ")
+                    }
+                }else{
+                    this.invDescr = this.invoice_description[0];
+                }   
+                let formData = {
+                    hospital: this.hospitalID,
+                    doctor: this.doctorID,
+                    staff: this.userID,
+                    patient: this.patientID,
+                    visit_notes: this.visit_notes,
+                    company: this.hospitalID,
+                    client: this.patientName,
+                    description: this.invDescr,
+                    txn_type: this.txn_type,
+                    issue_date: this.formatDate(this.visit_date),
+                    total_amount: this.invoice_totals,
+                    journal_entry_array: this.journalEntryArr,
                 }
-                    
                 this.axios
-                .post("api/v1/create-patient-history/", formData)
+                .post("api/v1/create-patient-visit/", formData)
                 .then((response)=>{
-                    this.patientHistoryDetails = response.data;
-                    this.$toast.success("Patient Visit Added Succesfully",{
-                        duration: 3000,
-                        dismissible: true
-                    })
+                    console.log(response.data);
+                    if (response.status == 200){
+                        this.$toast.success("Patient Visit Added Succesfully",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.visit_date = "";
+                        this.visit_notes = "";
+                        this.medicalFeeCharge = false;
+                        this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
+                        this.hideLoader();
+                        this.closeModal();
+                        this.$store.commit('reloadingPage');
+                    }
+                    else{
+                        this.$toast.error("Error Adding Patient Visit",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.hideLoader();
+                    }
+                    
                 })
                 .catch((error)=>{
-                    this.$toast.error("Operation Failed",{
+                    console.log(error.message);
+                    this.$toast.error("Error Adding Patient Visit",{
                         duration: 3000,
                         dismissible: true
                     })
-                    console.log(error.message);
                 })
                 .finally(()=>{
-                    this.invoice_description = [];
-                    if(this.medicalFeeCharge && this.fees[0].type != null && this.fees[0].amount != null){
-                        this.txn_type = "INV";
-                        for(let i=0; i<this.fees.length; i++){
-                            if(this.fees[i].amount != null){
-                                this.invoice_totals += Number(this.fees[i].amount);
-                                this.invoice_description.push(this.fees[i].fee_name +" for "+this.patientName);
-                                let jnlEntry1 ={
-                                    "date": this.formatDate(this.visit_date),
-                                    "description": this.fees[i].fee_name +" for "+this.patientName,
-                                    "txn_type": this.txn_type,
-                                    "posting_account": this.patientLedgerID,
-                                    "debit_amount": this.fees[i].amount,
-                                    "credit_amount": this.contra,
-                                }
-                                let jnlEntry2 = {
-                                    "date": this.formatDate(this.visit_date),
-                                    "description": this.fees[i].fee_name +" for "+this.patientName,
-                                    "txn_type": this.txn_type,
-                                    "posting_account": this.fees[i].fee_ledger,
-                                    "debit_amount": this.contra,
-                                    "credit_amount": this.fees[i].amount,
-                                }
-                                this.journalEntryArr.push(jnlEntry1,jnlEntry2);
-                            }else{
-                                this.$toast.error("Please input fee amount",{
-                                    duration: 3000,
-                                    dismissible: true
-                                })
-                            }
-                        }
-                        if(this.invoice_description.length > 1){
-                            for(let x=0; x<this.invoice_description.length; x++){
-                                this.invDescr += (this.invoice_description[x]+", ")
-                            }
-                        }else{
-                            this.invDescr = this.invoice_description[0];
-                        }
-                        
-                        this.journalDetails = [];
-                        let formData = {
-                            company: this.hospitalID,
-                            client: this.patientName,
-                            description: this.invDescr,
-                            txn_type: this.txn_type,
-                            client_id: this.patientID,
-                            issue_date: this.formatDate(this.visit_date),
-                            total_amount: this.invoice_totals,
-                        }
-                        this.axios
-                        .post("api/v1/create-journal/", formData)
-                        .then((response)=>{
-                            this.journalDetails = response.data;
-                        })
-                        .catch((error)=>{
-                            console.log(error.message);
-                            this.hideLoader();
-                        })
-                        .finally(()=>{
-                                let formData  ={
-                                    journal: this.journalDetails.journal_id,
-                                    journal_entry_array: this.journalEntryArr,
-                                    company:  this.hospitalID
-                                }
 
-                                this.axios
-                                .post("api/v1/create-journal-entry/", formData)
-                                .then((response)=>{
-
-                                })
-                                .catch((error)=>{
-                                    console.log(error.message);
-                                })    
-                                .finally(()=>{
-                                    this.hideLoader();
-                                    this.patient = "";
-                                    this.visitDoctor = false;
-                                    this.staff = "";
-                                    this.visit_date = "";
-                                    this.visit_notes = "";
-                                    this.closeModal();
-                                    this.$store.commit('reloadingPage');
-                                })                            
-                            })                     
-                    }else{
-                        this.patient = "";
-                        this.visitDoctor = false;
-                        this.staff = "";
+                })                                
+            }
+            else{
+                let formData = {
+                    hospital: this.hospitalID,
+                    doctor: this.doctorID,
+                    staff: this.userID,
+                    patient: this.patientID,
+                    visit_notes: this.visit_notes,
+                    date: this.formatDate(this.visit_date)
+                }
+                this.axios
+                .post("api/v1/create-patient-visit/", formData)
+                .then((response)=>{
+                    console.log(response.data);
+                    if (response.status == 200){
+                        this.$toast.success("Patient Visit Added Succesfully",{
+                            duration: 3000,
+                            dismissible: true
+                        })
                         this.visit_date = "";
                         this.visit_notes = "";
                         this.hideLoader();
                         this.closeModal();
                         this.$store.commit('reloadingPage');
                     }
+                    else{
+                        this.$toast.error("Error Adding Patient Visit",{
+                            duration: 3000,
+                            dismissible: true
+                        })
+                        this.hideLoader();
+                    }
+                    
                 })
+                .catch((error)=>{
+                    console.log(error.message);
+                    this.$toast.error("Error Adding Patient Visit",{
+                        duration: 3000,
+                        dismissible: true
+                    })
+                })
+                .finally(()=>{
+
+                })
+
             }
         },
         searchPatientHistory(){
@@ -654,13 +695,13 @@ export default{
             this.visit_notes = this.patientHistoryList[selectedPatientHistory].notes;
             if(this.visitDoctor){
                 this.doctorID = this.patientHistoryList[selectedPatientHistory].staff_id;
-                this.doctorEditing = this.patientHistoryList[selectedPatientHistory].staff_name;
-                this.staffEditing = "";
+                this.selectedDoctor = "Dr. "+this.patientHistoryList[selectedPatientHistory].staff_name+" ("+this.patientHistoryList[selectedPatientHistory].staff_email+")";
+                this.selectedStaff = "";
             }
             else{
                 this.staffID = this.patientHistoryList[selectedPatientHistory].staff_id;
-                this.staffEditing = this.patientHistoryList[selectedPatientHistory].staff_name;
-                this.doctorEditing = "";
+                this.selectedStaff = this.patientHistoryList[selectedPatientHistory].staff_name+" ("+this.patientHistoryList[selectedPatientHistory].staff_email+")";
+                this.selectedDoctor = "";
             }
             this.patientEditing = this.patientHistoryList[selectedPatientHistory].patient_name;
             
@@ -670,8 +711,8 @@ export default{
         },
         updatePatientHistory(){
             this.showLoader();
-            if(this.patientEditing === '' || this.visit_date === '' || this.visit_notes === '' || (this.staffEditing === undefined && this.doctorEditing === '')
-            || (this.staffEditing === '' && this.doctorEditing === undefined) || (this.staffEditing === undefined && this.doctorEditing === undefined)){
+            if(this.patientEditing === '' || this.visit_date === '' || this.visit_notes === '' 
+                || (this.selectedStaff === '' && this.selectedDoctor === '')){
                     this.$toast.error("Please Enter Patient Visit Details",{
                         duration:3000,
                         dismissible: true
@@ -685,20 +726,11 @@ export default{
                 formData.append('date', this.formatDate(this.visit_date));
                 formData.append('notes', this.visit_notes);
                 formData.append('hospital', this.hospitalID);
-                if(this.doctUpdateID != 0 && (this.stfUpdateID == 0 && this.staffEditing =="")){
-                    this.visitDoctor = true;
-                    formData.append('staff', this.doctUpdateID);
-                    formData.append('is_doctor', this.visitDoctor);
-                }else if(this.doctUpdateID == 0 && this.doctorEditing != "" && (this.stfUpdateID == 0 && this.staffEditing =="")){
+                if(this.selectedDoctor != "" && this.selectedStaff == ""){
                     this.visitDoctor = true;
                     formData.append('staff', this.doctorID);
                     formData.append('is_doctor', this.visitDoctor);
-                }
-                if(this.stfUpdateID != 0 && (this.doctUpdateID == 0 && this.doctorEditing =="")){
-                    this.visitDoctor = false;
-                    formData.append('staff', this.stfUpdateID);
-                    formData.append('is_doctor', this.visitDoctor);
-                }else if(this.stfUpdateID == 0 && this.staffEditing != "" && (this.doctUpdateID == 0 && this.doctorEditing =="")){
+                }else if(this.selectedStaff != "" && this.selectedDoctor == ""){
                     this.visitDoctor = false;
                     formData.append('staff', this.staffID);
                     formData.append('is_doctor', this.visitDoctor);
@@ -717,6 +749,7 @@ export default{
                 })
                 .finally(()=>{
                     this.hideLoader();
+                    this.$store.commit('reloadingPage');
                 })
             }
         },
@@ -767,11 +800,8 @@ export default{
             this.applyMedicalFees = false;
             this.medicalFeeCharge = false;
             if(this.isEditing == false){
-                this.patient = "";
-                this.doctor = "";
                 this.visit_date = new Date();
                 this.visit_notes = "";
-                this.staff = "";
             }
             this.patientModalVisible = !this.patientModalVisible;
             this.fetchDoctors();
@@ -785,6 +815,9 @@ export default{
         closeModal(){
             this.patientModalVisible = false;
             this.isEditing = false;
+            this.selectedDoctor = "";
+            this.selectedPatient = "";
+            this.selectedStaff = "";
         },
         loadNext(){
             if(this.currentPage >= this.pageCount){
@@ -983,9 +1016,12 @@ em{
     min-width: 50vw;
 }
 .fees-table{
-    min-height: 20vh;
-    max-height: 20vh;
+    min-height: 25vh;
+    max-height: 40vh;
     overflow-y: scroll;
     overflow-x: scroll;
+}
+.patient-visit-container{
+    min-width: 60vw;
 }
 </style>

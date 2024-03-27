@@ -1,4 +1,6 @@
 import os
+from django.db import transaction
+from django.db.models import F
 from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import *
@@ -533,14 +535,23 @@ class JournalList(generics.ListCreateAPIView):
 class JournalDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Journal.objects.all()
     serializer_class = JournalSerializer
-        
 
+
+@transaction.atomic
 @csrf_exempt
 @api_view(['POST'])
 def createJournal(request):
     company_id = request.data.get("company")
     txn_type = request.data.get("txn_type")
     done_by = request.data.get("done_by")
+    client = request.data.get('client')
+    client_id = request.data.get('client_id')
+    description = request.data.get('description')
+    issue_date = request.data.get('issue_date')
+    due_date = request.data.get('due_date')
+    total_amount = request.data.get('total_amount')
+    journal_entry_array = request.data.get("journal_entry_array")
+    print("The journal entry array is ",journal_entry_array)
 
     if txn_type == 'JNL' and done_by is not None:
         done_by = request.user.first_name + ' '+ request.user.last_name
@@ -550,24 +561,32 @@ def createJournal(request):
         if not last_journal_no:
             new_journal_no = "JNL-0001"
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)    
         else:
             journal_no = last_journal_no.journal_no
             journal_no_int = int(journal_no.split('JNL-')[-1])
             new_journal_no_int = journal_no_int + 1
             new_journal_no = 'JNL-'+ str(new_journal_no_int).zfill(4)
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
         
     
     elif txn_type == 'INV':
@@ -577,24 +596,35 @@ def createJournal(request):
         if not last_journal_no:
             new_journal_no = "INV00001"
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id,
+                                                     description=description, issue_date=issue_date, due_date=due_date, total_amount=total_amount, company=company)
+            
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
         else:
             journal_no = last_journal_no.journal_no
             journal_no_int = int(journal_no.split('INV')[-1])
             new_journal_no_int = journal_no_int + 1
             new_journal_no = 'INV'+ str(new_journal_no_int).zfill(5)
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id,
+                                                     description=description, issue_date=issue_date, due_date=due_date, total_amount=total_amount, company=company)
+            print("The invoice journal is ",invoice_journal)
+            for jnlEntry in journal_entry_array:
+                print("The jnle is ",jnlEntry)
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
     
     elif txn_type == 'RCPT':
         company_uuid = uuid.UUID(company_id)
@@ -603,24 +633,32 @@ def createJournal(request):
         if not last_journal_no:
             new_journal_no = "RC00001"
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
         else:
             journal_no = last_journal_no.journal_no
             journal_no_int = int(journal_no.split('RC')[-1])
             new_journal_no_int = journal_no_int + 1
             new_journal_no = 'RC'+ str(new_journal_no_int).zfill(5)
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
     
     elif txn_type == 'PMT':
         company_uuid = uuid.UUID(company_id)
@@ -629,24 +667,32 @@ def createJournal(request):
         if not last_journal_no:
             new_journal_no = "PM00001"
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
         else:
             journal_no = last_journal_no.journal_no
             journal_no_int = int(journal_no.split('PM')[-1])
             new_journal_no_int = journal_no_int + 1
             new_journal_no = 'PM'+ str(new_journal_no_int).zfill(5)
             company = get_object_or_404(Company, company_id=company_uuid)
-            serializer = JournalSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(company=company, journal_no=new_journal_no, done_by=done_by)
-            else:
-                print(serializer.errors) 
-            return Response(serializer.data)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            for jnlEntry in journal_entry_array:
+                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                           posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            message = {'msg':"The journal and journal entries succesfully added"}    
+            return Response(message)
     
 
 
