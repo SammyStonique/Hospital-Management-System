@@ -53,6 +53,7 @@ class Journal(models.Model):
 
     STATUS = (('','Select Status'),('Open','Open'),('Closed','Closed'))
     TRANSACTION_TYPE = (('','Select Txn Type'),('BAL','BAL'),('JNL','JNL'),('INV','INV'),('RCPT','RCPT'),('PMT','PMT'))
+    PAYMENT_METHODS = (('','Select Payment Method'),('Cash','Cash'),('Mpesa','Mpesa'),('Bank Deposit','Bank Deposit'),('Cheque','Cheque'),('Check-off','Check-off'),('RTGS','RTGS'),('EFT','EFT'))
 
     journal_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     journal_no = models.CharField(max_length=250,blank=True, null=True)
@@ -61,6 +62,7 @@ class Journal(models.Model):
     client_id = models.CharField(max_length=250,blank=True, null=True)
     issue_date = models.DateField()
     due_date = models.DateField(null=True, blank=True)
+    banking_date = models.DateField(null=True, blank=True)
     sub_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -69,6 +71,7 @@ class Journal(models.Model):
     status = models.CharField(max_length=250, choices=STATUS, default='Open')
     description = models.TextField()
     reference_no = models.CharField(max_length=250,blank=True, null=True)
+    payment_method = models.CharField(max_length=250, choices=PAYMENT_METHODS, default='',blank=True, null=True)
     done_by = models.CharField(max_length=250,blank=True, null=True)
     company = models.ForeignKey(Company, related_name="company_journal", on_delete=models.CASCADE)
 
@@ -77,6 +80,9 @@ class Journal(models.Model):
 
     def __str__(self):
         return f'{self.journal_no} Journal'
+    
+    def calculateBalance(self):
+        return int(self.total_amount) - int(self.total_paid)
     
 
 class JournalEntry(models.Model):

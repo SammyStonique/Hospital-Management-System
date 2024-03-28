@@ -156,6 +156,14 @@
                 </button>
               </router-link>
             </div>
+            <div class="py-2 px-3 pl-4 bg-slate-400 w-full text-white hover:bg-slate-500 hover:w-full hover:text-black">
+              <router-link to="/hms/patient-receipts">
+                <button class="flex text-sm">
+                  <i class="fa fa-pencil-square-o pt-2 mr-2" aria-hidden="true"></i>
+                  <p class="">Receipts</p>
+                </button>
+              </router-link>
+            </div>
           </div>
       </div>
       

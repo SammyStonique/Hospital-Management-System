@@ -19,6 +19,7 @@ import PayrollView from '../views/HR/PayrollView.vue'
 import LabManagementView from '../views/HMS/LabManagementView.vue'
 import MedicalFeesView from '../views/HMS/MedicalFeesView.vue'
 import InvoicesView from '../views/HMS/InvoicesView.vue'
+import PatientReceiptsView from '../views/HMS/PatientReceiptsView.vue'
 import InventoryView from '../views/INV/InventoryView.vue'
 import MyAccountView from '../views/HMS/MyAccountView.vue'
 import FADashboardView from '../views/FA/FADashboardView.vue'
@@ -161,6 +162,14 @@ const routes = [
     path: '/hms/invoices',
     name: 'hms-invoices',
     component: InvoicesView,
+    meta:{
+      requireLogin: true
+    }
+  },
+  {
+    path: '/hms/patient-receipts',
+    name: 'hms-patient-receipts',
+    component: PatientReceiptsView,
     meta:{
       requireLogin: true
     }

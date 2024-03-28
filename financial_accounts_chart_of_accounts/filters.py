@@ -98,6 +98,9 @@ def journalSearch(request):
     min_amount = data['min_amount']
     max_amount = data['max_amount']
     txn_type = data['txn_type']
+    reference_no = data['reference_no']
+    payment_method = data['payment_method']
+    balance = 0
     company_id = data['company_id']
 
     company_uuid = uuid.UUID(company_id)
@@ -120,24 +123,56 @@ def journalSearch(request):
     if client:
         journals = journals.filter(Q(client__icontains=client))
 
-    for jnl in journals:
-        obj = {
-            "journal_id": jnl.journal_id,
-            "journal_no": jnl.journal_no,
-            "client": jnl.client,
-            "issue_date": jnl.issue_date.strftime("%d %b, %Y"),
-            "due_date": jnl.due_date,
-            "sub_total": jnl.sub_total,
-            "tax": jnl.tax,
-            "total_amount": jnl.total_amount,
-            "total_paid": jnl.total_paid,
-            "due_amount": jnl.due_amount,
-            "status": jnl.status,
-            "description": jnl.description,
-            "done_by": jnl.done_by,
+    if reference_no:
+        journals = journals.filter(Q(reference_no__icontains=reference_no))
 
-        }
-        journalList.append(obj)
+    if payment_method:
+        journals = journals.filter(Q(payment_method__icontains=payment_method))
+
+    for jnl in journals:
+        balance = jnl.calculateBalance()
+        if(jnl.banking_date):
+            obj = {
+                "journal_id": jnl.journal_id,
+                "journal_no": jnl.journal_no,
+                "client": jnl.client,
+                "issue_date": jnl.issue_date.strftime("%d %b, %Y"),
+                "due_date": jnl.due_date,
+                "banking_date": jnl.banking_date.strftime("%d %b, %Y"),
+                "sub_total": jnl.sub_total,
+                "tax": jnl.tax,
+                "total_amount": jnl.total_amount,
+                "total_paid": jnl.total_paid,
+                "due_amount": jnl.due_amount,
+                "status": jnl.status,
+                "description": jnl.description,
+                "done_by": jnl.done_by,
+                "reference_no": jnl.reference_no,
+                "payment_method": jnl.payment_method,
+                "balance": balance,
+            }
+            journalList.append(obj)
+        else:
+            obj = {
+                "journal_id": jnl.journal_id,
+                "journal_no": jnl.journal_no,
+                "client": jnl.client,
+                "issue_date": jnl.issue_date.strftime("%d %b, %Y"),
+                "due_date": jnl.due_date,
+                "banking_date": jnl.banking_date,
+                "sub_total": jnl.sub_total,
+                "tax": jnl.tax,
+                "total_amount": jnl.total_amount,
+                "total_paid": jnl.total_paid,
+                "due_amount": jnl.due_amount,
+                "status": jnl.status,
+                "description": jnl.description,
+                "done_by": jnl.done_by,
+                "reference_no": jnl.reference_no,
+                "payment_method": jnl.payment_method,
+                "balance": balance,
+            }
+            journalList.append(obj)
 
     pagination_class = BasePagination
     paginator = pagination_class()

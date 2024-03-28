@@ -162,7 +162,7 @@
                                                 <button type="button" @click="removeRow(index)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
                                             </td>
                                             <td class="border border-black">
-                                                <button type="button" @click="addRow"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                                                <button type="button" @click="addRow(index)"><i class="fa fa-plus" aria-hidden="true"></i></button>
                                             </td>
                                         </tr>
                                     
@@ -244,6 +244,7 @@ import Modal from '@/components/Modal.vue'
 import MyPagination from '@/components/MyPagination.vue'
 import SearchableDropdown from '@/components/SearchableDropdown.vue'
 import Datepicker from 'vuejs3-datepicker';
+import { getTransitionRawChildren } from 'vue'
 
 export default{
     name: 'PatientsVisitsView',
@@ -338,15 +339,19 @@ export default{
         SearchableDropdown
     },
     methods:{
-        addRow() {
-            this.itemInd += 1;
+        addRow() {  
+            let selectedFee = arguments[0];
+            this.itemInd = this.fees[selectedFee].itemIndex + 1;
             this.fees.push({itemIndex:this.itemInd, type: null, amount: null, fee_name: null, fee_ledger: null });
         },
         removeRow(){
             if(this.fees.length > 1){
                 let selectedFee = arguments[0];
                 this.fees.splice(selectedFee, 1);
-                
+                for(let i=selectedFee; i<this.fees.length; i++){
+                    this.fees[i].itemIndex -= 1;
+                }
+                console.log("The fees array after remove is ",this.fees);
             }else{
                 this.fees = [{itemIndex:0, type: null, amount: null , fee_name: null, fee_ledger: null}];
                 this.selectedFees = "";
@@ -488,6 +493,7 @@ export default{
                 if((this.feesArray[i].fee_name) == this.selectedFees){
                     this.feesID = this.feesArray[i].fees_id;
                     this.fees[this.itemInd].fee_ledger = this.feesArray[i].posting_account;
+                    this.fees[this.itemInd].type = this.feesArray[i].fee_name;
                     this.fees[this.itemInd].fee_name = this.feesArray[i].fee_name;
                     this.fees[this.itemInd].amount = this.feesArray[i].default_amount;
                 }else{
@@ -510,14 +516,14 @@ export default{
                 this.txn_type = "INV";
                 this.journalEntryArr = [];
                 for(let i=0; i<this.fees.length; i++){
-                    if(this.fees[i].amount != null){
+                    if(this.fees[i].amount != null && this.fees[i].amount != 0){
                         this.invoice_totals += Number(this.fees[i].amount);
                         this.invoice_description.push(this.fees[i].fee_name);
                         let jnlEntry1 ={
                             "date": this.formatDate(this.visit_date),
                             "description": this.fees[i].fee_name,
                             "txn_type": this.txn_type,
-                            "posting_account": this.patientID,
+                            "posting_account": this.patientLedgerID,
                             "debit_amount": this.fees[i].amount,
                             "credit_amount": this.contra,
                         }
@@ -531,10 +537,15 @@ export default{
                         }
                         this.journalEntryArr.push(jnlEntry1,jnlEntry2);
                     }else{
-                        this.$toast.error("Please input fee amount",{
+                        this.$toast.error("Please input correct fee amount",{
                             duration: 3000,
                             dismissible: true
                         })
+                        this.journalEntryArr = [];
+                        this.invoice_description = [];
+                        this.invoice_totals = 0;
+                        this.invDescr = "";
+                        break;
                     }
                 }
                 if(this.invoice_description.length > 1){
@@ -586,16 +597,17 @@ export default{
                 })
                 .catch((error)=>{
                     console.log(error.message);
-                    this.$toast.error("Error Adding Patient Visit",{
+                    this.$toast.error(error.message,{
                         duration: 3000,
                         dismissible: true
                     })
+                    this.hideLoader();
                 })
                 .finally(()=>{
 
                 })                                
             }
-            else{
+            else if(!this.medicalFeeCharge){
                 let formData = {
                     hospital: this.hospitalID,
                     doctor: this.doctorID,
@@ -634,11 +646,18 @@ export default{
                         duration: 3000,
                         dismissible: true
                     })
+                    this.hideLoader();
                 })
                 .finally(()=>{
-
+                    this.hideLoader();
                 })
 
+            }else{
+                this.$toast.error("Check If Fee Is Correctly Added",{
+                    duration: 3000,
+                    dismissible: true
+                })
+                this.hideLoader();
             }
         },
         searchPatientHistory(){

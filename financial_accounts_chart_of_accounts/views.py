@@ -550,7 +550,11 @@ def createJournal(request):
     issue_date = request.data.get('issue_date')
     due_date = request.data.get('due_date')
     total_amount = request.data.get('total_amount')
+    payment_method = request.data.get('payment_method')
+    reference_no = request.data.get('reference_no')
+    banking_date = request.data.get('banking_date')
     journal_entry_array = request.data.get("journal_entry_array")
+    journals_array = request.data.get("journals_array")
     print("The journal entry array is ",journal_entry_array)
 
     if txn_type == 'JNL' and done_by is not None:
@@ -562,7 +566,7 @@ def createJournal(request):
             new_journal_no = "JNL-0001"
             company = get_object_or_404(Company, company_id=company_uuid)
             invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
-                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, due_amount=total_amount, company=company)
             for jnlEntry in journal_entry_array:
                 ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
                 company = get_object_or_404(Company, company_id=company_uuid)
@@ -578,7 +582,7 @@ def createJournal(request):
             new_journal_no = 'JNL-'+ str(new_journal_no_int).zfill(4)
             company = get_object_or_404(Company, company_id=company_uuid)
             invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
-                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+                                                     description=description, issue_date=issue_date, total_amount=total_amount, due_amount=total_amount, company=company)
             for jnlEntry in journal_entry_array:
                 ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
                 company = get_object_or_404(Company, company_id=company_uuid)
@@ -596,7 +600,7 @@ def createJournal(request):
         if not last_journal_no:
             new_journal_no = "INV00001"
             company = get_object_or_404(Company, company_id=company_uuid)
-            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id,
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, due_amount=total_amount,
                                                      description=description, issue_date=issue_date, due_date=due_date, total_amount=total_amount, company=company)
             
             for jnlEntry in journal_entry_array:
@@ -613,7 +617,7 @@ def createJournal(request):
             new_journal_no_int = journal_no_int + 1
             new_journal_no = 'INV'+ str(new_journal_no_int).zfill(5)
             company = get_object_or_404(Company, company_id=company_uuid)
-            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id,
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, due_amount=total_amount,
                                                      description=description, issue_date=issue_date, due_date=due_date, total_amount=total_amount, company=company)
             print("The invoice journal is ",invoice_journal)
             for jnlEntry in journal_entry_array:
@@ -626,21 +630,28 @@ def createJournal(request):
             message = {'msg':"The journal and journal entries succesfully added"}    
             return Response(message)
     
-    elif txn_type == 'RCPT':
+    elif txn_type == 'RCPT' and done_by is not None:
+        done_by = request.user.first_name + ' '+ request.user.last_name
         company_uuid = uuid.UUID(company_id)
         last_journal_no = Journal.objects.filter(company=company_uuid, txn_type=txn_type).order_by('journal_no').last()
 
         if not last_journal_no:
             new_journal_no = "RC00001"
             company = get_object_or_404(Company, company_id=company_uuid)
-            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
-                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,payment_method=payment_method,
+                                                     description=description, issue_date=issue_date, banking_date=banking_date, total_amount=total_amount, reference_no=reference_no, company=company)
             for jnlEntry in journal_entry_array:
                 ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
                 company = get_object_or_404(Company, company_id=company_uuid)
                 ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
                 JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
                                            posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+            
+            for jnl in journals_array:
+                journal_uuid = uuid.UUID(jnl['journal_id'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                Journal.objects.filter(company=company, journal_id=journal_uuid).update(total_paid=jnl['total_paid'],due_amount=jnl['due_amount'],status=jnl['status'])
+
             message = {'msg':"The journal and journal entries succesfully added"}    
             return Response(message)
         else:
@@ -649,14 +660,20 @@ def createJournal(request):
             new_journal_no_int = journal_no_int + 1
             new_journal_no = 'RC'+ str(new_journal_no_int).zfill(5)
             company = get_object_or_404(Company, company_id=company_uuid)
-            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,
-                                                     description=description, issue_date=issue_date, total_amount=total_amount, company=company)
+            invoice_journal = Journal.objects.create(journal_no=new_journal_no,txn_type=txn_type, client=client, client_id=client_id, done_by=done_by,payment_method=payment_method,
+                                                     description=description, issue_date=issue_date, banking_date=banking_date, total_amount=total_amount, reference_no=reference_no, company=company)
             for jnlEntry in journal_entry_array:
                 ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
                 company = get_object_or_404(Company, company_id=company_uuid)
                 ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
                 JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
                                            posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+                
+            for jnl in journals_array:
+                journal_uuid = uuid.UUID(jnl['journal_id'])
+                company = get_object_or_404(Company, company_id=company_uuid)
+                Journal.objects.filter(company=company, journal_id=journal_uuid).update(total_paid=jnl['total_paid'],due_amount=jnl['due_amount'],status=jnl['status'])
+
             message = {'msg':"The journal and journal entries succesfully added"}    
             return Response(message)
     
@@ -702,6 +719,8 @@ def getJournals(request):
     journal_id = request.data.get("journal")
     company_id = request.data.get("company")
     txn_type = request.data.get("txn_type")
+    client = request.data.get("client")
+    status = request.data.get("status")
 
     if journal_id is not None:
         company_uuid = uuid.UUID(company_id)
@@ -712,10 +731,34 @@ def getJournals(request):
         serializer = JournalSerializer(journal)
         return Response(serializer.data)
     
+    elif client is not None and txn_type is not None and status is not None:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journals = Journal.objects.filter(company=company,client_id= client, txn_type=txn_type, status=status)
+
+        serializer = JournalSerializer(journals, many=True)
+        return Response(serializer.data)
+    
+    elif client is not None and txn_type is not None:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journals = Journal.objects.filter(company=company,client_id= client, txn_type=txn_type)
+
+        serializer = JournalSerializer(journals, many=True)
+        return Response(serializer.data)
+    
     elif txn_type is not None:
         company_uuid = uuid.UUID(company_id)
         company = get_object_or_404(Company, company_id=company_uuid)
         journals = Journal.objects.filter(company=company,txn_type= txn_type)
+
+        serializer = JournalSerializer(journals, many=True)
+        return Response(serializer.data)
+    
+    elif client is not None:
+        company_uuid = uuid.UUID(company_id)
+        company = get_object_or_404(Company, company_id=company_uuid)
+        journals = Journal.objects.filter(company=company,client_id= client)
 
         serializer = JournalSerializer(journals, many=True)
         return Response(serializer.data)

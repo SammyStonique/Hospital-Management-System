@@ -1,7 +1,8 @@
 <template>
     <div class="searchable-dropdown">
       <input type="text" v-model="searchQuery" @input="filterOptions" :placeholder="searchPlaceholder" class="rounded border border-gray-600 bg-white pl-2" :style="{width: this.dropdownWidth, height:this.dropdownHeight}">
-      <button type="button" class="show-dropdown" @click="toggleDropdown"><i class="fa fa-caret-down" aria-hidden="true"></i></button>
+      <button type="button" class="show-dropdown" @click="toggleDropdown" v-if="!dropdown_active"><i class="fa fa-caret-down" aria-hidden="true"></i></button>
+      <button type="button" class="show-dropdown" @click="resetDropdown" v-else><i class="fa fa-times" aria-hidden="true"></i></button>
       <ul v-if="isOpen" class="dropdown-list">
         <li v-for="(option, index) in filteredOptions" :key="index" @click="selectOption(option)" :style="{fontSize: this.fontSize}">
           {{ option }}
@@ -12,30 +13,35 @@
   
   <script>
   export default {
-    props:['options','dropdownWidth','dropdownHeight','searchPlaceholder','fontSize','updateValue'],
+    props:['options','dropdownWidth','dropdownHeight','searchPlaceholder','fontSize','updateValue','updateVal'],
     data() {
       return {
         isOpen: false,
         searchQuery: '',
+        dropdown_active: false,
         filteredOptions: []
       };
     },
     created() {
       this.searchQuery = this.updateValue;
+      this.dropdown_active = false;
     },
     methods: {
       toggleDropdown() {
-        this.isOpen = !this.isOpen;
+        this.isOpen = true;
         if(this.isOpen){
           this.filteredOptions = this.options;
         }
+        this.dropdown_active = true;
       },
       selectOption(option) {
         this.searchQuery = option;
         this.toggleDropdown();
         this.$emit('option-selected', option);
+        this.isOpen = false;
       },
       filterOptions() {
+        this.dropdown_active = true;
         this.isOpen = true;
         this.filteredOptions = this.options.filter(option => {
           return option.toLowerCase().includes(this.searchQuery.toLowerCase());
@@ -44,7 +50,7 @@
       resetDropdown(){
         this.isOpen = false;
         this.searchQuery = "";
-        this.$emit('reset');
+        this.dropdown_active = false;
       }
     }
   };

@@ -141,7 +141,7 @@ def create_patient_with_nextofkin_visit_and_charges(request):
         invoice_number = invoice_number_gen(hospital_id)
 
         invoice_journal = Journal.objects.create(journal_no=invoice_number,txn_type=txn_type, client=client, description=description, issue_date=issue_date,
-                                                 client_id=patient.patient_id, total_amount=total_amount, company=hospital)
+                                                 client_id=patient.patient_id, total_amount=total_amount, due_amount=total_amount, company=hospital)
 
         for jnlEntry in journal_entry_array:
             if jnlEntry['posting_account'] == "":
@@ -850,36 +850,35 @@ def create_patient_visit_with_charges(request):
     print("The journal array is ",journal_entry_array)
 
     if journal_entry_array is not None:
-        with transaction.atomic():
-            hospital_uuid = uuid.UUID(hospital_id)
-            patient_uuid = uuid.UUID(patient_id)
-            hospital = get_object_or_404(Company, company_id=hospital_uuid)
-            patient = get_object_or_404(Patient, patient_id=patient_uuid)
-            if staff is not None and doctor is None:
-                staff_uuid = uuid.UUID(staff)
-                staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
-                PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, hospital=hospital)
-            elif doctor is not None and staff is None:
-                staff_uuid = uuid.UUID(doctor)
-                staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
-                PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, is_doctor=is_doctor, hospital=hospital)
+        hospital_uuid = uuid.UUID(hospital_id)
+        patient_uuid = uuid.UUID(patient_id)
+        hospital = get_object_or_404(Company, company_id=hospital_uuid)
+        patient = get_object_or_404(Patient, patient_id=patient_uuid)
+        if staff is not None and doctor is None:
+            staff_uuid = uuid.UUID(staff)
+            staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
+            PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, hospital=hospital)
+        elif doctor is not None and staff is None:
+            staff_uuid = uuid.UUID(doctor)
+            staff_to_visit = User.objects.get(allowed_company=hospital_uuid, user_id=staff_uuid)
+            PatientHistory.objects.create(patient=patient, date=issue_date, notes=visit_notes, staff=staff_to_visit, is_doctor=is_doctor, hospital=hospital)
 
-            invoice_number = invoice_number_gen(hospital_id)
-            print("The invoice number is ",invoice_number)
-            invoice_journal = Journal.objects.create(journal_no=invoice_number,txn_type=txn_type, client=client, description=description, issue_date=issue_date,
-                                                    client_id=patient.patient_id, total_amount=total_amount, company=hospital)
-            print("The invoice journal is ",invoice_journal)
+        invoice_number = invoice_number_gen(hospital_id)
+        print("The invoice number is ",invoice_number)
+        invoice_journal = Journal.objects.create(journal_no=invoice_number,txn_type=txn_type, client=client, description=description, issue_date=issue_date,
+                                                client_id=patient.patient_id, total_amount=total_amount, due_amount=total_amount, company=hospital)
+        print("The invoice journal is ",invoice_journal)
 
-            for jnlEntry in journal_entry_array:
-                print("The JNLE is ", jnlEntry)   
-                ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
-                company = get_object_or_404(Company, company_id=hospital_uuid)
-                ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
-                JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
-                                            posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
+        for jnlEntry in journal_entry_array:
+            print("The JNLE is ", jnlEntry)   
+            ledger_uuid = uuid.UUID(jnlEntry['posting_account'])
+            company = get_object_or_404(Company, company_id=hospital_uuid)
+            ledger = get_object_or_404(Ledger, ledger_id=ledger_uuid)
+            JournalEntry.objects.create(journal=invoice_journal, date=jnlEntry['date'], description=jnlEntry['description'], txn_type=jnlEntry['txn_type'],
+                                        posting_account=ledger, debit_amount=jnlEntry['debit_amount'], credit_amount=jnlEntry['credit_amount'], company=company)
 
-            message = {'msg':"The patient  visit and charges have been succesfully added"}    
-            return Response(message)
+        message = {'msg':"The patient  visit and charges have been succesfully added"}    
+        return Response(message)
     else:
         hospital_uuid = uuid.UUID(hospital_id)
         patient_uuid = uuid.UUID(patient_id)
